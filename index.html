@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Your Site — Clean & Modern</title>
+  <meta name="description" content="A clean, modern one-page site ready for GitHub Pages.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="wrap">
+      <a class="logo" href="#">Your<span class="accent">Site</span></a>
+      <nav class="nav">
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#work">Work</a>
+        <a href="#contact" class="cta">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <h1>Design that works. Pages that convert.</h1>
+          <p class="lead">Fast, responsive, and easy to customize — a one-page website built for clarity and results. Perfect for portfolios, small businesses, and landing pages.</p>
+          <p class="actions">
+            <a href="#contact" class="btn">Get in touch</a>
+            <a href="#work" class="btn ghost">See examples</a>
+          </p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <svg viewBox="0 0 400 300" width="400" height="300" xmlns="http://www.w3.org/2000/svg" role="img">
+            <rect x="10" y="10" width="380" height="280" rx="18" fill="#f7fbff"/>
+            <circle cx="120" cy="120" r="52" fill="#e6f0ff"/>
+            <rect x="180" y="60" width="160" height="24" rx="6" fill="#f3f9f0"/>
+            <rect x="180" y="110" width="120" height="16" rx="4" fill="#f6eefb"/>
+            <rect x="40" y="200" width="320" height="28" rx="8" fill="#fff7ed"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section light">
+      <div class="wrap">
+        <h2>About</h2>
+        <p class="muted">This template is focused on performance and clarity. The layout is responsive and uses semantic HTML so search engines and screen readers work well.</p>
+      </div>
+    </section>
+
+    <section id="services" class="section">
+      <div class="wrap grid-3">
+        <div class="card">
+          <h3>Branding</h3>
+          <p>Clean identity and messaging that tells your story quickly.</p>
+        </div>
+        <div class="card">
+          <h3>Web Design</h3>
+          <p>Responsive pages that load fast and look great on any device.</p>
+        </div>
+        <div class="card">
+          <h3>Consulting</h3>
+          <p>Strategy-first approach — we'll help you choose the right next steps.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="work" class="section light">
+      <div class="wrap">
+        <h2>Selected Work</h2>
+        <div class="grid-2 showcase">
+          <div class="showcase-card">
+            <div class="thumb" aria-hidden="true"></div>
+            <h4>Project One</h4>
+            <p class="muted">A landing page redesign that increased signups by 27%.</p>
+          </div>
+          <div class="showcase-card">
+            <div class="thumb" aria-hidden="true"></div>
+            <h4>Project Two</h4>
+            <p class="muted">A small business site with a focus on conversions and speed.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section contact">
+      <div class="wrap">
+        <h2>Contact</h2>
+        <p class="muted">Ready to start? Drop your message and I'll get back to you.</p>
+        <form class="form" onsubmit="alert('Demo form — configure a backend to receive messages.'); return false;">
+          <label>
+            Name
+            <input type="text" name="name" placeholder="Your name" required>
+          </label>
+          <label>
+            Email
+            <input type="email" name="email" placeholder="you@example.com" required>
+          </label>
+          <label>
+            Message
+            <textarea name="message" rows="5" placeholder="Tell me about your project" required></textarea>
+          </label>
+          <p><button class="btn" type="submit">Send message</button></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>© <span id="year"></span> Your Site • Built with a simple starter template.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
