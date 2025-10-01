@@ -1,49 +1,55 @@
-:root {
-  --bg:#0f172a;         
-  --muted:#94a3b8;      
-  --text:#f1f5f9;       
-  --primary:#38bdf8;    
-  --accent:#4ade80;     
-  --card:#1e293b;       
-  --radius:14px;
-  --wrap:1100px;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
-  color-scheme: dark;
+/* ITINERARY STYLES */
+.itinerary-section {
+  background: linear-gradient(180deg,#0b1220 0%,#091524 100%);
 }
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.6}
-.wrap{max-width:var(--wrap);margin:0 auto;padding:28px}
-.header{position:sticky;top:0;background:rgba(15,23,42,0.85);backdrop-filter:blur(6px);border-bottom:1px solid #1e293b;z-index:30}
-.header .wrap{display:flex;align-items:center;justify-content:space-between}
-.logo{font-weight:800;text-decoration:none;color:var(--text);font-size:1.2rem}
-.logo .accent{color:var(--accent)}
-.nav a{margin-left:18px;text-decoration:none;color:var(--muted);font-weight:600}
-.nav .cta{padding:8px 12px;border-radius:10px;background:var(--primary);color:#0f172a;text-decoration:none;font-weight:700}
-.hero{padding:64px 0 48px}
-.hero-inner{display:flex;gap:36px;align-items:center;flex-wrap:wrap}
-.hero-copy h1{font-size:2.4rem;margin:0 0 12px;color:var(--primary)}
-.lead{color:var(--muted);max-width:55ch;font-size:1.1rem}
-.actions .btn{margin-right:12px}
-.btn{display:inline-block;padding:10px 18px;border-radius:10px;background:var(--primary);color:#0f172a;text-decoration:none;border:none;cursor:pointer;font-weight:700}
-.btn.ghost{background:transparent;color:var(--primary);border:2px solid var(--primary);padding:8px 16px;border-radius:10px}
-.section{padding:56px 0}
-.light{background:#1e293b}
-h2{color:var(--accent);margin-bottom:16px}
-.timeline{list-style:none;padding:0;margin:0;display:grid;gap:16px}
-.timeline li{background:var(--card);padding:16px;border-radius:10px;border:1px solid #334155;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
-.timeline li span{display:inline-block;width:110px;font-weight:700;color:var(--primary)}
-.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
-.showcase-card{background:var(--card);padding:16px;border-radius:12px;border:1px solid #334155}
-.thumb{height:160px;border-radius:10px;margin-bottom:12px}
-.contact .form{max-width:720px;display:grid;gap:12px}
-.form label{display:block;font-size:0.95rem;color:var(--muted)}
-.form input,.form textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:var(--text)}
-.form input::placeholder,.form textarea::placeholder{color:#64748b}
-.footer{padding:24px 0;border-top:1px solid #334155;text-align:center;color:var(--muted);font-size:0.95rem}
 
-/* Responsive */
-@media (max-width:920px){
-  .hero-inner{flex-direction:column;text-align:center}
-  .nav a{margin-left:10px}
+.itinerary-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 28px;
+  margin: 36px 0;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  transition: transform 0.2s ease;
+}
+.itinerary-card:hover {
+  transform: translateY(-4px);
+}
+
+.itinerary-card .date {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.itinerary-card h3 {
+  font-size: 1.6rem;
+  margin: 0 0 12px;
+  color: var(--accent);
+}
+
+.itinerary-card p {
+  margin: 4px 0;
+  font-size: 1.05rem;
+}
+
+.itinerary-card .note {
+  margin-top: 8px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Color accents */
+.itinerary-card.flight {
+  border-left: 6px solid #38bdf8; /* cyan for flights */
+}
+.itinerary-card.stay {
+  border-left: 6px solid #94a3b8; /* grey-blue for stays */
+}
+.itinerary-card.aurora {
+  border-left: 6px solid #a855f7; /* purple for aurora nights */
+  background: linear-gradient(180deg, rgba(74,222,128,0.08), rgba(56,189,248,0.05));
 }
