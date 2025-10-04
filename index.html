@@ -4,219 +4,344 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Pending Payments</title>
+
+  <!-- Minimal, modern styles -->
   <style>
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#fff;margin:0;padding:32px;color:#111}
-    .wrap{max-width:980px;margin:0 auto}
-    h1{display:flex;align-items:center;gap:10px;font-size:28px}
-    table{border-collapse:collapse;width:100%;margin-top:20px}
-    th,td{border:1px solid #ddd;padding:12px;text-align:left}
-    th{background:#f4f4f4;color:#111}
-    tr:nth-child(even){background:#fbfbfb}
-    .muted{color:#666;font-size:13px}
-    .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
-    .form-row input[type=text], .form-row input[type=date], .form-row input[type=number], .form-row select {
-      padding:8px;border:1px solid #ccc;border-radius:6px;min-width:140px;box-sizing:border-box;
+    :root{
+      --accent: #2e8b57;
+      --muted: #6b7280;
+      --bg: #ffffff;
+      --card: #f7faf9;
+      --text: #0f172a;
+      --radius: 10px;
+      --shadow: 0 6px 20px rgba(10,10,10,0.06);
+      --danger: #e63946;
     }
-    .btn{background:#2f9e44;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-    .btn:disabled{opacity:.5;cursor:default}
-    .notice{margin-top:12px;color:#333}
-    .small{font-size:13px;color:#666;margin-top:8px}
-    .top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .left {display:flex;align-items:center;gap:12px}
+
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{background:linear-gradient(180deg,#fff 0%, #fbfdff 100%);color:var(--text);padding:28px;box-sizing:border-box}
+
+    .wrap{max-width:1100px;margin:0 auto}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    header h1{margin:0;font-size:1.6rem;display:flex;align-items:center;gap:12px}
+    .icon{font-size:1.4rem}
+
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+    .input, .select {
+      padding:10px 12px;border-radius:8px;border:1px solid #e6eef3;background:#fff;
+      font-size:0.95rem;min-width:180px;box-sizing:border-box;
+    }
+    .input.search{min-width:260px}
+    .btn{
+      border:0;background:var(--accent);color:#fff;padding:10px 14px;border-radius:8px;font-weight:600;
+      cursor:pointer;box-shadow:var(--shadow)
+    }
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #dbeee0}
+    .btn.warn{background:var(--danger)}
+    .small{font-size:0.86rem;padding:8px 10px}
+
+    /* table */
+    .table-wrap{background:var(--card);padding:14px;border-radius:12px;box-shadow:var(--shadow);overflow:auto}
+    table{width:100%;border-collapse:collapse;background:transparent}
+    thead th{
+      text-align:left;padding:12px 14px;font-weight:700;color:#0b5d3a;border-bottom:2px solid rgba(0,0,0,0.05);
+      background:linear-gradient(180deg,#ffffff,#f2f6f4);
+    }
+    tbody td{padding:12px 14px;border-bottom:1px solid rgba(0,0,0,0.04);vertical-align:middle}
+    tbody tr:last-child td{border-bottom:0}
+
+    .empty{padding:32px;text-align:center;color:var(--muted)}
+
+    /* form */
+    .form-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+    .form-field{flex:1;min-width:120px}
+    .form-field input, .form-field select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef3}
+    .note{color:var(--muted);font-size:0.9rem;margin-top:8px}
+
+    /* notifications */
+    .toast{position:fixed;right:18px;bottom:18px;background:#111;color:#fff;padding:12px 14px;border-radius:8px;opacity:0.98}
+
+    /* mobile friendly */
+    @media (max-width:720px){
+      header h1{font-size:1.2rem}
+      .controls{flex-direction:column;align-items:stretch}
+      .input.search{min-width:unset;width:100%}
+      .form-row{flex-direction:column}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="top-row">
-      <div class="left">
-        <h1>📋 Pending Payments</h1>
-        <div class="small muted">Live from your Google Sheet (via SheetDB)</div>
-      </div>
-      <div>
-        <button id="refreshBtn" class="btn">Refresh now</button>
+    <header>
+      <h1><span class="icon">📋</span> Pending Payments <small style="font-weight:600;color:var(--muted);margin-left:8px;font-size:0.85rem">Live from your Google Sheet (via SheetDB)</small></h1>
+    </header>
+
+    <div class="controls">
+      <input id="csvUrl" class="input" type="text" placeholder="(SheetDB CSV or API URL) — kept for reference" style="display:none" />
+      <input id="search" class="input search" type="search" placeholder="Search client, mobile or remark" />
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select id="refreshInterval" class="select small">
+          <option value="0">No auto refresh</option>
+          <option value="15">Refresh every 15s</option>
+          <option value="30">Refresh every 30s</option>
+          <option value="60" selected>Refresh every 60s</option>
+        </select>
+        <button id="togglePending" class="btn ghost small">Show: All</button>
+        <button id="reload" class="btn small">Reload now</button>
       </div>
     </div>
 
-    <!-- Table placeholder -->
-    <div id="tableWrap">
-      <div class="muted" id="loading">Loading data...</div>
+    <div class="table-wrap" id="tableWrap">
+      <table id="dataTable" role="table">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="empty" class="empty" style="display:none">No rows to show.</div>
     </div>
 
-    <!-- Add new entry form -->
-    <h3 style="margin-top:28px">Add new pending client</h3>
-    <div class="form-row" id="entryForm">
-      <input id="client" placeholder="Client Name" type="text" />
-      <input id="mobile" placeholder="Mobile" type="text" />
-      <input id="amount" placeholder="Amount" type="number" />
-      <input id="date" placeholder="Date" type="date" />
-      <select id="status"><option value="pending">pending</option><option value="received">received</option></select>
-      <input id="remark" placeholder="Remark" type="text" />
-      <button id="submitBtn" class="btn">Add</button>
-    </div>
-    <div id="message" class="small"></div>
+    <section style="margin-top:18px">
+      <h3 style="margin:6px 0 12px 0">Add new pending client</h3>
+      <div class="form-row" id="formRow">
+        <div class="form-field"><input id="clientName" placeholder="Client Name" /></div>
+        <div class="form-field"><input id="mobile" placeholder="Mobile" /></div>
+        <div class="form-field"><input id="amount" placeholder="Amount" /></div>
+        <div class="form-field"><input id="date" placeholder="Date (e.g. 10/1/2025)" /></div>
+      </div>
+
+      <div class="form-row" style="margin-top:8px">
+        <div class="form-field" style="min-width:150px">
+          <select id="status">
+            <option value="pending">pending</option>
+            <option value="received">received</option>
+            <option value="disputed">disputed</option>
+          </select>
+        </div>
+        <div class="form-field"><input id="remark" placeholder="Remark" /></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="addBtn" class="btn">Add</button>
+        </div>
+      </div>
+      <div class="note">Tip: To update the sheet on the site, edit the Google Sheet and publish to the web (CSV), or add entries from the form above.</div>
+    </section>
+
   </div>
 
-<script>
-  // ====== CONFIG ======
-  // paste your SheetDB api url here (the one you already created)
-  const SHEETDB_API = 'https://sheetdb.io/api/v1/hm2cm71m0ury9';
+  <div id="toast" style="display:none" class="toast"></div>
 
-  // how often table reloads (ms)
-  const POLL_INTERVAL = 10000;
+  <!-- SCRIPT: API URL (update only here if needed) -->
+  <script>
+    // ✅  Set your working SheetDB API endpoint here:
+    // this is the API URL you created (from sheetdb.io) — your working one:
+    const API_URL = "https://sheetdb.io/api/v1/mowutpzt9mpqo";
 
-  // ====== UTIL ======
-  function formatDateLocal(d) {
-    if(!d) return '';
-    const dt = new Date(d);
-    if(isNaN(dt)) return d; // returns original string if invalid
-    const mm = String(dt.getMonth()+1).padStart(2,'0');
-    const dd = String(dt.getDate()).padStart(2,'0');
-    const yyyy = dt.getFullYear();
-    return `${mm}/${dd}/${yyyy}`;
-  }
+    // Column mapping we want to show (header label -> array of possible source keys)
+    const COLUMNS = [
+      {key: "Client Name", label: "Client Name"},
+      {key: "mobile", label: "Mobile"},
+      {key: "amount", label: "Amount"},
+      {key: "date", label: "Date"},
+      {key: "status", label: "Status"},
+      {key: "remark", label: "Remarks"},
+      {key: "days pending", label: "Days Pending"}
+    ];
 
-  function daysPendingFrom(dateStr){
-    if(!dateStr) return '';
-    const d = new Date(dateStr);
-    if(isNaN(d)) return '';
-    const today = new Date();
-    // compute whole days difference
-    const diff = Math.floor((today - d) / (1000*60*60*24));
-    return diff >= 0 ? diff : 0;
-  }
+    // UI elements
+    const tbody = document.getElementById("tbody");
+    const thead = document.getElementById("thead");
+    const empty = document.getElementById("empty");
+    const searchInput = document.getElementById("search");
+    const reloadBtn = document.getElementById("reload");
+    const togglePendingBtn = document.getElementById("togglePending");
+    const refreshSelect = document.getElementById("refreshInterval");
+    const addBtn = document.getElementById("addBtn");
+    const toastEl = document.getElementById("toast");
 
-  // ====== RENDER TABLE ======
-  async function fetchAndRender(){
-    const wrap = document.getElementById('tableWrap');
-    const loading = document.getElementById('loading');
-    loading && (loading.textContent = 'Loading data...');
-    try {
-      const res = await fetch(SHEETDB_API);
-      if(!res.ok) throw new Error('Fetch failed');
-      const data = await res.json();
-      // data is an array of objects; keys come from your sheet headers.
-      renderTable(data);
-      loading && (loading.textContent = '');
-    } catch(err) {
-      wrap.innerHTML = '<div class="muted">Error loading data. Check SheetDB URL and network.</div>';
-      console.error(err);
-    }
-  }
+    let rows = [];           // current rows from API
+    let showPendingOnly = true;
+    let refreshTimer = null;
 
-  function renderTable(rows){
-    const wrap = document.getElementById('tableWrap');
-    if(!rows || rows.length === 0){
-      wrap.innerHTML = '<div class="muted">No data found</div>';
-      return;
-    }
-
-    // Build header order — matching your sheet columns
-    const headers = ['Client Name','Mobile','Amount','Date','Status','Remarks','Days Pending'];
-
-    // Build table HTML
-    let html = '<table><thead><tr>';
-    headers.forEach(h => html += `<th>${h}</th>`);
-    html += '</tr></thead><tbody>';
-
-    // Each item is an object with keys exactly as the sheet header (case may vary)
-    rows.forEach(r => {
-      // Try multiple common key spellings
-      const client = r['Client Name'] || r['client name'] || r.client || r['Client'] || '';
-      const mobile = r['Mobile'] || r.mobile || r['mobile'] || '';
-      const amount = r['Amount'] || r.amount || '';
-      const dateRaw = r['Date'] || r.date || r['date'] || '';
-      const status = (r['Status'] || r.status || '').toString();
-      const remarks = r['Remarks'] || r.Remarks || r.remark || r.Remarks || r['remark'] || '';
-
-      const daysPending = (status.toLowerCase() === 'pending') ? daysPendingFrom(dateRaw) : '';
-
-      html += `<tr>
-        <td>${escapeHtml(client)}</td>
-        <td>${escapeHtml(mobile)}</td>
-        <td>${escapeHtml(amount)}</td>
-        <td>${escapeHtml(formatDateLocal(dateRaw))}</td>
-        <td>${escapeHtml(status)}</td>
-        <td>${escapeHtml(remarks)}</td>
-        <td>${escapeHtml(daysPending)}</td>
-      </tr>`;
-    });
-
-    html += '</tbody></table>';
-    wrap.innerHTML = html;
-  }
-
-  function escapeHtml(s){
-    if(s === null || s === undefined) return '';
-    return String(s).replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'})[c]);
-  }
-
-  // ====== SEND NEW ENTRY ======
-  async function submitNew(){
-    const client = document.getElementById('client').value.trim();
-    const mobile = document.getElementById('mobile').value.trim();
-    const amount = document.getElementById('amount').value.trim();
-    const date = document.getElementById('date').value; // yyyy-mm-dd
-    const status = document.getElementById('status').value;
-    const remark = document.getElementById('remark').value.trim();
-
-    if(!client){
-      showMessage('Please enter client name', true); return;
-    }
-    // Build payload in SheetDB expected format:
-    // { data: [ { "Client Name": "ramesh", "Mobile": "...", ... } ] }
-    const payload = {
-      data: [{
-        "Client Name": client,
-        "Mobile": mobile,
-        "Amount": amount,
-        "Date": date,
-        "Status": status,
-        "Remarks": remark
-      }]
-    };
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    showMessage('Sending...');
-
-    try {
-      const res = await fetch(SHEETDB_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    // show header once
+    function renderHeader(){
+      thead.innerHTML = "";
+      const tr = document.createElement("tr");
+      COLUMNS.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col.label;
+        tr.appendChild(th);
       });
-      if(!res.ok) throw new Error('Request failed ' + res.status);
-      const result = await res.json();
-      showMessage('Added! Table will refresh shortly.');
-      // clear inputs
-      document.getElementById('client').value = '';
-      document.getElementById('mobile').value = '';
-      document.getElementById('amount').value = '';
-      document.getElementById('date').value = '';
-      document.getElementById('remark').value = '';
-      // refresh immediately
-      await fetchAndRender();
-    } catch(err){
-      console.error(err);
-      showMessage('Error adding entry. Check console.', true);
-    } finally {
-      btn.disabled = false;
+      thead.appendChild(tr);
     }
-  }
 
-  function showMessage(text, isErr){
-    const el = document.getElementById('message');
-    el.textContent = text;
-    el.style.color = isErr ? 'crimson' : '#333';
-  }
+    function showToast(msg, timeout = 2500){
+      toastEl.style.display = "block";
+      toastEl.textContent = msg;
+      clearTimeout(toastEl._t);
+      toastEl._t = setTimeout(()=>{ toastEl.style.display = "none"; }, timeout);
+    }
 
-  // ====== STARTUP ======
-  document.getElementById('submitBtn').addEventListener('click', submitNew);
-  document.getElementById('refreshBtn').addEventListener('click', fetchAndRender);
+    // normalize keys -> return value for a given row for col.key
+    function cellValue(row, key){
+      // keys from sheetdb often equal header text; just defensively look for exact
+      if(row[key] !== undefined) return row[key];
+      // try variations
+      const lower = key.toLowerCase();
+      for(const k in row){
+        if(k.toLowerCase().trim() === lower.trim()) return row[k];
+      }
+      return "";
+    }
 
-  // initial fetch + polling
-  fetchAndRender();
-  setInterval(fetchAndRender, POLL_INTERVAL);
-</script>
+    // render table body
+    function renderTable(filteredRows){
+      tbody.innerHTML = "";
+      if(!filteredRows || filteredRows.length === 0){
+        empty.style.display = "block";
+        return;
+      }
+      empty.style.display = "none";
+
+      filteredRows.forEach(r => {
+        const tr = document.createElement("tr");
+        COLUMNS.forEach(col => {
+          const td = document.createElement("td");
+          td.textContent = cellValue(r, col.key) ?? "";
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    // fetch rows from sheetdb (GET)
+    async function loadData(){
+      try{
+        reloadBtn.disabled = true;
+        reloadBtn.textContent = "Loading...";
+        const res = await fetch(API_URL);
+        if(!res.ok) throw new Error("Failed to fetch API: " + res.status);
+        const data = await res.json();
+        // data should be array
+        rows = Array.isArray(data) ? data : [];
+        applyFiltersAndRender();
+        reloadBtn.disabled = false;
+        reloadBtn.textContent = "Reload now";
+      }catch(err){
+        reloadBtn.disabled = false;
+        reloadBtn.textContent = "Reload now";
+        showToast("Load error: " + err.message);
+        console.error(err);
+      }
+    }
+
+    // apply search + pending-only
+    function applyFiltersAndRender(){
+      const q = (searchInput.value || "").trim().toLowerCase();
+      let filtered = rows.slice();
+
+      if(showPendingOnly){
+        filtered = filtered.filter(r => {
+          const st = (cellValue(r, "status") || "").toLowerCase();
+          return st === "pending" || st === "pending ";
+        });
+      }
+
+      if(q){
+        filtered = filtered.filter(r => {
+          const combined = COLUMNS.map(c => (cellValue(r, c.key) || "")).join(" ").toLowerCase();
+          return combined.indexOf(q) !== -1;
+        });
+      }
+
+      renderTable(filtered);
+    }
+
+    // toggle show pending only
+    function togglePending(){
+      showPendingOnly = !showPendingOnly;
+      togglePendingBtn.textContent = showPendingOnly ? "Show: Pending only" : "Show: All";
+      togglePendingBtn.classList.toggle("btn", showPendingOnly);
+      togglePendingBtn.classList.toggle("ghost", !showPendingOnly);
+      applyFiltersAndRender();
+    }
+
+    // add new row via SheetDB (POST)
+    async function addRow(){
+      const payload = {
+        "data": [
+          {
+            "Client Name": document.getElementById("clientName").value.trim(),
+            "mobile": document.getElementById("mobile").value.trim(),
+            "amount": document.getElementById("amount").value.trim(),
+            "date": document.getElementById("date").value.trim(),
+            "status": document.getElementById("status").value,
+            "remark": document.getElementById("remark").value.trim(),
+            // days pending left blank - backend/google sheet formula can compute it if set up
+          }
+        ]
+      };
+
+      // basic validation
+      if(!payload.data[0]["Client Name"]){
+        showToast("Enter client name");
+        return;
+      }
+
+      addBtn.disabled = true;
+      addBtn.textContent = "Adding...";
+
+      try{
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok){
+          const text = await res.text();
+          throw new Error("Failed to add: " + res.status + " " + text);
+        }
+        // success - clear form
+        document.getElementById("clientName").value = "";
+        document.getElementById("mobile").value = "";
+        document.getElementById("amount").value = "";
+        document.getElementById("date").value = "";
+        document.getElementById("remark").value = "";
+        showToast("Added successfully ✅");
+        // reload data after a short delay (SheetDB may take a beat)
+        setTimeout(loadData, 800);
+      }catch(err){
+        showToast("Add failed: " + err.message);
+        console.error(err);
+      }finally{
+        addBtn.disabled = false;
+        addBtn.textContent = "Add";
+      }
+    }
+
+    // init
+    function init(){
+      renderHeader();
+      // load initial
+      loadData();
+
+      // events
+      searchInput.addEventListener("input", applyFiltersAndRender);
+      reloadBtn.addEventListener("click", loadData);
+      togglePendingBtn.addEventListener("click", togglePending);
+      addBtn.addEventListener("click", addRow);
+
+      // refresh interval logic
+      refreshSelect.addEventListener("change", () => {
+        clearInterval(refreshTimer);
+        const v = Number(refreshSelect.value);
+        if(v > 0) refreshTimer = setInterval(loadData, v * 1000);
+      });
+
+      // default UI state
+      togglePending(); // initial state -> sets button text accordingly then flip back
+      togglePending(); // double-toggle to initialise label properly
+    }
+
+    // start
+    init();
+  </script>
 </body>
 </html>
