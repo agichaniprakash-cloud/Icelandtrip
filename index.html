@@ -1,69 +1,263 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Pending Payments</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  body {font-family:'Inter',sans-serif;background:#f4f6f8;margin:0;padding:20px;color:#333;}
-  h1{text-align:center;color:#2d3436;}
-  .container{max-width:900px;margin:auto;background:#fff;padding:25px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.1);}
-  table{width:100%;border-collapse:collapse;margin-top:15px;}
-  th,td{border:1px solid #e0e0e0;padding:10px;text-align:left;}
-  th{background:#16a085;color:white;}
-  tr:nth-child(even){background:#f8f9fa;}
-  tr:hover{background:#ecf0f1;}
-  input,select,button{padding:10px;border:1px solid #ccc;border-radius:6px;margin:4px 0;width:100%;}
-  button{background:#16a085;color:white;border:none;cursor:pointer;font-weight:600;}
-  button:hover{background:#138d75;}
+  :root{
+    --accent:#0f9d73;
+    --muted:#9aa6a0;
+    --bg:#f7faf8;
+    --card:#ffffff;
+    --radius:12px;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+  body{background:linear-gradient(180deg,#f1f6f4 0%, #f7faf8 100%);color:#0b2b23;padding:28px;}
+  .wrap{max-width:980px;margin:0 auto;}
+  .card{background:var(--card);border-radius:var(--radius);padding:28px;box-shadow:0 10px 30px rgba(10,30,20,0.06);}
+  h1{margin:0 0 12px;font-size:34px;font-weight:700}
+  .subtitle{color:var(--muted);margin-bottom:18px}
+  .big-btn{display:inline-block;background:var(--accent);color:white;padding:10px 18px;border-radius:8px;font-weight:600;text-decoration:none;border:0;cursor:pointer}
+  .controls{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0;}
+  .search{flex:1;min-width:220px;padding:12px;border-radius:10px;border:1px solid #e6eee9}
+  .select{padding:10px;border-radius:8px;border:1px solid #e6eee9;background:#fff}
+  table{width:100%;border-collapse:collapse;margin-top:18px}
+  th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #edf6f2}
+  thead th{background:var(--accent);color:#fff;font-weight:700}
+  tbody tr:nth-child(even){background:#fbfffd}
+  form .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .input{flex:1;min-width:160px;padding:12px;border-radius:10px;border:1px solid #e6eee9;background:#fff}
+  .select-small{padding:10px;border-radius:10px;border:1px solid #e6eee9;background:#fff}
+  .add-btn{background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;border:0;cursor:pointer}
+  .note{color:var(--muted);font-size:13px;margin-top:12px}
+  .center{display:flex;align-items:center;gap:12px}
+  @media (max-width:700px){
+    h1{font-size:26px}
+    th,td{padding:10px}
+    .controls{flex-direction:column}
+    .search{width:100%}
+  }
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="card">
+    <h1>📋 Pending Payments</h1>
+    <div class="subtitle">Live from Google Sheet (via SheetDB)</div>
 
-<div class="container">
-  <h1>📋 Pending Payments</h1>
-  <p style="text-align:center;color:gray;">Live from Google Sheet (via SheetDB)</p>
+    <div class="controls">
+      <button id="btnReload" class="big-btn">🔄 Refresh Now</button>
+      <input id="q" class="search" placeholder="Search client, mobile or remark" />
+      <select id="interval" class="select">
+        <option value="0">Don't auto-refresh</option>
+        <option value="15">Refresh every 15s</option>
+        <option value="30">Refresh every 30s</option>
+        <option value="60" selected>Refresh every 60s</option>
+        <option value="300">Refresh every 5min</option>
+      </select>
+      <div class="center">
+        <button id="pendingOnly" class="big-btn" style="background:#0f9d73b3">Show: Pending only</button>
+      </div>
+    </div>
 
-  <button onclick="fetchData()">🔄 Refresh Now</button>
+    <div id="tableWrap">
+      <table id="dataTable" role="table" aria-label="Pending payments">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
 
-  <table id="dataTable">
-    <thead>
-      <tr>
-        <th>Client Name</th>
-        <th>Mobile</th>
-        <th>Amount</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Remark</th>
-        <th>Days Pending</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <hr style="margin:20px 0;border:0;border-top:1px solid #eef7f2">
 
-  <hr style="margin:25px 0;">
-  <h2>Add New Pending Client</h2>
-
-  <form id="addForm">
-    <input id="clientname" placeholder="Client Name" required>
-    <input id="mobile" placeholder="Mobile" required>
-    <input id="amount" placeholder="Amount" required>
-    <input id="date" type="date" required>
-    <select id="status">
-      <option value="pending">Pending</option>
-      <option value="paid">Paid</option>
-    </select>
-    <input id="remark" placeholder="Remark">
-    <button type="submit">Add</button>
-  </form>
+    <h2>Add New Pending Client</h2>
+    <form id="addForm">
+      <div class="row">
+        <input class="input" id="clientname" name="clientname" placeholder="Client Name" />
+        <input class="input" id="mobile" name="mobile" placeholder="Mobile" />
+        <input class="input" id="amount" name="amount" placeholder="Amount" />
+      </div>
+      <div class="row">
+        <input class="input" id="date" name="date" placeholder="Date (e.g. 10/1/2025)" />
+        <select id="status" name="status" class="select-small" style="min-width:160px">
+          <option>pending</option>
+          <option>paid</option>
+          <option>cancelled</option>
+        </select>
+        <input class="input" id="remark" name="remark" placeholder="Remark" />
+      </div>
+      <div class="row" style="margin-top:14px">
+        <input class="input" id="days_pending" name="days_pending" placeholder="Days pending" />
+        <button type="submit" class="add-btn">Add</button>
+      </div>
+    </form>
+    <div class="note">Tip: To update manually, edit the Google Sheet and publish (CSV) or use the form above. Make sure sheet headers match the field names shown above (normalized).</div>
+  </div>
 </div>
 
 <script>
-  const API_URL = 'https://sheetdb.io/api/v1/mowutpzt9mpqo';
+/*
+  Replace API_URL with your SheetDB API endpoint.
+  Example: const API_URL = 'https://sheetdb.io/api/v1/abcd1234';
+*/
+const API_URL = 'REPLACE_WITH_YOUR_SHEETDB_API_URL';
 
-  async function fetchData() {
-    try {
-      const res = await fetch(API_URL);
-      const data =
+if (!API_URL || API_URL.includes('REPLACE_WITH_YOUR')) {
+  alert('Please edit the HTML and set API_URL to your SheetDB endpoint before testing.');
+}
+
+// The canonical normalized keys/order we want:
+const KEYS_ORDER = ['clientname','mobile','amount','date','status','remark','days_pending'];
+
+// Map a raw key from SheetDB to normalized (lowercase, replace non-word with underscore)
+function normalizeKey(k){
+  return String(k || '').trim().toLowerCase().replace(/\s+/g,'_').replace(/[^\w\-]/g,'_');
+}
+
+// Pretty header text from normalized key:
+function pretty(k){
+  return String(k).replace(/_/g,' ').replace(/\b\w/g, s => s.toUpperCase());
+}
+
+const thead = document.getElementById('thead');
+const tbody = document.getElementById('tbody');
+const q = document.getElementById('q');
+const btnReload = document.getElementById('btnReload');
+const intervalSelect = document.getElementById('interval');
+const pendingOnlyBtn = document.getElementById('pendingOnly');
+const addForm = document.getElementById('addForm');
+
+let rawData = [];
+let autoTimer = null;
+let pendingOnly = false;
+
+async function fetchData(){
+  try{
+    const res = await fetch(API_URL);
+    const data = await res.json();
+    // If sheetdb returns object with "status"/error:
+    if (!Array.isArray(data)){
+      console.error('Unexpected API response', data);
+      rawData = [];
+    } else {
+      // Normalize keys for each row
+      rawData = data.map(row => {
+        const newRow = {};
+        Object.keys(row).forEach(k => {
+          newRow[ normalizeKey(k) ] = row[k];
+        });
+        return newRow;
+      });
+    }
+    renderTable();
+  }catch(err){
+    console.error('Fetch failed', err);
+    rawData = [];
+    renderTable();
+  }
+}
+
+function getAllKeysFromData(){
+  // union of keys found + ensure our KEYS_ORDER appear first
+  const keys = new Set();
+  rawData.forEach(r => Object.keys(r).forEach(k => keys.add(k)));
+  // ensure canonical present
+  KEYS_ORDER.forEach(k => keys.add(k));
+  return Array.from(keys);
+}
+
+function renderTable(){
+  const query = (q.value || '').toLowerCase().trim();
+  // Column order: canonical KEYS_ORDER first, then any extra keys
+  const allKeys = getAllKeysFromData();
+  const extras = allKeys.filter(k => !KEYS_ORDER.includes(k));
+  const columns = KEYS_ORDER.concat(extras);
+
+  // build thead
+  thead.innerHTML = '';
+  const trh = document.createElement('tr');
+  columns.forEach(col => {
+    const th = document.createElement('th');
+    th.textContent = pretty(col);
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+
+  // build tbody
+  tbody.innerHTML = '';
+  rawData.forEach(row => {
+    // filtering
+    if (pendingOnly){
+      const st = (row.status || '').toLowerCase();
+      if (st !== 'pending') return;
+    }
+    // search
+    if (query){
+      const hay = Object.values(row).join(' ').toLowerCase();
+      if (!hay.includes(query)) return;
+    }
+
+    const tr = document.createElement('tr');
+    columns.forEach(col => {
+      const td = document.createElement('td');
+      let v = row[col];
+      if (v === undefined) v = '';
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+btnReload.addEventListener('click', () => fetchData());
+q.addEventListener('input', () => renderTable());
+pendingOnlyBtn.addEventListener('click', () => {
+  pendingOnly = !pendingOnly;
+  pendingOnlyBtn.style.background = pendingOnly ? '#0f9d73' : '#0f9d73b3';
+  pendingOnlyBtn.textContent = pendingOnly ? 'Showing: Pending only' : 'Show: Pending only';
+  renderTable();
+});
+
+// auto refresh handling
+intervalSelect.addEventListener('change', () => {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  const s = Number(intervalSelect.value);
+  if (s > 0) autoTimer = setInterval(fetchData, s * 1000);
+});
+
+// form submit (create new row in sheet via SheetDB POST)
+addForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const formData = new FormData(addForm);
+  // create object normalized keys
+  const payloadRow = {};
+  KEYS_ORDER.forEach(k => {
+    payloadRow[k] = formData.get(k) || '';
+  });
+
+  // SheetDB expects an array of objects under "data" OR direct json for create
+  try{
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({data: [payloadRow]})
+    });
+    const out = await res.json();
+    console.log('POST result', out);
+    // after create, refresh the table
+    await fetchData();
+    addForm.reset();
+    alert('Added (if SheetDB accepted it). Reloaded data.');
+  }catch(err){
+    console.error('POST failed', err);
+    alert('Failed to add — check console and your SheetDB settings (permissions).');
+  }
+});
+
+// initial load
+fetchData();
+</script>
+</body>
+</html>
