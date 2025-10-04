@@ -1,70 +1,415 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pending Payments</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background-color: #f4f4f4; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pending Payments</title>
+<link rel="icon" href="data:;base64,=">
+<style>
+  :root{
+    --bg:#0b0f14;
+    --card:#111418;
+    --muted:#9aa9bd;
+    --accent:#4ade80;
+    --text:#eef6fb;
+    --table-head:#f0f4f2;
+    --cell-border:#d9d9d9;
+  }
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+  .wrap{max-width:1200px;margin:28px auto;padding:18px;}
+  h1{margin:0 0 18px;font-size:28px;display:flex;align-items:center;gap:12px}
+  h1 .emoji{font-size:26px}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+  .search{flex:1;min-width:200px}
+  input,select,button{padding:10px 12px;border-radius:8px;border:1px solid #2b2f33;background:#0f1416;color:var(--text)}
+  input::placeholder{color:var(--muted)}
+  button.primary{background:var(--accent);color:#022; border:none}
+  .small{padding:8px 10px;font-size:13px}
+  .table-wrap{overflow:auto;background:transparent;border-radius:10px;padding:6px}
+  table{border-collapse:collapse;width:100%;min-width:720px;background:#fff;border:1px solid rgba(0,0,0,0.08)}
+  th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(0,0,0,0.06);font-size:15px}
+  th{background:#f3f6f5;color:#0b6a3a;position:sticky;top:0;z-index:2;cursor:pointer}
+  th.sorted-asc::after{content:" ▲";font-size:12px;color:#333}
+  th.sorted-desc::after{content:" ▼";font-size:12px;color:#333}
+  td{background:#fff;color:#222}
+  .muted{color:#666;font-size:13px}
+  .empty{padding:28px;text-align:center;color:#666}
+  .row-actions{display:flex;gap:6px}
+  @media (max-width:800px){
+    .wrap{padding:12px}
+    table{min-width:640px}
+    th,td{padding:10px}
+    h1{font-size:20px}
+  }
+</style>
 </head>
 <body>
-  <h2>📋 Pending Payments</h2>
-  <table id="paymentTable">
-    <thead>
-      <tr>
-        <th>Client Name</th>
-        <th>Mobile</th>
-        <th>Amount</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Remarks</th>
-        <th>Days Pending</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="7">Loading...</td></tr>
-    </tbody>
-  </table>
+<div class="wrap">
+  <h1><span class="emoji">📋</span>Pending Payments</h1>
 
-  <script>
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRHmwczcuvj6Fljrnn3AfgDtQQ4F6bozQ6u1Fp70o-Qwyl5eUKjoarZrMrkT88v7qg8OGR_E9XiWWaG/pub?output=csv';
+  <div class="controls">
+    <input id="csvUrl" class="search" placeholder="CSV URL (published Google Sheet CSV) - update if different" />
+    <input id="q" placeholder="Search client, mobile or remarks" />
+    <select id="refresh" title="Auto refresh interval">
+      <option value="0">No auto refresh</option>
+      <option value="15">Refresh every 15s</option>
+      <option value="30">Refresh every 30s</option>
+      <option value="60" selected>Refresh every 60s</option>
+      <option value="300">Refresh every 5 min</option>
+    </select>
+    <button id="togglePending" class="small">Show: Pending only</button>
+    <button id="reload" class="small">Reload now</button>
+  </div>
 
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(csv => {
-        const lines = csv.split('\n').filter(line => line.trim().length > 0);
-        const rows = lines.map(line => line.split(','));
-        const header = rows.shift();
-        const tbody = document.getElementById('paymentTable').querySelector('tbody');
-        tbody.innerHTML = '';
+  <div class="table-wrap" id="tableWrap">
+    <table id="dataTable" aria-live="polite">
+      <thead>
+        <tr id="theadRow"></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty" class="empty" style="display:none">Loading data...</div>
+  </div>
 
-        rows.forEach(cols => {
-          // basic parse: skip if status isn't "Pending"
-          const status = cols[4] || '';
-          if (status.trim().toLowerCase() !== 'pending') return;
+  <div style="margin-top:12px" class="muted">Tip: to update the sheet on the site, edit the Google Sheet and publish to the web (CSV link) — paste that CSV URL in the box above.</div>
+</div>
 
-          const tr = document.createElement('tr');
-          cols.forEach(c => {
-            const td = document.createElement('td');
-            td.innerText = c;
-            tr.appendChild(td);
-          });
-          tbody.appendChild(tr);
-        });
+<script>
+/* ========== CONFIG ========== */
+/* Default CSV (your published Google sheet CSV). Change this if you publish a different sheet. */
+const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRHmwczcuvj6Fljrnn3AfgDtQQ4F6bozQ6u1Fp70o-Qwyl5eUKjoarZrMrkT88v7qg8OGR_E9XiWWaG/pub?output=csv';
+/* Column names expected (case-insensitive). If your sheet has different headings, update them here */
+const EXPECTED_COLS = ['Client Name','Mobile','Amount','Date','Status','Remarks','Days Pending'];
+/* ========== END CONFIG ========== */
 
-        if (!tbody.hasChildNodes()) {
-          tbody.innerHTML = '<tr><td colspan="7">No pending payments found</td></tr>';
+const csvInput = document.getElementById('csvUrl');
+const qInput = document.getElementById('q');
+const reloadBtn = document.getElementById('reload');
+const toggleBtn = document.getElementById('togglePending');
+const tbody = document.getElementById('tbody');
+const theadRow = document.getElementById('theadRow');
+const empty = document.getElementById('empty');
+const refreshSelect = document.getElementById('refresh');
+
+let rawRows = []; // array of rows (arrays)
+let headers = [];
+let dataItems = [];
+let showPendingOnly = true;
+let currentSort = {colIndex: null, dir: 'asc'};
+let refreshIntervalId = null;
+
+csvInput.value = DEFAULT_CSV;
+
+/* ---------- Utilities ---------- */
+
+// Small but robust CSV parser (handles quoted fields with commas, double quotes)
+function parseCSV(text){
+  const rows = [];
+  let row = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i=0;i<text.length;i++){
+    const ch = text[i];
+    const next = text[i+1];
+    if(inQuotes){
+      if(ch === '"' && next === '"'){ cur += '"'; i++; continue; } // escaped quote
+      if(ch === '"'){ inQuotes = false; continue; }
+      cur += ch;
+    } else {
+      if(ch === '"'){ inQuotes = true; continue; }
+      if(ch === ','){ row.push(cur); cur=''; continue; }
+      if(ch === '\r'){ continue; }
+      if(ch === '\n'){ row.push(cur); rows.push(row); row=[]; cur=''; continue; }
+      cur += ch;
+    }
+  }
+  // final push
+  if(inQuotes) { /* malformed but continue */ }
+  if(cur !== '' || row.length) row.push(cur);
+  if(row.length) rows.push(row);
+  return rows;
+}
+
+// Normalize header names (trim & collapse whitespace)
+function normHeader(h){ return (h||'').toString().trim(); }
+
+// Flexible date parsing: try Date(), then guesses dd/mm/yyyy vs mm/dd/yyyy
+function parseDateFlexible(str){
+  if(!str) return null;
+  str = str.toString().trim();
+  // Try typical JS parse first
+  let d = new Date(str);
+  if(!isNaN(d.getTime())) return d;
+  // Try numeric-only formats: 2025-10-01 or 01/10/2025 etc
+  // If contains '/', split
+  if(str.includes('/')){
+    const parts = str.split('/').map(s=>s.trim());
+    if(parts.length===3){
+      const [p1,p2,p3] = parts.map(p=>p.replace(/\D/g,''));
+      if(p3.length===4){
+        // two possibilities: MM/DD/YYYY or DD/MM/YYYY
+        // guess: if p1>12 then p1 is day
+        let month = parseInt(p1,10);
+        let day = parseInt(p2,10);
+        let year = parseInt(p3,10);
+        if(month>12){ // then p1 is day
+          day = parseInt(p1,10);
+          month = parseInt(p2,10);
         }
-      })
-      .catch(err => {
-        const tbody = document.getElementById('paymentTable').querySelector('tbody');
-        tbody.innerHTML = `<tr><td colspan="7">Error loading data: ${err.message}</td></tr>`;
-        console.error(err);
+        const tryd = new Date(year, month-1, day);
+        if(!isNaN(tryd.getTime())) return tryd;
+      }
+    }
+  }
+  // Try dd-mm-yyyy or dd.mm.yyyy
+  const alt = str.replace(/[.\-]/g,'/');
+  if(alt.includes('/')){
+    const p = alt.split('/').map(s=>s.trim());
+    if(p.length===3){
+      let [a,b,c] = p;
+      if(c.length===4){ // assume a=day or month
+        let dd = parseInt(a,10), mm = parseInt(b,10), yy = parseInt(c,10);
+        if(mm>12){ [dd,mm] = [mm,dd]; }
+        const tryd = new Date(yy, mm-1, dd);
+        if(!isNaN(tryd.getTime())) return tryd;
+      }
+    }
+  }
+  // fallback null
+  return null;
+}
+
+// days difference between today and date (today - date)
+function daysPendingFrom(dateObj){
+  if(!dateObj) return '';
+  const today = new Date();
+  // zero out time portion for both
+  const t0 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const t1 = Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+  const diff = Math.floor((t0 - t1) / (1000*60*60*24));
+  return diff;
+}
+
+function setEmptyMessage(msg){
+  empty.style.display = 'block';
+  empty.textContent = msg;
+  document.getElementById('dataTable').style.display = 'none';
+}
+function clearEmpty(){
+  empty.style.display = 'none';
+  document.getElementById('dataTable').style.display = '';
+}
+
+/* ---------- Rendering / sorting ---------- */
+
+function renderTable(){
+  // build headers if needed (from headers array)
+  theadRow.innerHTML = '';
+  headers.forEach((h,i)=>{
+    const th = document.createElement('th');
+    th.textContent = h;
+    th.dataset.colIndex = i;
+    th.addEventListener('click', ()=>{ toggleSort(i); });
+    if(currentSort.colIndex === i){
+      th.classList.add(currentSort.dir==='asc' ? 'sorted-asc' : 'sorted-desc');
+    }
+    theadRow.appendChild(th);
+  });
+
+  // filter
+  let items = dataItems.slice();
+  const q = (qInput.value||'').toLowerCase().trim();
+  if(showPendingOnly){
+    items = items.filter(it => (it.status||'').toLowerCase() === 'pending');
+  }
+  if(q){
+    items = items.filter(it => {
+      return (it.client||'').toLowerCase().includes(q) ||
+             (it.mobile||'').toLowerCase().includes(q) ||
+             (it.remarks||'').toLowerCase().includes(q);
+    });
+  }
+
+  // sort if needed
+  if(currentSort.colIndex !== null){
+    const idx = currentSort.colIndex;
+    const dir = currentSort.dir === 'asc' ? 1 : -1;
+    items.sort((a,b)=>{
+      const va = a._cells[idx] || '';
+      const vb = b._cells[idx] || '';
+      // try numeric
+      const na = parseFloat(va.toString().replace(/[^0-9.\-]/g,''));
+      const nb = parseFloat(vb.toString().replace(/[^0-9.\-]/g,''));
+      if(!isNaN(na) && !isNaN(nb)) return (na-nb)*dir;
+      return va.toString().localeCompare(vb.toString()) * dir;
+    });
+  }
+
+  // render rows
+  tbody.innerHTML = '';
+  if(!items.length){
+    setEmptyMessage('No matching rows.');
+    return;
+  }
+  clearEmpty();
+  items.forEach(it=>{
+    const tr = document.createElement('tr');
+    headers.forEach((h,idx)=>{
+      const td = document.createElement('td');
+      td.innerHTML = it._cells[idx] !== undefined ? it._cells[idx] : '';
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+/* sort toggle */
+function toggleSort(idx){
+  if(currentSort.colIndex === idx){
+    currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    currentSort.colIndex = idx;
+    currentSort.dir = 'asc';
+  }
+  renderTable();
+}
+
+/* ---------- Fetch & process ---------- */
+
+async function fetchAndRender(){
+  const url = (csvInput.value && csvInput.value.trim()) || DEFAULT_CSV;
+  try{
+    setEmptyMessage('Loading data...');
+    const res = await fetch(url, {cache: 'no-store'});
+    if(!res.ok) throw new Error('Fetch failed ' + res.status);
+    const text = await res.text();
+    rawRows = parseCSV(text);
+    if(!rawRows || rawRows.length===0) throw new Error('CSV empty');
+    headers = rawRows[0].map(h=>normHeader(h));
+    // ensure expected columns exist (not required but helpful)
+    // build dataItems
+    dataItems = rawRows.slice(1).filter(r => r.some(c => (c||'').toString().trim() !== '')).map((r,i) => {
+      // map by header name (case-insensitive)
+      const obj = {};
+      r.forEach((cell,ci)=>{
+        const hn = (headers[ci]||'').toLowerCase();
+        obj[hn] = cell;
       });
-  </script>
+      // normal properties (some common keys)
+      const client = obj['client name'] || obj['client'] || obj['name'] || obj['clientname'] || '';
+      const mobile = obj['mobile']||obj['phone']||obj['mobile no']||'';
+      const amount = obj['amount']||'';
+      const dateRaw = obj['date']||'';
+      const status = (obj['status']||'').toString();
+      const remarks = obj['remarks']||obj['remark']||obj['comments']||'';
+      // parse date flexibly
+      const d = parseDateFlexible(dateRaw);
+      let days = '';
+      if(d){
+        days = daysPendingFrom(d);
+      } else {
+        // if there's already a Days Pending cell in CSV use that
+        const dp = obj['days pending'] || obj['dayspending'] || '';
+        days = dp ? dp : '';
+      }
+      // create _cells array in same column order as headers
+      const cells = headers.map(h => {
+        const key = (h||'').toLowerCase();
+        if(key === 'client name' || key === 'client') return client;
+        if(key === 'mobile') return mobile;
+        if(key === 'amount') return amount;
+        if(key === 'date') return dateRaw;
+        if(key === 'status') return status;
+        if(key === 'remarks' || key === 'remark') return remarks;
+        if(key === 'days pending' || key === 'dayspending') return days;
+        // fallback to raw cell if header unknown
+        const idx = headers.indexOf(h);
+        return r[idx] !== undefined ? r[idx] : '';
+      });
+      return {
+        client: client,
+        mobile: mobile,
+        amount: amount,
+        dateRaw: dateRaw,
+        dateObj: d,
+        status: status,
+        remarks: remarks,
+        daysPending: days,
+        _cells: cells
+      };
+    });
+
+    // if CSV didn't include Days Pending column we can add it to headers and each row
+    const lowerHeaders = headers.map(h => (h||'').toLowerCase());
+    if(!lowerHeaders.includes('days pending') && !lowerHeaders.includes('dayspending')){
+      headers.push('Days Pending');
+      dataItems.forEach(it => it._cells.push(it.daysPending));
+    }
+
+    // If CSV didn't include expected headers, ensure the table shows sensible ordering:
+    // Build canonical header order when possible
+    const defaultOrder = ['Client Name','Mobile','Amount','Date','Status','Remarks','Days Pending'];
+    const currentLower = headers.map(h=>h.toLowerCase());
+    const ordered = [];
+    defaultOrder.forEach(def => {
+      const idx = currentLower.indexOf(def.toLowerCase());
+      if(idx>=0) ordered.push(headers[idx]);
+    });
+    // append any remaining headers
+    headers.forEach(h => { if(!ordered.includes(h)) ordered.push(h); });
+    headers = ordered;
+
+    // ensure each item's _cells follow new header order
+    dataItems.forEach(it => {
+      const cellMap = {};
+      // original map by header
+      for(let i=0;i<lowerHeaders.length;i++){
+        cellMap[lowerHeaders[i]] = it._cells[i];
+      }
+      const newCells = headers.map(h => cellMap[(h||'').toLowerCase()] || '');
+      it._cells = newCells;
+    });
+
+    renderTable();
+  } catch(err){
+    console.error(err);
+    setEmptyMessage('Error loading CSV: ' + (err.message||err));
+  }
+}
+
+/* ---------- UI events ---------- */
+
+reloadBtn.addEventListener('click', ()=> fetchAndRender());
+qInput.addEventListener('input', ()=> renderTable());
+toggleBtn.addEventListener('click', ()=>{
+  showPendingOnly = !showPendingOnly;
+  toggleBtn.textContent = showPendingOnly ? 'Show: Pending only' : 'Show: All';
+  renderTable();
+});
+
+refreshSelect.addEventListener('change', ()=>{
+  const val = parseInt(refreshSelect.value,10);
+  if(refreshIntervalId) { clearInterval(refreshIntervalId); refreshIntervalId = null; }
+  if(val>0){
+    refreshIntervalId = setInterval(()=>{ fetchAndRender(); }, val*1000);
+  }
+});
+
+/* keyboard: Enter in CSV input triggers reload */
+csvInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ fetchAndRender(); }});
+
+
+// initial load
+fetchAndRender();
+
+/* Auto-refresh if default selected */
+(function initAutoRefresh(){
+  const v = parseInt(refreshSelect.value,10);
+  if(v>0){
+    refreshIntervalId = setInterval(()=>{ fetchAndRender(); }, v*1000);
+  }
+})();
+
+</script>
 </body>
 </html>
