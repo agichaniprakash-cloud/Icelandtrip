@@ -6,80 +6,27 @@
 <title>Pending Payments — Live from Google Sheet</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --accent:#138a5a;
-    --muted:#6b7280;
-    --card:#ffffff;
-    --bg:#f6f8f9;
-    --radius:12px;
-  }
-  html,body{height:100%}
-  body{
-    font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
-    margin:0;
-    background:var(--bg);
-    color:#111827;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    padding:28px;
-  }
-
+  :root{--accent:#138a5a;--muted:#6b7280;--card:#fff;--bg:#f6f8f9;--radius:12px}
+  body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;margin:0;background:var(--bg);color:#111827;padding:28px}
   .wrap{max-width:980px;margin:0 auto}
-  .card{
-    background:var(--card);
-    border-radius:var(--radius);
-    padding:20px 28px;
-    box-shadow:0 4px 18px rgba(16,24,40,0.06);
-  }
-
+  .card{background:var(--card);border-radius:var(--radius);padding:20px 28px;box-shadow:0 4px 18px rgba(16,24,40,0.06)}
   header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
   header h1{font-size:28px;margin:0}
   header p{margin:0;color:var(--muted);font-size:14px}
-
   .controls{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
-  .controls input[type="search"]{
-    flex:1 1 320px;padding:12px 14px;border-radius:10px;border:1px solid #e6e9ee;
-    outline:none;font-size:14px;
-  }
-  .btn{
-    background:var(--accent);color:white;padding:10px 16px;border-radius:9px;border:none;
-    cursor:pointer;font-weight:600;box-shadow:none;
-  }
-  .btn.ghost{background:transparent;color:var(--accent);border:1px solid #e6e9ee}
+  .controls input[type="search"]{flex:1 1 320px;padding:12px 14px;border-radius:10px;border:1px solid #e6e9ee;font-size:14px}
+  .btn{background:var(--accent);color:white;padding:10px 16px;border-radius:9px;border:none;cursor:pointer;font-weight:600}
   .btn.small{padding:8px 12px;font-size:14px}
-
-  .row{display:flex;gap:12px;align-items:center}
-  .select, .input{
-    padding:10px;border-radius:10px;border:1px solid #e6e9ee;background:white;
-    min-width:140px;
-  }
-
+  .select{padding:10px;border-radius:10px;border:1px solid #e6e9ee;background:white;min-width:140px}
   table{width:100%;border-collapse:collapse;margin-top:18px}
-  thead th{
-    text-align:left;padding:16px;background:var(--accent);color:white;font-weight:700;font-size:15px;
-    border-top-left-radius:8px;border-top-right-radius:8px;
-  }
+  thead th{text-align:left;padding:16px;background:var(--accent);color:white;font-weight:700;font-size:15px}
   tbody tr{background:#fbfcfd}
   td{padding:16px;border-bottom:1px solid #eef2f6;vertical-align:middle}
-  tbody tr:nth-child(even){background:#ffffff}
   .empty{color:var(--muted);text-align:center;padding:28px}
-
   form .field{margin-top:12px}
-  form input, form textarea, form select{
-    width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ee;font-size:15px;
-  }
-  form .two{display:flex;gap:12px}
-  form .two > *{flex:1}
-
+  form input, form textarea, form select{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ee;font-size:15px}
   .tip{color:var(--muted);font-size:13px;margin-top:14px}
-  .notice{margin-top:12px;font-size:14px;color:var(--muted)}
-
-  @media (max-width:700px){
-    header{flex-direction:column;align-items:flex-start}
-    .controls{flex-direction:column}
-    thead th{font-size:13px;padding:12px}
-    td{padding:12px}
-  }
+  @media (max-width:700px){header{flex-direction:column;align-items:flex-start}.controls{flex-direction:column}thead th{font-size:13px;padding:12px}td{padding:12px}}
 </style>
 </head>
 <body>
@@ -93,10 +40,9 @@
       </div>
     </header>
 
-    <!-- controls -->
     <div class="controls">
       <input id="search" type="search" placeholder="Search client, mobile or remark" aria-label="Search">
-      <div class="row">
+      <div style="display:flex;gap:10px;align-items:center">
         <select id="refreshInterval" class="select" title="Auto refresh interval">
           <option value="0">Auto refresh: Off</option>
           <option value="15">Refresh every 15s</option>
@@ -109,11 +55,10 @@
       </div>
     </div>
 
-    <!-- table -->
     <div id="tableWrap">
       <table id="dataTable" role="table" aria-label="Pending payments table">
         <thead>
-          <tr>
+          <tr id="theadRow">
             <th>Client Name</th>
             <th>Mobile</th>
             <th>Amount</th>
@@ -131,25 +76,13 @@
 
     <hr style="margin:22px 0;border:0;border-top:1px solid #eef2f6">
 
-    <h2 style="margin:0 0 8px 0">Add New Pending Client</h2>
+    <h2>Add New Pending Client</h2>
 
     <form id="addForm">
-      <div class="field">
-        <input id="clientname" name="clientname" placeholder="Client Name" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <input id="mobile" name="mobile" placeholder="Mobile" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <input id="amount" name="amount" placeholder="Amount" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <input id="date" name="date" placeholder="Date (e.g. 10/1/2025)" autocomplete="off">
-      </div>
-
+      <div class="field"><input id="clientname" name="clientname" placeholder="Client Name"></div>
+      <div class="field"><input id="mobile" name="mobile" placeholder="Mobile"></div>
+      <div class="field"><input id="amount" name="amount" placeholder="Amount"></div>
+      <div class="field"><input id="date" name="date" placeholder="Date (e.g. 10/1/2025)"></div>
       <div class="field">
         <select id="status" name="status">
           <option value="pending" selected>Pending</option>
@@ -157,33 +90,27 @@
           <option value="other">Other</option>
         </select>
       </div>
-
-      <div class="field">
-        <input id="remark" name="remark" placeholder="Remark" autocomplete="off">
-      </div>
+      <div class="field"><input id="remark" name="remark" placeholder="Remark"></div>
 
       <div style="margin-top:12px">
         <button id="addBtn" class="btn" type="submit">Add</button>
         <span id="formMsg" style="margin-left:12px;color:var(--muted)"></span>
       </div>
 
-      <div class="tip">Tip: Editing the Google Sheet directly (published as CSV) will also update this site when refreshed.</div>
+      <div class="tip">Tip: Editing the Google Sheet directly (published as CSV) will update this site when refreshed.</div>
     </form>
-
   </div>
 </div>
 
 <script>
-/*
-  Final HTML (client side) for SheetDB API
-  Replace API_URL if you rebuild the API.
-*/
-const API_URL = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // <<-- your SheetDB endpoint
+/* ---------- CONFIG ---------- */
+/* Replace this with your current SheetDB endpoint if it changes */
+const API_URL = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 
-// Column keys used in the sheet (must match exactly)
-const KEYS = ['clientname','mobile','amount','date','status','remark','days_pending'];
+/* canonical keys we want inside the app */
+const CANONICAL = ['clientname','mobile','amount','date','status','remark','days_pending'];
 
-// DOM
+/* ---------- DOM ---------- */
 const tbody = document.getElementById('tbody');
 const searchInput = document.getElementById('search');
 const reloadBtn = document.getElementById('reload');
@@ -191,54 +118,116 @@ const pendingOnlyBtn = document.getElementById('pendingOnlyBtn');
 const refreshInterval = document.getElementById('refreshInterval');
 const addForm = document.getElementById('addForm');
 const formMsg = document.getElementById('formMsg');
+const theadRow = document.getElementById('theadRow');
 
 let allData = [];
+let mapping = {};        // maps canonical -> actual key from API response
 let showPendingOnly = true;
 let autoTimer = null;
 
-// helpers
-function safe(value){ return value == null ? '' : String(value); }
-function fmtDate(s){
-  if(!s) return '';
-  // prefer showing as entered; optionally parse
-  return s;
+/* ---------- UTILITIES ---------- */
+function normKey(k){
+  // normalize: lowercase, remove spaces/underscores, remove non-alphanum
+  return String(k||'').toLowerCase().replace(/[\s_]+/g,'').replace(/[^a-z0-9]/g,'');
 }
+function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function daysDiffFromToday(dateStr){
   if(!dateStr) return '';
-  // try to parse dd/mm/yyyy or mm/dd/yyyy heuristically
-  // We'll attempt Date parsing; user-entered format might be 10/1/2025
   let d = new Date(dateStr);
   if(isNaN(d)){
-    // try converting slash-separated tokens (fallback)
-    let parts = dateStr.split(/[\/\-\.]/).map(t=>t.trim());
+    const parts = dateStr.split(/[\/\-\.]/).map(t=>t.trim());
     if(parts.length>=3){
-      // try mm/dd/yyyy then dd/mm/yyyy fallback
-      let mm = parseInt(parts[0],10), dd = parseInt(parts[1],10), yyyy = parseInt(parts[2],10);
-      // heuristics: if mm>12 swap
+      let mm=+parts[0], dd=+parts[1], yy=+parts[2];
       if(mm>12){ let tmp=mm; mm=dd; dd=tmp; }
-      d = new Date(yyyy, mm-1, dd);
+      d = new Date(yy, mm-1, dd);
     }
   }
   if(isNaN(d)) return '';
   const today = new Date();
-  // zero out hours for stable count
-  const diff = Math.floor((today - new Date(d.getFullYear(),d.getMonth(),d.getDate())) / (1000*60*60*24));
-  return diff >= 0 ? String(diff) : '';
+  const diffDays = Math.floor((today - new Date(d.getFullYear(),d.getMonth(),d.getDate()))/(1000*60*60*24));
+  return diffDays >= 0 ? String(diffDays) : '';
 }
 
-function buildRow(obj){
-  // ensure keys exist
-  const row = {};
-  KEYS.forEach(k => row[k] = safe(obj[k] || ''));
-  // ensure days_pending computed if missing or keep provided
-  if(!row.days_pending){
-    row.days_pending = daysDiffFromToday(row.date);
+/* flexible mapping: take first object keys and map them to canonical keys */
+function buildMapping(firstObj){
+  mapping = {};
+  const keys = Object.keys(firstObj || {});
+  const normMap = {};
+  keys.forEach(k => { normMap[normKey(k)] = k; });
+
+  CANONICAL.forEach(can => {
+    // try exact normalized match
+    const candidate = normMap[normKey(can)] || 
+                      normMap['clientname'] && can==='clientname' && (normMap['clientname']) ||
+                      null;
+    // fallback: if not found try heuristics (e.g. 'clientname' match 'clientname', 'client' etc.)
+    if(!candidate){
+      // attempt partial matches
+      for(const nk in normMap){
+        if(nk.includes(normKey(can)) || normKey(can).includes(nk)){
+          mapping[can] = normMap[nk];
+          break;
+        }
+      }
+    } else {
+      mapping[can] = candidate;
+    }
+  });
+
+  // last resort: if mapping missing, assign first columns in order
+  const missing = CANONICAL.filter(c => !mapping[c]);
+  let idx=0;
+  for(const c of missing){
+    // find next key not used
+    while(idx<keys.length && Object.values(mapping).includes(keys[idx])) idx++;
+    if(idx < keys.length) mapping[c] = keys[idx++];
   }
-  return row;
+
+  // If still missing, leave undefined
+  console.log('Field mapping:', mapping);
 }
 
-function renderTable(data){
-  allData = data.map(buildRow);
+/* get value from an object using mapping */
+function getField(obj, canonicalKey){
+  const k = mapping[canonicalKey];
+  return k ? obj[k] : '';
+}
+
+/* ---------- RENDER ---------- */
+function renderTableFromJson(json){
+  if(!Array.isArray(json)) json = [];
+  if(json.length === 0){
+    tbody.innerHTML = '<tr><td class="empty" colspan="7">No records</td></tr>';
+    return;
+  }
+
+  // build mapping from first row
+  buildMapping(json[0]);
+
+  // rebuild header labels to show nice names (keep UI consistent)
+  // not strictly necessary, but safe to keep standard headers.
+  theadRow.innerHTML = `
+    <th>Client Name</th>
+    <th>Mobile</th>
+    <th>Amount</th>
+    <th>Date</th>
+    <th>Status</th>
+    <th>Remark</th>
+    <th>Days Pending</th>
+  `;
+
+  // build normalized rows array (canonical keys)
+  allData = json.map(raw => {
+    const row = {};
+    CANONICAL.forEach(k => {
+      row[k] = getField(raw, k) || '';
+    });
+    // compute days_pending if blank
+    if(!row.days_pending){
+      row.days_pending = daysDiffFromToday(row.date);
+    }
+    return row;
+  });
 
   applyAndRender();
 }
@@ -246,71 +235,55 @@ function renderTable(data){
 function applyAndRender(){
   const q = (searchInput.value || '').trim().toLowerCase();
   let rows = allData.slice();
-  if(showPendingOnly){
-    rows = rows.filter(r => (r.status || '').toLowerCase() === 'pending');
-  }
+  if(showPendingOnly) rows = rows.filter(r => (r.status||'').toLowerCase() === 'pending');
   if(q){
-    rows = rows.filter(r => {
-      return KEYS.some(k => (r[k]||'').toString().toLowerCase().includes(q));
-    });
+    rows = rows.filter(r => CANONICAL.some(k => (r[k]||'').toString().toLowerCase().includes(q)));
   }
-
-  // render
   if(rows.length === 0){
     tbody.innerHTML = '<tr><td class="empty" colspan="7">No records</td></tr>';
     return;
   }
-  const html = rows.map(r => {
-    return `<tr>
+  tbody.innerHTML = rows.map(r => `
+    <tr>
       <td>${escapeHtml(r.clientname)}</td>
       <td>${escapeHtml(r.mobile)}</td>
       <td>${escapeHtml(r.amount)}</td>
-      <td>${escapeHtml(fmtDate(r.date))}</td>
+      <td>${escapeHtml(r.date)}</td>
       <td>${escapeHtml(r.status)}</td>
       <td>${escapeHtml(r.remark)}</td>
       <td style="text-align:center">${escapeHtml(r.days_pending)}</td>
-    </tr>`;
-  }).join('');
-  tbody.innerHTML = html;
+    </tr>`).join('');
 }
 
-function escapeHtml(s){
-  return (s+'').replace(/[&<>"']/g, c =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-// fetch data
+/* ---------- NETWORK ---------- */
 async function fetchData(){
   try{
     tbody.innerHTML = '<tr><td class="empty" colspan="7">Loading…</td></tr>';
     const res = await fetch(API_URL);
-    if(!res.ok) throw new Error('Network response not OK');
+    if(!res.ok) throw new Error('Network response not OK: ' + res.status);
     const json = await res.json();
-    // SheetDB returns array
-    renderTable(json || []);
+    renderTableFromJson(json);
   }catch(err){
-    tbody.innerHTML = `<tr><td class="empty" colspan="7">Error loading data — ${escapeHtml(err.message || err)}</td></tr>`;
     console.error(err);
+    tbody.innerHTML = `<tr><td class="empty" colspan="7">Error loading data — ${escapeHtml(err.message || err)}</td></tr>`;
   }
 }
 
-// add row POST
-async function addRow(formData){
-  // build data object with keys exactly as sheet header
+/* POST / add row to SheetDB (SheetDB accepts {"data":[{...}]}) */
+async function addRowFromForm(fd){
   const obj = {
-    clientname: (formData.get('clientname')||'').trim(),
-    mobile: (formData.get('mobile')||'').trim(),
-    amount: (formData.get('amount')||'').trim(),
-    date: (formData.get('date')||'').trim(),
-    status: (formData.get('status')||'').trim() || 'pending',
-    remark: (formData.get('remark')||'').trim()
+    clientname: (fd.get('clientname')||'').trim(),
+    mobile: (fd.get('mobile')||'').trim(),
+    amount: (fd.get('amount')||'').trim(),
+    date: (fd.get('date')||'').trim(),
+    status: (fd.get('status')||'').trim() || 'pending',
+    remark: (fd.get('remark')||'').trim()
   };
-  // compute days_pending
   obj.days_pending = daysDiffFromToday(obj.date);
 
   try{
     formMsg.textContent = 'Sending…';
-    addBtnDisabled(true);
+    document.getElementById('addBtn').disabled = true;
 
     const payload = { data: [obj] };
     const r = await fetch(API_URL, {
@@ -319,63 +292,45 @@ async function addRow(formData){
       body: JSON.stringify(payload)
     });
     if(!r.ok){
-      // try to read text message
       const txt = await r.text();
-      throw new Error('Failed to add: '+ (txt||r.statusText));
+      throw new Error('Failed to add: ' + (txt || r.statusText));
     }
-    // success — reload table
     formMsg.textContent = 'Added ✓';
-    setTimeout(()=>formMsg.textContent='', 2400);
-    await fetchData();
+    setTimeout(()=>formMsg.textContent='', 2200);
     addForm.reset();
+    await fetchData();
   }catch(err){
-    formMsg.textContent = 'Error: '+ (err.message || err);
     console.error(err);
+    formMsg.textContent = 'Error: ' + (err.message || err);
   } finally {
-    addBtnDisabled(false);
+    document.getElementById('addBtn').disabled = false;
   }
 }
 
-function addBtnDisabled(flag){
-  const btn = document.getElementById('addBtn');
-  if(btn) btn.disabled = !!flag;
-}
-
-// events
-searchInput.addEventListener('input', ()=>applyAndRender());
+/* ---------- EVENTS ---------- */
+searchInput.addEventListener('input', () => applyAndRender());
 reloadBtn.addEventListener('click', fetchData);
-pendingOnlyBtn.addEventListener('click', ()=>{
+pendingOnlyBtn.addEventListener('click', () => {
   showPendingOnly = !showPendingOnly;
   pendingOnlyBtn.textContent = showPendingOnly ? 'Show: Pending only' : 'Show: All';
   applyAndRender();
+});
+refreshInterval.addEventListener('change', ()=>{
+  const val = Number(refreshInterval.value || 0);
+  if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+  if(val>0) autoTimer = setInterval(fetchData, val*1000);
 });
 
 addForm.addEventListener('submit', (ev)=>{
   ev.preventDefault();
   const fd = new FormData(addForm);
-
-  // minimal validation
-  if(!fd.get('clientname') || !fd.get('status')){
-    formMsg.textContent = 'Please add client name and status';
-    return;
-  }
-  addRow(fd);
+  if(!fd.get('clientname')) { formMsg.textContent = 'Please enter client name'; return; }
+  addRowFromForm(fd);
 });
 
-// auto refresh control
-refreshInterval.addEventListener('change', ()=>{
-  const val = Number(refreshInterval.value || 0);
-  if(autoTimer) { clearInterval(autoTimer); autoTimer=null; }
-  if(val>0){
-    autoTimer = setInterval(fetchData, val*1000);
-  }
-});
-
-// initial load
+/* initial load */
 fetchData();
-
-// expose for console (debug)
-window._sheetdb = { fetchData, allData };
+window._sheetdb = { fetchData, mapping, allData }; // debug
 </script>
 </body>
 </html>
