@@ -2,19 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pending Payments</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; text-align: center; padding: 20px; }
-    table { margin: 20px auto; border-collapse: collapse; width: 90%; max-width: 800px; }
-    th, td { border: 1px solid #444; padding: 8px; }
-    th { background: #222; color: #4ade80; }
-    tr:nth-child(even) { background: #1a1a1a; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background-color: #f4f4f4; }
   </style>
 </head>
 <body>
-  <h2>📋 Broadband Pending Payments</h2>
-  <table id="data-table">
+  <h2>📋 Pending Payments</h2>
+  <table id="paymentTable">
     <thead>
       <tr>
         <th>Client Name</th>
@@ -27,34 +26,45 @@
       </tr>
     </thead>
     <tbody>
-      <tr><td colspan="7">Loading data...</td></tr>
+      <tr><td colspan="7">Loading...</td></tr>
     </tbody>
   </table>
 
   <script>
-    // Replace this link with your Google Apps Script Web App URL
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwe5JZZytQecq86-X619FLlfOEjI3Swt77eLRiqitt3Oyq68I32C7pvP265uruJfqWp/exec";
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRHmwczcuvj6Fljrnn3AfgDtQQ4F6bozQ6u1Fp70o-Qwyl5eUKjoarZrMrkT88v7qg8OGR_E9XiWWaG/pub?output=csv';
 
-    fetch(scriptURL, { method: 'POST', body: JSON.stringify({ action: 'list' }) })
-      .then(res => res.json())
-      .then(data => {
-        const tbody = document.querySelector('#data-table tbody');
+    fetch(csvUrl)
+      .then(response => response.text())
+      .then(csv => {
+        const lines = csv.split('\n').filter(line => line.trim().length > 0);
+        const rows = lines.map(line => line.split(','));
+        const header = rows.shift();
+        const tbody = document.getElementById('paymentTable').querySelector('tbody');
         tbody.innerHTML = '';
-        data.forEach(row => {
+
+        rows.forEach(cols => {
+          // basic parse: skip if status isn't "Pending"
+          const status = cols[4] || '';
+          if (status.trim().toLowerCase() !== 'pending') return;
+
           const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${row.client}</td>
-            <td>${row.mobile}</td>
-            <td>${row.amount}</td>
-            <td>${row.date}</td>
-            <td>${row.status}</td>
-            <td>${row.remarks}</td>
-            <td>${row.daysPending}</td>
-          `;
+          cols.forEach(c => {
+            const td = document.createElement('td');
+            td.innerText = c;
+            tr.appendChild(td);
+          });
           tbody.appendChild(tr);
         });
+
+        if (!tbody.hasChildNodes()) {
+          tbody.innerHTML = '<tr><td colspan="7">No pending payments found</td></tr>';
+        }
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        const tbody = document.getElementById('paymentTable').querySelector('tbody');
+        tbody.innerHTML = `<tr><td colspan="7">Error loading data: ${err.message}</td></tr>`;
+        console.error(err);
+      });
   </script>
 </body>
 </html>
