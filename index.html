@@ -3,287 +3,160 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pending Payments</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<title>PERFECT DIGITAL NETWORK – Pending Payments</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#138a55;
+    --orange:#f59e0b;
     --muted:#6b6f72;
-    --card:#ffffff;
     --bg:#f6f7f8;
+    --card:#fff;
     --radius:10px;
   }
   *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
   body{margin:0;background:var(--bg);color:#1f2933;padding:28px;}
   .wrap{max-width:980px;margin:0 auto}
-  header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
-  header h1{margin:0;font-size:28px}
+  header{display:flex;align-items:center;gap:18px;margin-bottom:20px}
+  header h1{margin:0;font-size:30px;font-weight:700;color:var(--green)}
   .card{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
   .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-  .controls input[type=search]{width:100%;max-width:540px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-  .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
-  .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
-  .tableWrap{overflow-x:auto;margin-top:12px}
-  table{border-collapse:collapse;width:100%;min-width:700px}
-  thead th{background:var(--green);color:#fff;padding:18px 14px;text-align:left}
-  tbody td{padding:18px 14px;border-bottom:1px solid #f1f2f3}
+  input[type=search]{width:100%;max-width:520px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  button{background:var(--green);color:white;padding:10px 16px;border:none;border-radius:8px;cursor:pointer}
+  button.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}
+  table{border-collapse:collapse;width:100%;min-width:700px;margin-top:12px}
+  thead th{background:var(--green);color:#fff;padding:16px 12px;text-align:left}
+  tbody td{padding:14px 12px;border-bottom:1px solid #f1f2f3}
+  .status-paid{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:8px;font-weight:600;text-transform:capitalize}
+  .status-pending{background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:8px;font-weight:600;text-transform:capitalize}
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-  .formRow .row{display:flex;gap:10px}
-  .formRow .row input{flex:1}
-  .notice{font-size:13px;color:var(--muted);margin-top:12px}
-  @media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:540px}}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row input,.row select,textarea{flex:1;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .actions button{margin-right:6px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div style="font-size:28px">📋</div>
-    <div>
-      <h1>Pending Payments</h1>
-      <div style="color:var(--muted);font-size:14px">Live from Google Sheet (via SheetDB)</div>
-    </div>
+    <h1>PERFECT DIGITAL NETWORK</h1>
   </header>
 
   <div class="card">
     <div class="controls">
-      <input id="searchBox" type="search" placeholder="Search client, mobile or remark" />
-      <select id="refreshSel" title="Auto refresh">
-        <option value="0">Refresh off</option>
-        <option value="15">Refresh every 15s</option>
-        <option value="30">Refresh every 30s</option>
-        <option value="60" selected>Refresh every 60s</option>
-      </select>
-      <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>
-      <button id="reloadBtn" class="btn">Reload now</button>
+      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
+      <button id="reloadBtn">Reload</button>
     </div>
 
-    <div class="tableWrap" id="tableWrap">
-      <table id="dataTable" role="table" aria-label="Pending payments table">
-        <thead id="tableHead"></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Mobile</th>
+          <th>Amount (₹)</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Address</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading…</td></tr>
+      </tbody>
+    </table>
 
-    <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
+    <hr style="margin:20px 0;border:none;border-top:1px solid #eee" />
 
-    <h2>Add New Pending Client</h2>
+    <h2>Add New Client</h2>
     <div class="formRow">
       <div class="row">
-        <input id="f_name" placeholder="Client Name" />
-        <input id="f_mobile" placeholder="Mobile" />
+        <input id="f_name" placeholder="Client Name">
+        <input id="f_mobile" placeholder="Mobile">
       </div>
       <div class="row">
-        <input id="f_amount" placeholder="Amount" />
-        <input id="f_date" placeholder="Date (e.g. 10/1/2025)" />
+        <input id="f_amount" placeholder="Amount (₹)">
+        <input id="f_date" placeholder="Date (DD/MM/YYYY)">
       </div>
       <div class="row">
         <select id="f_status">
-          <option>pending</option>
-          <option>paid</option>
-          <option>other</option>
+          <option>pending</option><option>paid</option>
         </select>
-        <input id="f_days" placeholder="Days pending (optional)" />
+        <input id="f_address" placeholder="Address">
       </div>
-      <textarea id="f_remark" rows="2" placeholder="Remark"></textarea>
-      <div style="display:flex;gap:12px;align-items:center">
-        <button id="addBtn" class="btn">Add</button>
-        <div id="msg" style="color:var(--muted)"></div>
-      </div>
-      <div class="notice">Tip: To update sheet directly, edit your Google Sheet and publish to the web (CSV) — or add via this form.</div>
+      <textarea id="f_remark" rows="2" placeholder="Remark (optional)"></textarea>
+      <button id="addBtn">Add Client</button>
+      <div id="msg" style="margin-top:8px;color:var(--muted)"></div>
     </div>
   </div>
 </div>
 
 <script>
-/*
-  FINAL single-file app.
-  Replace the SHEETDB_API with your SheetDB API if different.
-*/
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
+const API='https://sheetdb.io/api/v1/zla8gcygz4jgd';
+let rows=[];
 
-// canonical fields we expect
-const canonical = ["clientname","mobile","amount","date","status","remark","days_pending"];
-
-// utility to normalize a header name to compare
-function norm(s){
-  return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');
-}
-
-// fetch data and render
-let lastData = [];
-let headerMap = {}; // canonical -> actual sheet key
-
-async function fetchData(){
+async function load(){
+  const tb=document.getElementById('tableBody');
+  tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">Loading…</td></tr>';
   try{
-    const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: '+res.status);
-    const data = await res.json();
-    lastData = Array.isArray(data) ? data : [];
-    detectHeaders(lastData);
-    renderTable(lastData);
-    return lastData;
-  }catch(e){
-    console.error(e);
-    document.getElementById('msg').textContent = 'Error loading data: '+e.message;
-    return [];
-  }
+    const r=await fetch(API);const j=await r.json();rows=j;render();
+  }catch(e){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#c33">Error '+e.message+'</td></tr>';}
 }
 
-// detect which actual keys correspond to each canonical field
-function detectHeaders(data){
-  headerMap = {};
-  if(data && data.length){
-    const keys = Object.keys(data[0]);
-    // build lookup normalized -> original
-    const lookup = {};
-    keys.forEach(k => lookup[norm(k)] = k);
-    canonical.forEach(c => {
-      // try direct norm match
-      if(lookup[norm(c)]) headerMap[c] = lookup[norm(c)];
-      else {
-        // try common variants
-        const variants = {
-          clientname:['clientname','client','name','clientname','client_name','clientname'],
-          mobile:['mobile','phone','mobilephone','phoneNumber','mobilenumber','mobile_number'],
-          amount:['amount','amt','price'],
-          date:['date','duedate','due_date'],
-          status:['status','statu'],
-          remark:['remark','remarks','note','notes'],
-          days_pending:['dayspending','days_pending','dayspending','days','days_pending']
-        };
-        const vs = variants[c]||[c];
-        for(const v of vs){
-          if(lookup[norm(v)]){ headerMap[c]=lookup[norm(v)]; break; }
-        }
-        // fallback to first key if nothing matched
-        if(!headerMap[c] && keys.length) headerMap[c] = keys[0];
-      }
-    });
-  } else {
-    // no rows yet — fallback to canonical as headers
-    canonical.forEach(c=> headerMap[c] = c);
-  }
-}
-
-// render table head & body using headerMap
-function renderTable(data){
-  const th = document.getElementById('tableHead');
-  const tb = document.getElementById('tableBody');
-  th.innerHTML = ''; tb.innerHTML = '';
-
-  // build head using canonical label -> nicer title
-  const titles = {
-    clientname:'Client Name', mobile:'Mobile', amount:'Amount',
-    date:'Date', status:'Status', remark:'Remark', days_pending:'Days Pending'
-  };
-
-  const headRow = document.createElement('tr');
-  Object.keys(titles).forEach(k => {
-    const thcell = document.createElement('th');
-    thcell.textContent = titles[k];
-    headRow.appendChild(thcell);
-  });
-  th.appendChild(headRow);
-
-  // filter/search
-  const search = document.getElementById('searchBox').value.trim().toLowerCase();
-
-  const showOnlyPending = filterPending;
-  (data||[]).forEach(row => {
-    const visible = Object.values(row).join(' ').toLowerCase().includes(search);
-    if(!visible) return;
-    if(showOnlyPending && !String(row[headerMap['status']]||'').toLowerCase().includes('pending')) return;
-
-    const tr = document.createElement('tr');
-    canonical.forEach(k => {
-      const td = document.createElement('td');
-      const actualKey = headerMap[k];
-      td.textContent = (actualKey && row[actualKey]!==undefined) ? row[actualKey] : '';
-      tr.appendChild(td);
-    });
+function render(){
+  const q=document.getElementById('searchBox').value.trim().toLowerCase();
+  const tb=document.getElementById('tableBody');tb.innerHTML='';
+  const data=rows.filter(r=>Object.values(r).join(' ').toLowerCase().includes(q));
+  for(const r of data){
+    const tr=document.createElement('tr');
+    const status=(r.status||'').toLowerCase();
+    tr.innerHTML=`
+      <td>${r.clientname||r['Client Name']||''}</td>
+      <td>${r.mobile||''}</td>
+      <td>${r.amount||''}</td>
+      <td>${r.date||''}</td>
+      <td><span class="${status==='paid'?'status-paid':'status-pending'}">${status}</span></td>
+      <td>${r.address||r.remark||''}</td>
+      <td class="actions">
+        <button onclick='editRow(${JSON.stringify(JSON.stringify(r))})'>Edit</button>
+        <button onclick='deleteRow(${JSON.stringify(JSON.stringify(r))})'>Delete</button>
+      </td>`;
     tb.appendChild(tr);
-  });
+  }
+  if(!data.length)tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">No records found</td></tr>';
 }
 
-let refreshTimer = null;
-let filterPending = false;
+async function addRow(){
+  const name=f_name.value.trim(),mobile=f_mobile.value.trim(),amount=f_amount.value.trim(),date=f_date.value.trim(),status=f_status.value.trim(),address=f_address.value.trim(),remark=f_remark.value.trim();
+  if(!name){alert('Name required');return;}
+  const obj={clientname:name,mobile,amount,date,status,address,remark};
+  await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:[obj]})});
+  msg.textContent='Added ✔';setTimeout(()=>msg.textContent='',2000);
+  ['f_name','f_mobile','f_amount','f_date','f_address','f_remark'].forEach(id=>document.getElementById(id).value='');
+  load();
+}
 
-document.getElementById('reloadBtn').addEventListener('click', () => {
-  document.getElementById('msg').textContent = 'Reloading…';
-  fetchData().then(()=> document.getElementById('msg').textContent = '');
-});
+async function deleteRow(encoded){
+  if(!confirm('Delete this client?'))return;
+  const r=JSON.parse(encoded);
+  const url=API+'/?clientname='+encodeURIComponent(r.clientname||r['Client Name']||'');
+  await fetch(url,{method:'DELETE'});
+  load();
+}
 
-document.getElementById('filterPendingBtn').addEventListener('click', (e) => {
-  filterPending = !filterPending;
-  e.target.classList.toggle('btn', filterPending);
-  e.target.classList.toggle('ghost', !filterPending);
-  e.target.textContent = filterPending ? 'Show: Pending only' : 'Show: Pending only';
-  renderTable(lastData);
-});
+async function editRow(encoded){
+  const r=JSON.parse(encoded);
+  const newAmt=prompt('New amount for '+(r.clientname||r['Client Name']),r.amount||'');
+  const newStatus=prompt('Status (paid/pending)',r.status||'');
+  const newAddr=prompt('Address',r.address||r.remark||'');
+  const patch={amount:newAmt,status:newStatus,address:newAddr};
+  const url=API+'/?clientname='+encodeURIComponent(r.clientname||r['Client Name']||'');
+  await fetch(url,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:[patch]})});
+  load();
+}
 
-document.getElementById('searchBox').addEventListener('input', ()=>renderTable(lastData));
-
-document.getElementById('refreshSel').addEventListener('change', (e) => {
-  const v = Number(e.target.value);
-  if(refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
-  if(v>0) refreshTimer = setInterval(fetchData, v*1000);
-});
-
-document.getElementById('addBtn').addEventListener('click', async () => {
-  const name = document.getElementById('f_name').value.trim();
-  const mobile = document.getElementById('f_mobile').value.trim();
-  const amount = document.getElementById('f_amount').value.trim();
-  const date = document.getElementById('f_date').value.trim();
-  const status = document.getElementById('f_status').value.trim();
-  const days = document.getElementById('f_days').value.trim();
-  const remark = document.getElementById('f_remark').value.trim();
-
-  if(!name && !mobile){
-    alert('Please provide at least Client Name or Mobile.');
-    return;
-  }
-
-  // ensure headers detected (if no data yet, fetch first)
-  if(!Object.keys(headerMap).length) await fetchData();
-
-  // build payload using detected headerMap
-  const payloadObj = {};
-  payloadObj[ headerMap['clientname'] || 'clientname' ] = name || '';
-  payloadObj[ headerMap['mobile'] || 'mobile' ] = mobile || '';
-  payloadObj[ headerMap['amount'] || 'amount' ] = amount || '';
-  payloadObj[ headerMap['date'] || 'date' ] = date || '';
-  payloadObj[ headerMap['status'] || 'status' ] = status || '';
-  payloadObj[ headerMap['remark'] || 'remark' ] = remark || '';
-  payloadObj[ headerMap['days_pending'] || 'days_pending' ] = days || '';
-
-  const body = { data: [ payloadObj ] };
-
-  try{
-    const res = await fetch(SHEETDB_API, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(body)
-    });
-    const j = await res.json();
-    if(!res.ok){
-      console.error('SheetDB error:', j);
-      alert('Error adding row: '+(j.message||res.status));
-      return;
-    }
-    document.getElementById('msg').textContent = 'Added — reloading...';
-    // clear form
-    ['f_name','f_mobile','f_amount','f_date','f_days','f_remark'].forEach(id=>document.getElementById(id).value='');
-    // small delay then reload
-    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),400);
-  }catch(err){
-    console.error(err);
-    alert('Network error adding row: '+err.message);
-  }
-});
-
-// initial load
-fetchData();
+searchBox.oninput=render;
+reloadBtn.onclick=load;
+addBtn.onclick=addRow;
+load();
 </script>
 </body>
 </html>
