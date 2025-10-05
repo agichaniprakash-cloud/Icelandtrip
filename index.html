@@ -26,14 +26,13 @@
   .controls input[type=search]{width:100%;max-width:640px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
   .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
   .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
-  .btn.orange{background:var(--accent)}
   .tableWrap{overflow-x:auto;margin-top:12px}
-  table{border-collapse:collapse;width:100%;min-width:800px}
-  thead th{background:var(--green);color:#fff;padding:16px 14px;text-align:left}
-  tbody td{padding:16px 14px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
+  table{border-collapse:collapse;width:100%;min-width:860px}
+  thead th{background:var(--green);color:#fff;padding:14px 12px;text-align:left}
+  tbody td{padding:12px 10px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
   tbody tr:nth-child(even) td{background:#fafafa}
   .actionBtn{border-radius:8px;border:1px solid #e6e9ea;padding:6px 10px;background:#fff;color:var(--muted);cursor:pointer}
-  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #eee;color:var(--muted)}
+  .editBtn { background:#fff; border:1px solid #e6e9ea; padding:8px 10px; border-radius:8px; color:var(--green); cursor:pointer; }
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
   .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
   .formRow .row{display:flex;gap:10px}
@@ -144,33 +143,23 @@
 
 <script>
 /* ====== CONFIG ====== */
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // your SheetDB API
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 const QR_IMAGE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/Screenshot_20251005_074910_PhonePe.jpg';
 const UPI_ID = 'perfectdigital@axl';
 const SITE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/';
 /* ==================== */
 
-/* canonical fields expected */
 const canonical = ["clientname","mobile","amount","date","status","address"];
 
-let headerMap = {};  // canonical -> actual sheet key
+let headerMap = {};
 let lastData = [];
 let currentPage = 1;
 let perPage = Number(document.getElementById('perPage').value || 20);
 let filterPending = false;
 let refreshTimer = null;
 
-/* Utility normalize */
-function norm(s){
-  return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');
-}
-
-/* Format phone for wa.me:
-   - Remove non-digits
-   - Strip leading zeros
-   - If 10 digits -> prepend 91 (India)
-   - If >=11 digits and starts with country code, keep as-is
-*/
+/* helpers */
+function norm(s){ return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,''); }
 function normalizePhone(mob){
   if(!mob) return '';
   let digits = String(mob).replace(/\D/g,'');        // remove non-digits
@@ -178,14 +167,11 @@ function normalizePhone(mob){
   if(digits.length === 10) digits = '91' + digits;
   return digits;
 }
-
-/* Build the WhatsApp message text exactly as requested */
 function buildWhatsAppText(row){
   const nameKey = headerMap['clientname'];
   const amountKey = headerMap['amount'];
   const name = (row[nameKey] || '').toString().trim() || 'there';
   const amount = (row[amountKey] || '').toString().trim() || '';
-  // exact wording you requested; star markers for bold are included
   const text =
 `Hello ${name},
 
@@ -199,7 +185,7 @@ ${QR_IMAGE_URL}`;
   return text;
 }
 
-/* Fetch from SheetDB */
+/* fetch & detect */
 async function fetchData(){
   try{
     const res = await fetch(SHEETDB_API);
@@ -221,7 +207,6 @@ async function fetchData(){
   }
 }
 
-/* Detect headers: map canonical fields to actual sheet keys */
 function detectHeaders(data){
   headerMap = {};
   if(data && data.length){
@@ -250,26 +235,22 @@ function detectHeaders(data){
   }
 }
 
-/* Render table head & body */
+/* render table with Edit button as first (extreme left) column */
 function renderTable(){
   const th = document.getElementById('tableHead');
   const tb = document.getElementById('tableBody');
   th.innerHTML=''; tb.innerHTML='';
 
-  const titles = {
-    clientname:'Client Name', mobile:'Mobile', amount:'Amount (₹)',
-    date:'Date', status:'Status', address:'Address'
-  };
+  // build header: first cell for Edit, then fields, then Actions
+  const headerRow = document.createElement('tr');
+  const thEdit = document.createElement('th'); thEdit.textContent = ''; headerRow.appendChild(thEdit);
 
-  const trHead = document.createElement('tr');
+  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount (₹)', date:'Date', status:'Status', address:'Address' };
   Object.keys(titles).forEach(k=>{
-    const thCell = document.createElement('th');
-    thCell.textContent = titles[k];
-    trHead.appendChild(thCell);
+    const thc = document.createElement('th'); thc.textContent = titles[k]; headerRow.appendChild(thc);
   });
-  const thActions = document.createElement('th'); thActions.textContent = 'Actions';
-  trHead.appendChild(thActions);
-  th.appendChild(trHead);
+  const thActions = document.createElement('th'); thActions.textContent = 'Actions'; headerRow.appendChild(thActions);
+  th.appendChild(headerRow);
 
   const search = document.getElementById('searchBox').value.trim().toLowerCase();
 
@@ -299,40 +280,13 @@ function renderTable(){
 
   pageItems.forEach(row=>{
     const tr = document.createElement('tr');
-    Object.keys(titles).forEach(k=>{
-      const td = document.createElement('td');
-      const actual = headerMap[k];
-      td.textContent = (actual && row[actual] !== undefined) ? row[actual] : '';
-      tr.appendChild(td);
-    });
 
-    const tdActions = document.createElement('td');
-
-    // WhatsApp send button
-    const waBtn = document.createElement('button');
-    waBtn.className = 'actionBtn';
-    waBtn.textContent = 'Send WhatsApp';
-    waBtn.addEventListener('click', () => {
-      const phoneRaw = row[ headerMap.mobile ] || '';
-      const phone = normalizePhone(phoneRaw);
-      const text = buildWhatsAppText(row);
-      // prefer wa.me when we have a likely valid phone (>=11 digits incl country code)
-      if(phone && phone.length >= 11){
-        const waUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
-        window.open(waUrl, '_blank');
-      } else {
-        // fallback: open web.whatsapp with message only (recipient must be chosen manually)
-        const waUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(text);
-        window.open(waUrl, '_blank');
-      }
-    });
-    tdActions.appendChild(waBtn);
-
-    // Edit button - fills the form so you can update and re-add (or later we can implement PATCH)
+    // EDIT column (extreme left)
+    const tdEdit = document.createElement('td');
     const editBtn = document.createElement('button');
-    editBtn.className = 'actionBtn';
-    editBtn.style.marginLeft = '8px';
+    editBtn.className = 'editBtn';
     editBtn.textContent = 'Edit';
+    // when clicked, prefill the add form with this row's values
     editBtn.addEventListener('click', () => {
       document.getElementById('f_name').value = row[ headerMap.clientname ] || '';
       document.getElementById('f_mobile').value = row[ headerMap.mobile ] || '';
@@ -340,10 +294,43 @@ function renderTable(){
       document.getElementById('f_date').value = row[ headerMap.date ] || '';
       document.getElementById('f_status').value = row[ headerMap.status ] || 'pending';
       document.getElementById('f_address').value = row[ headerMap.address ] || '';
-      window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
-      document.getElementById('msg').textContent = 'Edit mode: change values and press Add to append (or we can add server-side update later).';
+      // focus the first input so it's clear we're in edit mode
+      document.getElementById('f_name').focus();
+      // scroll to the form area
+      document.getElementById('f_name').scrollIntoView({behavior:'smooth'});
+      document.getElementById('msg').textContent = 'Edit mode: change values and press Add (or we can add server-side update later).';
     });
-    tdActions.appendChild(editBtn);
+    tdEdit.appendChild(editBtn);
+    tr.appendChild(tdEdit);
+
+    // data columns
+    const fields = ['clientname','mobile','amount','date','status','address'];
+    fields.forEach(k=>{
+      const td = document.createElement('td');
+      const key = headerMap[k];
+      td.textContent = (key && row[key] !== undefined) ? row[key] : '';
+      tr.appendChild(td);
+    });
+
+    // actions column (WhatsApp only)
+    const tdActions = document.createElement('td');
+
+    const waBtn = document.createElement('button');
+    waBtn.className = 'actionBtn';
+    waBtn.textContent = 'Send WhatsApp';
+    waBtn.addEventListener('click', () => {
+      const phoneRaw = row[ headerMap.mobile ] || '';
+      const phone = normalizePhone(phoneRaw);
+      const text = buildWhatsAppText(row);
+      if(phone && phone.length >= 11){
+        const waUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+        window.open(waUrl, '_blank');
+      } else {
+        const waUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(text);
+        window.open(waUrl, '_blank');
+      }
+    });
+    tdActions.appendChild(waBtn);
 
     tr.appendChild(tdActions);
     tb.appendChild(tr);
@@ -352,7 +339,7 @@ function renderTable(){
   document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
 }
 
-/* Update stats */
+/* update stats */
 function updateStats(){
   const total = lastData.length || 0;
   const pendingRows = lastData.filter(r => String(r[ headerMap.status ] || '').toLowerCase().includes('pending'));
@@ -366,7 +353,7 @@ function updateStats(){
   document.getElementById('statPendingAmt').textContent = pendingAmount ? '₹' + pendingAmount.toFixed(0) : '₹0';
 }
 
-/* Add new row */
+/* add row */
 document.getElementById('addBtn').addEventListener('click', async () => {
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
@@ -408,8 +395,8 @@ document.getElementById('addBtn').addEventListener('click', async () => {
   }
 });
 
-/* UI controls wiring */
-document.getElementById('reloadBtn').addEventListener('click', ()=>{ document.getElementById('msg').textContent = 'Reloading…'; fetchData().then(()=>document.getElementById('msg').textContent=''); });
+/* UI wiring */
+document.getElementById('reloadBtn').addEventListener('click', ()=>{ document.getElementById('msg').textContent = 'Reloading…'; fetchData().then(()=> document.getElementById('msg').textContent=''); });
 document.getElementById('pendingToggle').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
 document.getElementById('searchBox').addEventListener('input', ()=>{ currentPage = 1; renderTable(); });
 
@@ -426,14 +413,14 @@ document.getElementById('fillTest').addEventListener('click', ()=> {
   document.getElementById('f_address').value = 'Wazirpur';
 });
 
-/* Auto-refresh selector */
+/* auto-refresh select */
 document.getElementById('refreshSel').addEventListener('change', (e)=> {
   const v = Number(e.target.value);
   if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; }
   if(v>0) refreshTimer = setInterval(fetchData, v*1000);
 });
 
-/* Initial load */
+/* initial load */
 fetchData();
 
 </script>
