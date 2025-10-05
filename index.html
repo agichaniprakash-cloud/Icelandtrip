@@ -4,40 +4,35 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>PERFECT DIGITAL NETWORK – Pending Payments</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#138a55;
-    --orange:#f59e0b;
     --muted:#6b6f72;
+    --card:#ffffff;
     --bg:#f6f7f8;
-    --card:#fff;
     --radius:10px;
   }
   *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
   body{margin:0;background:var(--bg);color:#1f2933;padding:28px;}
   .wrap{max-width:980px;margin:0 auto}
-  header{display:flex;align-items:center;gap:18px;margin-bottom:20px}
-  header h1{margin:0;font-size:30px;font-weight:700;color:var(--green)}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:22px;justify-content:center}
+  header h1{margin:0;font-size:30px;font-weight:700;color:var(--green);}
   .card{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
   .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-  input[type=search]{width:100%;max-width:520px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-  button{background:var(--green);color:white;padding:10px 16px;border:none;border-radius:8px;cursor:pointer}
-  button.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}
-  table{border-collapse:collapse;width:100%;min-width:700px;margin-top:12px}
-  thead th{background:var(--green);color:#fff;padding:16px 12px;text-align:left}
-  tbody td{padding:14px 12px;border-bottom:1px solid #f1f2f3}
-  .status-paid{background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:8px;font-weight:600;text-transform:capitalize}
-  .status-pending{background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:8px;font-weight:600;text-transform:capitalize}
+  .controls input[type=search]{width:100%;max-width:540px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
+  .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
+  .tableWrap{overflow-x:auto;margin-top:12px}
+  table{border-collapse:collapse;width:100%;min-width:700px}
+  thead th{background:var(--green);color:#fff;padding:18px 14px;text-align:left}
+  tbody td{padding:18px 14px;border-bottom:1px solid #f1f2f3}
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  .row input,.row select,textarea{flex:1;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-  .actions button{margin-right:6px}
-  .muted{color:var(--muted)}
-  @media (max-width:760px){
-    .row{flex-direction:column}
-    input[type=search]{max-width:100%}
-  }
+  .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .formRow .row{display:flex;gap:10px;flex-wrap:wrap}
+  .formRow .row input{flex:1}
+  .notice{font-size:13px;color:var(--muted);margin-top:12px}
+  @media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:540px}}
 </style>
 </head>
 <body>
@@ -48,304 +43,134 @@
 
   <div class="card">
     <div class="controls">
-      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
-      <button id="reloadBtn">Reload</button>
+      <input id="searchBox" type="search" placeholder="Search client, mobile or remark" />
+      <select id="refreshSel" title="Auto refresh">
+        <option value="0">Refresh off</option>
+        <option value="15">Refresh every 15s</option>
+        <option value="30">Refresh every 30s</option>
+        <option value="60" selected>Refresh every 60s</option>
+      </select>
+      <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>
+      <button id="reloadBtn" class="btn">Reload now</button>
     </div>
 
-    <table id="dataTable" role="table" aria-label="Pending payments">
-      <thead>
-        <tr>
-          <th>Client Name</th>
-          <th>Mobile</th>
-          <th>Amount (₹)</th>
-          <th>Date</th>
-          <th>Status</th>
-          <th>Address</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-        <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading…</td></tr>
-      </tbody>
-    </table>
+    <div class="tableWrap" id="tableWrap">
+      <table id="dataTable" role="table" aria-label="Pending payments table">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
 
-    <hr style="margin:20px 0;border:none;border-top:1px solid #eee" />
+    <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
 
-    <h2>Add New Client</h2>
+    <h2>Add New Pending Client</h2>
     <div class="formRow">
       <div class="row">
-        <input id="f_name" placeholder="Client Name">
-        <input id="f_mobile" placeholder="Mobile">
+        <input id="f_name" placeholder="Client Name" />
+        <input id="f_mobile" placeholder="Mobile" />
       </div>
       <div class="row">
-        <input id="f_amount" placeholder="Amount (₹)">
-        <input id="f_date" placeholder="Date (DD/MM/YYYY)">
+        <input id="f_amount" placeholder="Amount" />
+        <input id="f_date" placeholder="Date (e.g. 10/1/2025)" />
       </div>
       <div class="row">
         <select id="f_status">
-          <option>pending</option><option>paid</option>
+          <option>pending</option>
+          <option>paid</option>
+          <option>other</option>
         </select>
-        <input id="f_address" placeholder="Address">
       </div>
-      <textarea id="f_remark" rows="2" placeholder="Remark (optional)"></textarea>
-      <button id="addBtn">Add Client</button>
-      <div id="msg" style="margin-top:8px;color:var(--muted)"></div>
+      <textarea id="f_remark" rows="2" placeholder="Remark"></textarea>
+      <div style="display:flex;gap:12px;align-items:center">
+        <button id="addBtn" class="btn">Add</button>
+        <div id="msg" style="color:var(--muted)"></div>
+      </div>
+      <div class="notice">Tip: To update sheet directly, edit your Google Sheet and publish to the web (CSV) — or add via this form.</div>
     </div>
   </div>
 </div>
 
 <script>
-/* ---------- CONFIG - paste your SheetDB API here if different ---------- */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
+const canonical = ["clientname","mobile","amount","date","status","remark"];
+function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');}
+let lastData=[],headerMap={};
 
-/* ---------- Utilities for header normalization ---------- */
-function normalizeKey(s){
-  if(!s) return '';
-  return String(s).toLowerCase().replace(/[^a-z0-9]/g,'');
-}
-
-// canonical keys we'll use in UI
-const CANON = ['clientname','mobile','amount','date','status','address','remark'];
-
-// headerMap: maps canonical -> actual sheet key (e.g. 'clientname' -> 'Client Name' or 'clientname')
-let headerMap = {}; // filled by detectHeaders()
-let rawRows = [];   // original array from API
-
-/* Detect which actual sheet columns correspond to canonical fields */
-function detectHeaders(rows){
-  headerMap = {};
-  if(!rows || !rows.length){
-    // default - if no data yet, fallback to canonical as keys
-    CANON.forEach(k => headerMap[k] = k);
-    return;
-  }
-  const first = rows[0];
-  const keys = Object.keys(first);
-  // build normalized -> original lookup
-  const lookup = {};
-  keys.forEach(k => lookup[normalizeKey(k)] = k);
-
-  // mapping attempts for each canonical key
-  const variants = {
-    clientname: ['clientname','client','name'],
-    mobile: ['mobile','phone','phonenumber','mobilephone'],
-    amount: ['amount','amt','price'],
-    date: ['date','duedate','due_date','billingdate'],
-    status: ['status','paymentstatus','st'],
-    address: ['address','addr','location'],
-    remark: ['remark','remarks','note','notes']
-  };
-
-  CANON.forEach(c => {
-    headerMap[c] = null;
-    const vs = variants[c] || [c];
-    for(const v of vs){
-      const key = lookup[normalizeKey(v)];
-      if(key){ headerMap[c] = key; break; }
-    }
-    // fallback: try direct normalized match
-    if(!headerMap[c]){
-      const direct = lookup[c];
-      if(direct) headerMap[c] = direct;
-    }
-    // final fallback: first sheet key to avoid undefined access
-    if(!headerMap[c]) headerMap[c] = keys[0] || c;
-  });
-}
-
-/* Safe access to a cell using canonical name */
-function cell(row, canonicalKey){
-  if(!row) return '';
-  const ak = headerMap[canonicalKey];
-  if(ak && typeof row[ak] !== 'undefined') return row[ak];
-  // last fallback: try some common direct keys
-  return row[canonicalKey] || row[canonicalKey.replace('_',' ')] || '';
-}
-
-/* ---------- Data fetch & render ---------- */
 async function fetchData(){
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">Loading…</td></tr>';
   try{
-    const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: ' + res.status);
-    const json = await res.json();
-    rawRows = Array.isArray(json) ? json : (json.data || []);
-    detectHeaders(rawRows);
-    renderTable();
-  }catch(err){
-    console.error(err);
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#c33">Error loading data — check API and console</td></tr>';
-  }
+    const res=await fetch(SHEETDB_API);
+    if(!res.ok)throw new Error('Fetch failed: '+res.status);
+    const data=await res.json();
+    lastData=Array.isArray(data)?data:[];
+    detectHeaders(lastData);
+    renderTable(lastData);
+    return lastData;
+  }catch(e){console.error(e);document.getElementById('msg').textContent='Error loading data: '+e.message;return[];}
 }
 
-function renderTable(){
-  const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-  const filtered = rawRows.filter(r => {
-    const hay = Object.values(r).join(' ').toLowerCase();
-    if(q) return hay.includes(q);
-    return true;
-  });
-
-  if(!filtered.length){
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No records found</td></tr>'; return;
-  }
-
-  // render each row
-  filtered.forEach((r, idx) => {
-    const name = cell(r, 'clientname') || cell(r,'name') || '';
-    const mobile = cell(r,'mobile') || '';
-    const amount = cell(r,'amount') || '';
-    const date = cell(r,'date') || '';
-    const statusRaw = (cell(r,'status') || '').toString().toLowerCase();
-    const address = cell(r,'address') || cell(r,'remark') || '';
-
-    const statusBadge = (statusRaw === 'paid') ? `<span class="status-paid">Paid</span>` : `<span class="status-pending">Pending</span>`;
-
-    const tr = document.createElement('tr');
-
-    // create buttons payload as encoded JSON to decode in handlers
-    const payload = encodeURIComponent(JSON.stringify(r));
-
-    tr.innerHTML = `
-      <td>${escapeHtml(name)}</td>
-      <td>${escapeHtml(mobile)}</td>
-      <td>${escapeHtml(amount)}</td>
-      <td>${escapeHtml(date)}</td>
-      <td>${statusBadge}</td>
-      <td>${escapeHtml(address)}</td>
-      <td class="actions">
-        <button data-payload="${payload}" data-action="edit">Edit</button>
-        <button data-payload="${payload}" data-action="delete">Delete</button>
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-/* escape helper */
-function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
-
-/* ---------- Add row ---------- */
-async function addRow(){
-  const name = document.getElementById('f_name').value.trim();
-  const mobile = document.getElementById('f_mobile').value.trim();
-  const amount = document.getElementById('f_amount').value.trim();
-  const date = document.getElementById('f_date').value.trim();
-  const status = document.getElementById('f_status').value.trim();
-  const address = document.getElementById('f_address').value.trim();
-  const remark = document.getElementById('f_remark').value.trim();
-
-  if(!name && !mobile){ alert('Please enter client name or mobile'); return; }
-
-  // create payload using detected headerMap keys
-  const obj = {};
-  obj[ headerMap['clientname'] || 'clientname' ] = name;
-  obj[ headerMap['mobile'] || 'mobile' ] = mobile;
-  obj[ headerMap['amount'] || 'amount' ] = amount;
-  obj[ headerMap['date'] || 'date' ] = date;
-  obj[ headerMap['status'] || 'status' ] = status;
-  obj[ headerMap['address'] || 'address' ] = address;
-  obj[ headerMap['remark'] || 'remark' ] = remark;
-
-  try{
-    const res = await fetch(SHEETDB_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: [ obj ] })
+function detectHeaders(data){
+  headerMap={};
+  if(data&&data.length){
+    const keys=Object.keys(data[0]);
+    const lookup={};keys.forEach(k=>lookup[norm(k)]=k);
+    canonical.forEach(c=>{
+      if(lookup[norm(c)])headerMap[c]=lookup[norm(c)];
+      else{if(keys.length)headerMap[c]=keys[0];}
     });
-    if(!res.ok){
-      const txt = await res.text();
-      throw new Error(txt || res.status);
-    }
-    document.getElementById('msg').textContent = 'Added ✓';
-    setTimeout(()=>document.getElementById('msg').textContent='',2000);
-    // clear form
-    ['f_name','f_mobile','f_amount','f_date','f_address','f_remark'].forEach(id=>document.getElementById(id).value='');
-    await fetchData();
-  }catch(err){
-    console.error(err);
-    alert('Add failed — check console');
-  }
+  }else{canonical.forEach(c=>headerMap[c]=c);}
 }
 
-/* ---------- Edit & Delete handlers (delegated) ---------- */
-document.getElementById('tableBody').addEventListener('click', async (ev) => {
-  const btn = ev.target.closest('button');
-  if(!btn) return;
-  const action = btn.dataset.action;
-  const rawEncoded = btn.dataset.payload;
-  if(!rawEncoded) return;
-  const raw = JSON.parse(decodeURIComponent(rawEncoded));
+function renderTable(data){
+  const th=document.getElementById('tableHead'),tb=document.getElementById('tableBody');
+  th.innerHTML='';tb.innerHTML='';
+  const titles={clientname:'Client Name',mobile:'Mobile',amount:'Amount',date:'Date',status:'Status',remark:'Remark'};
+  const headRow=document.createElement('tr');
+  Object.keys(titles).forEach(k=>{const thcell=document.createElement('th');thcell.textContent=titles[k];headRow.appendChild(thcell);});
+  th.appendChild(headRow);
+  const search=document.getElementById('searchBox').value.trim().toLowerCase();
+  const showOnlyPending=filterPending;
+  (data||[]).forEach(row=>{
+    const visible=Object.values(row).join(' ').toLowerCase().includes(search);
+    if(!visible)return;
+    if(showOnlyPending&&!String(row[headerMap['status']]||'').toLowerCase().includes('pending'))return;
+    const tr=document.createElement('tr');
+    canonical.forEach(k=>{
+      const td=document.createElement('td');
+      const actualKey=headerMap[k];
+      td.textContent=(actualKey&&row[actualKey]!==undefined)?row[actualKey]:'';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+}
 
-  // prefer mobile as unique identifier if available, else use clientname
-  const mobileVal = raw[ headerMap['mobile'] ] || raw['mobile'] || '';
-  const nameVal = raw[ headerMap['clientname'] ] || raw['Client Name'] || raw['clientname'] || '';
-
-  if(action === 'delete'){
-    if(!confirm('Delete client: ' + (nameVal||mobileVal||'') + ' ?')) return;
-    try{
-      let deleteUrl;
-      if(mobileVal) deleteUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
-      else deleteUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-      const res = await fetch(deleteUrl, { method: 'DELETE' });
-      if(!res.ok) throw new Error('Delete failed: ' + res.status);
-      await fetchData();
-    }catch(err){
-      console.error(err);
-      alert('Delete failed — check console');
-    }
-    return;
-  }
-
-  if(action === 'edit'){
-    // prompt for editable fields
-    const newName = prompt('Client name', nameVal) || nameVal;
-    const newMobile = prompt('Mobile', mobileVal) || mobileVal;
-    const newAmount = prompt('Amount', raw[ headerMap['amount'] ] || raw['amount'] || '') || (raw[ headerMap['amount'] ] || raw['amount'] || '');
-    const newDate = prompt('Date', raw[ headerMap['date'] ] || raw['date'] || '') || (raw[ headerMap['date'] ] || raw['date'] || '');
-    const currentStatus = (raw[ headerMap['status'] ] || raw['status'] || 'pending');
-    const newStatus = prompt('Status (paid / pending)', currentStatus) || currentStatus;
-    const newAddress = prompt('Address', raw[ headerMap['address'] ] || raw['address'] || raw[ headerMap['remark'] ] || raw['remark'] || '') || (raw[ headerMap['address'] ] || raw['address'] || raw[ headerMap['remark'] ] || raw['remark'] || '');
-
-    // build patch object using headerMap actual column names
-    const patchObj = {};
-    patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
-    patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;
-    patchObj[ headerMap['amount'] || 'amount' ] = newAmount;
-    patchObj[ headerMap['date'] || 'date' ] = newDate;
-    patchObj[ headerMap['status'] || 'status' ] = newStatus;
-    patchObj[ headerMap['address'] || 'address' ] = newAddress;
-    // send patch by mobile if available, else by clientname
-    try{
-      let patchUrl;
-      if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
-      else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-      const res = await fetch(patchUrl, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [ patchObj ] })
-      });
-      if(!res.ok) throw new Error('Patch failed: ' + res.status);
-      await fetchData();
-    }catch(err){
-      console.error(err);
-      alert('Update failed — check console');
-    }
-    return;
-  }
+let refreshTimer=null,filterPending=false;
+document.getElementById('reloadBtn').addEventListener('click',()=>{document.getElementById('msg').textContent='Reloading…';fetchData().then(()=>document.getElementById('msg').textContent='');});
+document.getElementById('filterPendingBtn').addEventListener('click',e=>{filterPending=!filterPending;e.target.classList.toggle('btn',filterPending);e.target.classList.toggle('ghost',!filterPending);e.target.textContent='Show: Pending only';renderTable(lastData);});
+document.getElementById('searchBox').addEventListener('input',()=>renderTable(lastData));
+document.getElementById('refreshSel').addEventListener('change',e=>{const v=Number(e.target.value);if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}if(v>0)refreshTimer=setInterval(fetchData,v*1000);});
+document.getElementById('addBtn').addEventListener('click',async()=>{
+  const name=f_name.value.trim(),mobile=f_mobile.value.trim(),amount=f_amount.value.trim(),date=f_date.value.trim(),status=f_status.value.trim(),remark=f_remark.value.trim();
+  if(!name&&!mobile){alert('Please provide at least Client Name or Mobile.');return;}
+  if(!Object.keys(headerMap).length)await fetchData();
+  const payloadObj={};
+  payloadObj[headerMap['clientname']||'clientname']=name||'';
+  payloadObj[headerMap['mobile']||'mobile']=mobile||'';
+  payloadObj[headerMap['amount']||'amount']=amount||'';
+  payloadObj[headerMap['date']||'date']=date||'';
+  payloadObj[headerMap['status']||'status']=status||'';
+  payloadObj[headerMap['remark']||'remark']=remark||'';
+  const body={data:[payloadObj]};
+  try{
+    const res=await fetch(SHEETDB_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const j=await res.json();
+    if(!res.ok){console.error('SheetDB error:',j);alert('Error adding row: '+(j.message||res.status));return;}
+    document.getElementById('msg').textContent='Added — reloading...';
+    ['f_name','f_mobile','f_amount','f_date','f_remark'].forEach(id=>document.getElementById(id).value='');
+    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),400);
+  }catch(err){console.error(err);alert('Network error adding row: '+err.message);}
 });
-
-/* ---------- wire UI ---------- */
-document.getElementById('reloadBtn').addEventListener('click', fetchData);
-document.getElementById('searchBox').addEventListener('input', renderTable);
-document.getElementById('addBtn').addEventListener('click', addRow);
-
-/* ---------- start ---------- */
 fetchData();
-
 </script>
 </body>
 </html>
