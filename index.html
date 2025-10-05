@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK – Pending Payments (Code M1 + Month)</title>
+<title>PERFECT DIGITAL NETWORK – Pending Payments (CodeDone + Remark)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -25,7 +25,7 @@
   .btn{background:var(--green);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
   .btn.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}
   .tableWrap{overflow-x:auto;margin-top:12px}
-  table{border-collapse:collapse;width:100%;min-width:700px}
+  table{border-collapse:collapse;width:100%;min-width:820px}
   thead th{background:var(--green);color:#fff;padding:12px 10px;text-align:left}
   tbody td{padding:12px 10px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
   .status-paid{background:#d1fae5;color:#065f46;padding:4px 8px;border-radius:8px;font-weight:600}
@@ -54,8 +54,8 @@
 
   <div class="card">
     <div class="controls">
-      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
-      <!-- ADDED: simple month filter -->
+      <input id="searchBox" type="search" placeholder="Search client, mobile, address or remark" />
+      <!-- Month filter (kept from CodeDone) -->
       <label for="monthSel" style="font-size:13px;color:var(--muted)">Month</label>
       <select id="monthSel" class="smallSelect">
         <option value="all">All months</option>
@@ -125,6 +125,10 @@
           <option>Gulabi Bagh</option>
         </select>
       </div>
+      <!-- NEW: Remark input row -->
+      <div class="row">
+        <input id="f_remark" placeholder="Remark (optional)" />
+      </div>
       <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
         <button id="addBtn" class="btn">Add</button>
         <div id="addMsg" class="muted"></div>
@@ -136,7 +140,7 @@
 <script>
 /* CONFIG - keep your API */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
-const CANON = ['clientname','mobile','amount','date','status','address'];
+const CANON = ['clientname','mobile','amount','date','status','address','remark'];
 
 /* UPI + QR used in WhatsApp message */
 const UPI_ID = 'perfectdigital@axl';
@@ -205,7 +209,7 @@ function parseMonthFromDate(s){
   return null;
 }
 
-/* header detection (safe) */
+/* header detection (includes remark) */
 function detectHeaders(rows){
   headerMap = {};
   if(Array.isArray(rows) && rows.length){
@@ -216,7 +220,8 @@ function detectHeaders(rows){
       amount:['amount','amt','price'],
       date:['date','duedate','due_date'],
       status:['status','paymentstatus'],
-      address:['address','addr','location','area','remark','remarks']
+      address:['address','addr','location','area','remark','remarks'],
+      remark:['remark','remarks','note','notes']
     };
     CANON.forEach(c=>{
       if(lookup[normKey(c)]){ headerMap[c]=lookup[normKey(c)]; return; }
@@ -258,7 +263,8 @@ function getCell(row, canonical){
     amount:['amount','Amount','amt'],
     date:['date','Date'],
     status:['status','Status'],
-    address:['address','Address','remark','Remark','remarks']
+    address:['address','Address','remark','Remark','remarks'],
+    remark:['remark','Remark','notes','note']
   };
   for(const k of (fallback[canonical]||[])) if(row.hasOwnProperty(k)) return row[k];
   return '';
@@ -288,16 +294,16 @@ function getFilteredRows(){
   });
 }
 
-/* render table with WA left and Edit right */
+/* render table with WA left and Edit right and new Remark column */
 function renderTable(){
   const th = document.getElementById('tableHead');
   const tb = document.getElementById('tableBody');
   th.innerHTML=''; tb.innerHTML='';
 
-  // header
+  // header: first column for WA button
   const headRow = document.createElement('tr');
   const thLeft = document.createElement('th'); thLeft.style.width='56px'; headRow.appendChild(thLeft);
-  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
+  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address', remark:'Remark' };
   Object.keys(titles).forEach(k => { const thc=document.createElement('th'); thc.textContent = titles[k]; headRow.appendChild(thc); });
   const thAct = document.createElement('th'); thAct.textContent = 'Edit'; headRow.appendChild(thAct);
   th.appendChild(headRow);
@@ -311,7 +317,7 @@ function renderTable(){
   const pageRows = filtered.slice(start, start + PAGE_SIZE);
 
   if(!pageRows.length){
-    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:14px;color:var(--muted)">No records</td></tr>';
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:14px;color:var(--muted)">No records</td></tr>';
   } else {
     pageRows.forEach(row=>{
       const tr = document.createElement('tr');
@@ -321,6 +327,7 @@ function renderTable(){
       const date = getCell(row,'date') || '';
       const statusRaw = (getCell(row,'status') || '').toString().toLowerCase();
       const address = getCell(row,'address') || '';
+      const remark = getCell(row,'remark') || '';
       const statusHtml = statusRaw === 'paid' ? `<span class="status-paid">Paid</span>` : `<span class="status-pending">Pending</span>`;
 
       tr.innerHTML =
@@ -331,6 +338,7 @@ function renderTable(){
          <td>${escapeHtml(date)}</td>
          <td>${statusHtml}</td>
          <td>${escapeHtml(address)}</td>
+         <td>${escapeHtml(remark)}</td>
          <td class="actions" style="white-space:nowrap">
            <button class="btn ghost editBtn" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>
          </td>`;
@@ -392,7 +400,7 @@ function renderPaginationControls(){
   document.getElementById('lastBtn').disabled = currentPage === totalPages;
 }
 
-/* add row (unchanged) */
+/* add row (now includes remark) */
 async function addRow(){
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
@@ -400,6 +408,7 @@ async function addRow(){
   const date = document.getElementById('f_date').value.trim();
   const status = document.getElementById('f_status').value.trim();
   const address = document.getElementById('f_address').value.trim();
+  const remark = document.getElementById('f_remark').value.trim();
 
   if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }
   if(!Object.keys(headerMap).length) await fetchData();
@@ -411,6 +420,7 @@ async function addRow(){
   payload[ headerMap['date'] || 'date' ] = date || '';
   payload[ headerMap['status'] || 'status' ] = status || '';
   payload[ headerMap['address'] || 'address' ] = address || '';
+  payload[ headerMap['remark'] || 'remark' ] = remark || '';
 
   try{
     document.getElementById('addMsg').textContent = 'Adding…';
@@ -421,7 +431,7 @@ async function addRow(){
     });
     if(!res.ok) throw new Error('Add failed: '+res.status);
     await fetchData();
-    ['f_name','f_mobile','f_amount','f_date'].forEach(id=>document.getElementById(id).value='');
+    ['f_name','f_mobile','f_amount','f_date','f_remark'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('f_address').value = '';
     document.getElementById('f_status').value = 'pending';
     document.getElementById('addMsg').textContent = 'Added ✓';
@@ -432,7 +442,7 @@ async function addRow(){
   }
 }
 
-/* edit - same prompt-based patch */
+/* edit - now includes remark in prompt and patch */
 async function editRow(rowObj){
   try{
     const currentName = getCell(rowObj,'clientname')||'';
@@ -441,6 +451,7 @@ async function editRow(rowObj){
     const currentDate = getCell(rowObj,'date')||'';
     const currentStatus = getCell(rowObj,'status')||'pending';
     const currentAddress = getCell(rowObj,'address')||'';
+    const currentRemark = getCell(rowObj,'remark')||'';
 
     const newName = prompt('Client name', currentName) || currentName;
     const newMobile = prompt('Mobile', currentMobile) || currentMobile;
@@ -448,6 +459,7 @@ async function editRow(rowObj){
     const newDate = prompt('Date', currentDate) || currentDate;
     const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;
     const newAddress = prompt('Address', currentAddress) || currentAddress;
+    const newRemark = prompt('Remark (optional)', currentRemark) || currentRemark;
 
     const patchObj = {};
     patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
@@ -456,6 +468,7 @@ async function editRow(rowObj){
     patchObj[ headerMap['date'] || 'date' ] = newDate;
     patchObj[ headerMap['status'] || 'status' ] = newStatus;
     patchObj[ headerMap['address'] || 'address' ] = newAddress;
+    patchObj[ headerMap['remark'] || 'remark' ] = newRemark;
 
     // PATCH by mobile if present, else by clientname
     const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';
