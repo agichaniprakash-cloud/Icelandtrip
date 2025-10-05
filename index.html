@@ -42,10 +42,8 @@
   .small { font-size:13px;color:var(--muted) }
   .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .stat{background:#f0fbf6;border:1px solid #e9f5ef;padding:12px;border-radius:8px;min-width:150px}
-  .qr-img{max-width:260px;border-radius:8px}
-  /* modal */
-  .modal-backdrop{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9999}
-  .modal{background:#fff;padding:18px;border-radius:12px;max-width:420px;width:90%}
+  .pager{display:flex;gap:8px;align-items:center;margin-top:12px}
+  .smallSelect{padding:8px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}
   @media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:640px} }
 </style>
 </head>
@@ -60,22 +58,23 @@
         <div style="color:var(--muted);font-size:14px">Pending payments dashboard (Live)</div>
       </div>
     </div>
+    <div style="margin-left:auto;text-align:right;color:var(--muted);font-size:13px">
+      UPI ID: <strong>perfectdigital@axl</strong>
+    </div>
   </header>
 
   <div class="card">
     <div class="controls">
       <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
-      <select id="refreshSel" title="Auto refresh">
+      <select id="refreshSel" class="smallSelect" title="Auto refresh">
         <option value="0">No Auto-refresh</option>
-        <option value="15">Refresh every 15s</option>
-        <option value="30">Refresh every 30s</option>
-        <option value="60" selected>Refresh every 60s</option>
+        <option value="15">Every 15s</option>
+        <option value="30">Every 30s</option>
+        <option value="60" selected>Every 60s</option>
       </select>
       <button id="pendingToggle" class="btn ghost">Pending only</button>
       <button id="reloadBtn" class="btn">Reload now</button>
-      <div style="margin-left:auto" class="small">
-        <button id="showQRGlobal" class="actionBtn">QR & UPI</button>
-      </div>
+      <div style="margin-left:auto" class="small">Site: <a href="https://agichaniprakash-cloud.github.io/PerfectDigital/" target="_blank" rel="noopener" style="color:var(--green)">PerfectDigital</a></div>
     </div>
 
     <div class="stats">
@@ -93,7 +92,7 @@
 
     <div style="margin-top:12px; display:flex; gap:12px; align-items:center;">
       <label>Show per page:</label>
-      <select id="perPage">
+      <select id="perPage" class="smallSelect">
         <option>10</option>
         <option selected>20</option>
         <option>50</option>
@@ -143,23 +142,6 @@
 
 </div>
 
-<!-- QR Modal -->
-<div id="modalBackdrop" class="modal-backdrop">
-  <div class="modal" role="dialog" aria-modal="true">
-    <h3>Pay via UPI</h3>
-    <img id="qrImg" class="qr-img" src="" alt="QR code" />
-    <div style="margin-top:12px">
-      <div><strong>UPI ID:</strong> <span id="upiText">perfectdigital@axl</span>
-        <button id="copyUpi" class="actionBtn" style="margin-left:8px">Copy</button>
-      </div>
-      <div style="margin-top:8px" class="small">Share this QR or your UPI ID with the client to accept payment.</div>
-    </div>
-    <div style="text-align:right;margin-top:12px">
-      <button id="closeModal" class="actionBtn">Close</button>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ====== CONFIG ====== */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // your SheetDB API
@@ -168,7 +150,7 @@ const UPI_ID = 'perfectdigital@axl';
 const SITE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/';
 /* ==================== */
 
-// canonical fields expected
+/* canonical fields expected */
 const canonical = ["clientname","mobile","amount","date","status","address"];
 
 let headerMap = {};  // canonical -> actual sheet key
@@ -183,25 +165,38 @@ function norm(s){
   return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');
 }
 
-/* Format phone for wa.me
+/* Format phone for wa.me:
    - Remove non-digits
-   - If length==10 -> prepend 91
-   - If already has leading country (e.g., 919...) keep
+   - Strip leading zeros
+   - If 10 digits -> prepend 91 (India)
+   - If >=11 digits and starts with country code, keep as-is
 */
-function formatPhoneForWhatsApp(raw){
-  if(!raw) return '';
-  const digits = (''+raw).replace(/\D+/g,'');
-  if(digits.length === 10) return '91' + digits;
-  if(digits.length > 10 && digits.startsWith('0')) return digits.replace(/^0+/, '');
-  return digits; // hope it's already in international form
+function normalizePhone(mob){
+  if(!mob) return '';
+  let digits = String(mob).replace(/\D/g,'');        // remove non-digits
+  digits = digits.replace(/^0+/, '');                // remove leading zeros
+  if(digits.length === 10) digits = '91' + digits;
+  return digits;
 }
 
-/* Build the WhatsApp message text */
+/* Build the WhatsApp message text exactly as requested */
 function buildWhatsAppText(row){
-  const name = row[ headerMap.clientname ] || row[ 'clientname' ] || '';
-  const amount = row[ headerMap.amount ] || row[ 'amount' ] || '';
-  const msg = `Hello ${name || 'there'}, your broadband payment of ₹${amount} is pending. Please pay via UPI ID: ${UPI_ID}. If you've already paid, please ignore. View: ${SITE_URL}`;
-  return msg;
+  const nameKey = headerMap['clientname'];
+  const amountKey = headerMap['amount'];
+  const name = (row[nameKey] || '').toString().trim() || 'there';
+  const amount = (row[amountKey] || '').toString().trim() || '';
+  // exact wording you requested; star markers for bold are included
+  const text =
+`Hello ${name},
+
+Your broadband payment of ₹${amount} is pending.
+
+Please pay via UPI ID: ${UPI_ID}
+If you've already paid, please ignore.
+
+UPI QR — *CLICK ON THE LINK TO OPEN:*
+${QR_IMAGE_URL}`;
+  return text;
 }
 
 /* Fetch from SheetDB */
@@ -246,14 +241,11 @@ function detectHeaders(data){
       for(const v of (variants[c]||[c])){
         if(lookup[norm(v)]){ found = lookup[norm(v)]; break; }
       }
-      // fallback: try exact canonical
       if(!found && lookup[norm(c)]) found = lookup[norm(c)];
-      // fallback to first key
       if(!found && keys.length) found = keys[0];
       headerMap[c] = found;
     });
   } else {
-    // empty sheet: map canonical to themselves so code can build payload
     canonical.forEach(c => headerMap[c] = c);
   }
 }
@@ -264,7 +256,6 @@ function renderTable(){
   const tb = document.getElementById('tableBody');
   th.innerHTML=''; tb.innerHTML='';
 
-  // HEAD titles order
   const titles = {
     clientname:'Client Name', mobile:'Mobile', amount:'Amount (₹)',
     date:'Date', status:'Status', address:'Address'
@@ -276,28 +267,35 @@ function renderTable(){
     thCell.textContent = titles[k];
     trHead.appendChild(thCell);
   });
-  // actions header
   const thActions = document.createElement('th'); thActions.textContent = 'Actions';
   trHead.appendChild(thActions);
   th.appendChild(trHead);
 
-  // filter & search
   const search = document.getElementById('searchBox').value.trim().toLowerCase();
 
-  // paging slice
-  const filtered = lastData.filter(r=>{
-    const joined = Object.values(r).join(' ').toLowerCase();
-    if(search && !joined.includes(search)) return false;
+  const filtered = (lastData||[]).filter(row=>{
     if(filterPending){
-      const stat = String(r[ headerMap.status ] || r[ headerMap.status ] || '').toLowerCase();
-      return stat.includes('pending');
+      const s = String(row[ headerMap.status ] || '').toLowerCase();
+      if(!s.includes('pending')) return false;
+    }
+    if(search){
+      const hay = Object.values(row).join(' ').toLowerCase();
+      if(!hay.includes(search)) return false;
     }
     return true;
   });
 
-  const total = filtered.length;
+  perPage = Number(document.getElementById('perPage').value || 20);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  if(currentPage > totalPages) currentPage = totalPages;
   const start = (currentPage-1)*perPage;
-  const pageItems = filtered.slice(start, start+perPage);
+  const pageItems = filtered.slice(start, start + perPage);
+
+  if(pageItems.length === 0){
+    tb.innerHTML = '<tr><td colspan="8" style="color:var(--muted);padding:14px">No clients to show.</td></tr>';
+    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+    return;
+  }
 
   pageItems.forEach(row=>{
     const tr = document.createElement('tr');
@@ -308,49 +306,42 @@ function renderTable(){
       tr.appendChild(td);
     });
 
-    // Actions cell: WhatsApp + Show QR + Edit
     const tdActions = document.createElement('td');
 
-    // WhatsApp button
+    // WhatsApp send button
     const waBtn = document.createElement('button');
     waBtn.className = 'actionBtn';
     waBtn.textContent = 'Send WhatsApp';
     waBtn.addEventListener('click', () => {
-      const rawPhone = row[ headerMap.mobile ] || '';
-      const phone = formatPhoneForWhatsApp(rawPhone);
-      if(!phone){ alert('Phone number missing or invalid'); return; }
+      const phoneRaw = row[ headerMap.mobile ] || '';
+      const phone = normalizePhone(phoneRaw);
       const text = buildWhatsAppText(row);
-      // include QR link so user can click from WhatsApp if desired
-      const finalText = text + ' (UPI QR: ' + QR_IMAGE_URL + ')';
-      const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(finalText);
-      window.open(url, '_blank');
+      // prefer wa.me when we have a likely valid phone (>=11 digits incl country code)
+      if(phone && phone.length >= 11){
+        const waUrl = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(text);
+        window.open(waUrl, '_blank');
+      } else {
+        // fallback: open web.whatsapp with message only (recipient must be chosen manually)
+        const waUrl = 'https://web.whatsapp.com/send?text=' + encodeURIComponent(text);
+        window.open(waUrl, '_blank');
+      }
     });
     tdActions.appendChild(waBtn);
 
-    // Show QR button
-    const qrBtn = document.createElement('button');
-    qrBtn.className = 'actionBtn';
-    qrBtn.style.marginLeft = '8px';
-    qrBtn.textContent = 'Show QR';
-    qrBtn.addEventListener('click', () => openQrModal());
-    tdActions.appendChild(qrBtn);
-
-    // Edit button (prefill form so you can modify then press Add -> creates new row)
+    // Edit button - fills the form so you can update and re-add (or later we can implement PATCH)
     const editBtn = document.createElement('button');
     editBtn.className = 'actionBtn';
     editBtn.style.marginLeft = '8px';
     editBtn.textContent = 'Edit';
     editBtn.addEventListener('click', () => {
-      // prefill add form with this row's values so you can edit and re-add/update as desired
       document.getElementById('f_name').value = row[ headerMap.clientname ] || '';
       document.getElementById('f_mobile').value = row[ headerMap.mobile ] || '';
       document.getElementById('f_amount').value = row[ headerMap.amount ] || '';
       document.getElementById('f_date').value = row[ headerMap.date ] || '';
       document.getElementById('f_status').value = row[ headerMap.status ] || 'pending';
       document.getElementById('f_address').value = row[ headerMap.address ] || '';
-      // focus
       window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
-      document.getElementById('msg').textContent = 'Edit mode: change values and press Add to append (or we can implement server-side update later).';
+      document.getElementById('msg').textContent = 'Edit mode: change values and press Add to append (or we can add server-side update later).';
     });
     tdActions.appendChild(editBtn);
 
@@ -358,45 +349,22 @@ function renderTable(){
     tb.appendChild(tr);
   });
 
-  // page info
-  const pageCount = Math.max(1, Math.ceil( (filtered.length||0) / perPage ));
-  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${pageCount}`;
+  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
 }
 
-/* Update summary stats */
+/* Update stats */
 function updateStats(){
   const total = lastData.length || 0;
-  const pendingRows = lastData.filter(r => {
-    const s = String(r[ headerMap.status ] || '').toLowerCase();
-    return s.includes('pending');
-  });
+  const pendingRows = lastData.filter(r => String(r[ headerMap.status ] || '').toLowerCase().includes('pending'));
   const pendingCount = pendingRows.length;
   const pendingAmount = pendingRows.reduce((sum, r) => {
     const amt = parseFloat( String(r[ headerMap.amount ] || '0' ).replace(/[^\d.\-]/g,'') ) || 0;
     return sum + amt;
   }, 0);
-  document.getElementById('statTotal').textContent = total || '—';
-  document.getElementById('statPending').textContent = pendingCount || '—';
-  document.getElementById('statPendingAmt').textContent = pendingAmount ? '₹' + pendingAmount.toFixed(0) : '—';
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPending').textContent = pendingCount;
+  document.getElementById('statPendingAmt').textContent = pendingAmount ? '₹' + pendingAmount.toFixed(0) : '₹0';
 }
-
-/* Open QR modal */
-function openQrModal(){
-  document.getElementById('qrImg').src = QR_IMAGE_URL;
-  document.getElementById('upiText').textContent = UPI_ID;
-  document.getElementById('modalBackdrop').style.display = 'flex';
-}
-
-/* Close QR modal */
-document.getElementById('closeModal').addEventListener('click', ()=> {
-  document.getElementById('modalBackdrop').style.display = 'none';
-});
-document.getElementById('modalBackdrop').addEventListener('click',(e)=>{
-  if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display = 'none';
-});
-document.getElementById('copyUpi').addEventListener('click', () => {
-  navigator.clipboard.writeText(UPI_ID).then(()=> alert('UPI copied'));
-});
 
 /* Add new row */
 document.getElementById('addBtn').addEventListener('click', async () => {
@@ -409,24 +377,21 @@ document.getElementById('addBtn').addEventListener('click', async () => {
 
   if(!name && !mobile){ alert('Please provide at least name or mobile'); return; }
 
-  // ensure headerMap exists
   if(!Object.keys(headerMap).length) await fetchData();
 
   const payloadObj = {};
-  payloadObj[ headerMap.clientname || 'clientname' ] = name || '';
-  payloadObj[ headerMap.mobile || 'mobile' ] = mobile || '';
-  payloadObj[ headerMap.amount || 'amount' ] = amount || '';
-  payloadObj[ headerMap.date || 'date' ] = date || '';
-  payloadObj[ headerMap.status || 'status' ] = status || '';
-  payloadObj[ headerMap.address || 'address' ] = address || '';
-
-  const body = { data: [ payloadObj ] };
+  payloadObj[ headerMap['clientname'] || 'clientname' ] = name || '';
+  payloadObj[ headerMap['mobile'] || 'mobile' ] = mobile || '';
+  payloadObj[ headerMap['amount'] || 'amount' ] = amount || '';
+  payloadObj[ headerMap['date'] || 'date' ] = date || '';
+  payloadObj[ headerMap['status'] || 'status' ] = status || '';
+  payloadObj[ headerMap['address'] || 'address' ] = address || '';
 
   try{
     const res = await fetch(SHEETDB_API, {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify({ data: [ payloadObj ] })
     });
     const j = await res.json();
     if(!res.ok){
@@ -443,32 +408,16 @@ document.getElementById('addBtn').addEventListener('click', async () => {
   }
 });
 
-/* misc controls */
-document.getElementById('reloadBtn').addEventListener('click', ()=> { document.getElementById('msg').textContent = 'Reloading…'; fetchData().then(()=> document.getElementById('msg').textContent = ''); });
-document.getElementById('pendingToggle').addEventListener('click',(e)=>{
-  filterPending = !filterPending;
-  e.target.classList.toggle('btn', filterPending);
-  e.target.classList.toggle('ghost', !filterPending);
-  e.target.textContent = filterPending ? 'Pending only' : 'Pending only';
-  renderTable();
-});
-document.getElementById('searchBox').addEventListener('input', ()=> { currentPage = 1; renderTable(); });
+/* UI controls wiring */
+document.getElementById('reloadBtn').addEventListener('click', ()=>{ document.getElementById('msg').textContent = 'Reloading…'; fetchData().then(()=>document.getElementById('msg').textContent=''); });
+document.getElementById('pendingToggle').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
+document.getElementById('searchBox').addEventListener('input', ()=>{ currentPage = 1; renderTable(); });
 
-document.getElementById('perPage').addEventListener('change', (e)=>{
-  perPage = Number(e.target.value);
-  currentPage = 1;
-  renderTable();
-});
-document.getElementById('nextPage').addEventListener('click', ()=>{
-  currentPage++;
-  renderTable();
-});
-document.getElementById('prevPage').addEventListener('click', ()=>{
-  if(currentPage>1) currentPage--;
-  renderTable();
-});
+document.getElementById('perPage').addEventListener('change', ()=>{ perPage = Number(document.getElementById('perPage').value); currentPage = 1; renderTable(); });
+document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; renderTable(); });
+document.getElementById('prevPage').addEventListener('click', ()=>{ if(currentPage>1) currentPage--; renderTable(); });
 
-document.getElementById('fillTest').addEventListener('click', ()=>{
+document.getElementById('fillTest').addEventListener('click', ()=> {
   document.getElementById('f_name').value = 'Test Client';
   document.getElementById('f_mobile').value = '9810976377';
   document.getElementById('f_amount').value = '100';
@@ -477,20 +426,16 @@ document.getElementById('fillTest').addEventListener('click', ()=>{
   document.getElementById('f_address').value = 'Wazirpur';
 });
 
-/* auto-refresh control */
+/* Auto-refresh selector */
 document.getElementById('refreshSel').addEventListener('change', (e)=> {
   const v = Number(e.target.value);
   if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; }
   if(v>0) refreshTimer = setInterval(fetchData, v*1000);
 });
 
-/* global QR button */
-document.getElementById('showQRGlobal').addEventListener('click', openQrModal);
-
-/* initial load */
+/* Initial load */
 fetchData();
 
-/* END */
 </script>
 </body>
 </html>
