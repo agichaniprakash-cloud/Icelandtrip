@@ -3,66 +3,79 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pending Payments — Perfect Digital Network (CodeX5 Fixed)</title>
+<title>Pending Payments — Perfect Digital Network</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{--green:#138a55;--accent:#e67e22;--muted:#6b6f72;--card:#ffffff;--bg:#f6f7f8;--radius:10px}
+  :root{
+    --green:#138a55;
+    --accent:#e67e22;
+    --muted:#6b6f72;
+    --card:#ffffff;
+    --bg:#f6f7f8;
+    --radius:10px;
+  }
   *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
-  body{margin:0;background:var(--bg);color:#1f2933;padding:20px}
+  body{margin:0;background:var(--bg);color:#1f2933;padding:20px;}
   .wrap{max-width:1100px;margin:0 auto}
   header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
-  .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(180deg,#ecf9f1,#e9f5ef);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green)}
-  h1{margin:0;font-size:28px}
-  .card{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06);margin-bottom:18px}
+  header h1{margin:0;font-size:28px}
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand .logo { width:56px;height:56px;border-radius:10px;background:linear-gradient(180deg,#ecf9f1,#e9f5ef); display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green); }
+  .card{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06); margin-bottom:18px}
   .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
   .controls input[type=search]{width:100%;max-width:640px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
   .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
   .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
+  .btn.orange{background:var(--accent)}
   .tableWrap{overflow-x:auto;margin-top:12px}
-  table{border-collapse:collapse;width:100%;min-width:900px}
-  thead th{background:var(--green);color:#fff;padding:14px 12px;text-align:left}
-  tbody td{padding:12px 10px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
+  table{border-collapse:collapse;width:100%;min-width:800px}
+  thead th{background:var(--green);color:#fff;padding:16px 14px;text-align:left}
+  tbody td{padding:16px 14px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
   tbody tr:nth-child(even) td{background:#fafafa}
   .actionBtn{border-radius:8px;border:1px solid #e6e9ea;padding:6px 10px;background:#fff;color:var(--muted);cursor:pointer}
-  .waBtn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer}
+  .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #eee;color:var(--muted)}
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .formRow input,.formRow select{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
   .formRow .row{display:flex;gap:10px}
   .formRow .row input{flex:1}
-  .small{font-size:13px;color:var(--muted)}
+  .notice{font-size:13px;color:var(--muted);margin-top:12px}
+  .small { font-size:13px;color:var(--muted) }
   .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .stat{background:#f0fbf6;border:1px solid #e9f5ef;padding:12px;border-radius:8px;min-width:150px}
-  .smallSelect{padding:8px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}
+  .qr-img{max-width:260px;border-radius:8px}
+  /* modal */
+  .modal-backdrop{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9999}
+  .modal{background:#fff;padding:18px;border-radius:12px;max-width:420px;width:90%}
   @media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:640px} }
 </style>
 </head>
 <body>
 <div class="wrap">
+
   <header>
     <div class="brand">
       <div class="logo">PDN</div>
       <div>
         <h1>PERFECT DIGITAL NETWORK</h1>
-        <div class="small" style="color:var(--muted)">Pending payments dashboard (Live)</div>
+        <div style="color:var(--muted);font-size:14px">Pending payments dashboard (Live)</div>
       </div>
-    </div>
-    <div style="margin-left:auto;text-align:right;color:var(--muted);font-size:13px">
-      UPI ID: <strong>perfectdigital@axl</strong>
     </div>
   </header>
 
   <div class="card">
     <div class="controls">
       <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
-      <select id="refreshSel" class="smallSelect" title="Auto refresh">
+      <select id="refreshSel" title="Auto refresh">
         <option value="0">No Auto-refresh</option>
-        <option value="15">Every 15s</option>
-        <option value="30">Every 30s</option>
-        <option value="60" selected>Every 60s</option>
+        <option value="15">Refresh every 15s</option>
+        <option value="30">Refresh every 30s</option>
+        <option value="60" selected>Refresh every 60s</option>
       </select>
       <button id="pendingToggle" class="btn ghost">Pending only</button>
       <button id="reloadBtn" class="btn">Reload now</button>
+      <div style="margin-left:auto" class="small">
+        <button id="showQRGlobal" class="actionBtn">QR & UPI</button>
+      </div>
     </div>
 
     <div class="stats">
@@ -78,15 +91,20 @@
       </table>
     </div>
 
-    <div style="margin-top:12px;display:flex;gap:12px;align-items:center;">
+    <div style="margin-top:12px; display:flex; gap:12px; align-items:center;">
       <label>Show per page:</label>
-      <select id="perPage" class="smallSelect"><option>10</option><option selected>20</option><option>50</option></select>
+      <select id="perPage">
+        <option>10</option>
+        <option selected>20</option>
+        <option>50</option>
+      </select>
       <div style="margin-left:auto">
         <button id="prevPage" class="actionBtn">Prev</button>
         <button id="nextPage" class="actionBtn">Next</button>
-        <span id="pageInfo" class="small" style="margin-left:10px">Page 1</span>
+        <span id="pageInfo" style="margin-left:10px" class="small">Page 1</span>
       </div>
     </div>
+
   </div>
 
   <div class="card">
@@ -98,62 +116,95 @@
       </div>
       <div class="row">
         <input id="f_amount" placeholder="Amount (₹)" />
-        <input id="f_date" placeholder="Date DD/MM/YYYY" />
+        <input id="f_date" placeholder="Date DD/MM/YYYY or MM/DD/YYYY" />
       </div>
       <div class="row">
-        <select id="f_status"><option>pending</option><option>paid</option></select>
+        <select id="f_status">
+          <option>pending</option>
+          <option>paid</option>
+        </select>
         <select id="f_address">
           <option value="">-- choose address --</option>
-          <option>Wazirpur</option><option>Shas/Trinagar</option>
-          <option>Ashok Vihar</option><option>Gulabi Bagh</option>
+          <option>Wazirpur</option>
+          <option>Shas/Trinagar</option>
+          <option>Ashok Vihar</option>
+          <option>Gulabi Bagh</option>
         </select>
       </div>
 
-      <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
+      <div style="display:flex;gap:12px;align-items:center;margin-top:6px">
         <button id="addBtn" class="btn">Add client</button>
+        <button id="fillTest" class="actionBtn">Fill sample</button>
         <div id="msg" style="color:var(--muted)"></div>
       </div>
-      <div class="small" style="margin-top:8px">Tip: edit safely using the Edit button (it updates the sheet directly).</div>
+      <div class="notice">Tip: to update the sheet directly, edit your Google Sheet and publish to the web (CSV) — or add via this form above.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- QR Modal -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3>Pay via UPI</h3>
+    <img id="qrImg" class="qr-img" src="" alt="QR code" />
+    <div style="margin-top:12px">
+      <div><strong>UPI ID:</strong> <span id="upiText">perfectdigital@axl</span>
+        <button id="copyUpi" class="actionBtn" style="margin-left:8px">Copy</button>
+      </div>
+      <div style="margin-top:8px" class="small">Share this QR or your UPI ID with the client to accept payment.</div>
+    </div>
+    <div style="text-align:right;margin-top:12px">
+      <button id="closeModal" class="actionBtn">Close</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ===== CONFIG ===== */
+/* ====== CONFIG ====== */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // your SheetDB API
 const QR_IMAGE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/Screenshot_20251005_074910_PhonePe.jpg';
 const UPI_ID = 'perfectdigital@axl';
 const SITE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/';
-const canonical = ["clientname","mobile","amount","date","status","address"];
-/* ================ */
+/* ==================== */
 
-let headerMap = {};
+// canonical fields expected
+const canonical = ["clientname","mobile","amount","date","status","address"];
+
+let headerMap = {};  // canonical -> actual sheet key
 let lastData = [];
-let filterPending = false;
 let currentPage = 1;
-let perPage = 20;
+let perPage = Number(document.getElementById('perPage').value || 20);
+let filterPending = false;
 let refreshTimer = null;
 
-/* normalize header keys */
-function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');}
-
-/* phone normalization */
-function normalizePhone(mob){
-  if(!mob) return '';
-  let digits = String(mob).replace(/\D/g,'');
-  digits = digits.replace(/^0+/, '');
-  if(digits.length === 10) digits = '91' + digits;
-  return digits;
+/* Utility normalize */
+function norm(s){
+  return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');
 }
 
-/* build WhatsApp message */
+/* Format phone for wa.me
+   - Remove non-digits
+   - If length==10 -> prepend 91
+   - If already has leading country (e.g., 919...) keep
+*/
+function formatPhoneForWhatsApp(raw){
+  if(!raw) return '';
+  const digits = (''+raw).replace(/\D+/g,'');
+  if(digits.length === 10) return '91' + digits;
+  if(digits.length > 10 && digits.startsWith('0')) return digits.replace(/^0+/, '');
+  return digits; // hope it's already in international form
+}
+
+/* Build the WhatsApp message text */
 function buildWhatsAppText(row){
-  const name = row[ headerMap.clientname ] || row['clientname'] || 'there';
-  const amount = row[ headerMap.amount ] || row['amount'] || '';
-  return `Hello ${name},\n\nYour broadband payment of ₹${amount} is pending.\n\nPlease pay via UPI ID: ${UPI_ID}\nIf you've already paid, please ignore.\n\nUPI QR — *CLICK ON THE LINK TO OPEN:*\n${QR_IMAGE_URL}`;
+  const name = row[ headerMap.clientname ] || row[ 'clientname' ] || '';
+  const amount = row[ headerMap.amount ] || row[ 'amount' ] || '';
+  const msg = `Hello ${name || 'there'}, your broadband payment of ₹${amount} is pending. Please pay via UPI ID: ${UPI_ID}. If you've already paid, please ignore. View: ${SITE_URL}`;
+  return msg;
 }
 
-/* fetch data */
+/* Fetch from SheetDB */
 async function fetchData(){
   try{
     const res = await fetch(SHEETDB_API);
@@ -168,272 +219,278 @@ async function fetchData(){
     return lastData;
   }catch(err){
     console.error(err);
-    document.getElementById('msg').textContent = 'Error loading data — check API / SheetDB (see console).';
+    document.getElementById('msg').textContent = 'Error loading data — check API/SheetDB settings. See console.';
     document.getElementById('tableHead').innerHTML = '';
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" style="padding:14px;color:#b33">Error loading data — see console</td></tr>';
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" style="padding:20px;color:#b33">Error loading data — check API / SheetDB (see console)</td></tr>';
     return [];
   }
 }
 
-/* detect headers map */
+/* Detect headers: map canonical fields to actual sheet keys */
 function detectHeaders(data){
   headerMap = {};
   if(data && data.length){
     const keys = Object.keys(data[0]);
     const lookup = {};
-    keys.forEach(k=> lookup[norm(k)] = k);
+    keys.forEach(k => lookup[norm(k)] = k);
     const variants = {
-      clientname:['clientname','client','name','client_name'],
-      mobile:['mobile','phone','mobilenumber','mobile_number'],
+      clientname:['clientname','client','name','client_name','client name'],
+      mobile:['mobile','phone','phone_number','mobilephone','mobilenumber'],
       amount:['amount','amt','price'],
       date:['date','duedate','due_date'],
       status:['status','statu'],
       address:['address','area','location','addr']
     };
-    canonical.forEach(c=>{
+    canonical.forEach(c => {
       let found = null;
       for(const v of (variants[c]||[c])){
         if(lookup[norm(v)]){ found = lookup[norm(v)]; break; }
       }
+      // fallback: try exact canonical
       if(!found && lookup[norm(c)]) found = lookup[norm(c)];
+      // fallback to first key
       if(!found && keys.length) found = keys[0];
       headerMap[c] = found;
     });
   } else {
-    canonical.forEach(c=> headerMap[c] = c);
+    // empty sheet: map canonical to themselves so code can build payload
+    canonical.forEach(c => headerMap[c] = c);
   }
 }
 
-/* render table: WhatsApp button on extreme left, Edit on right with PATCH edit flow */
+/* Render table head & body */
 function renderTable(){
-  const th = document.getElementById('tableHead'), tb = document.getElementById('tableBody');
+  const th = document.getElementById('tableHead');
+  const tb = document.getElementById('tableBody');
   th.innerHTML=''; tb.innerHTML='';
 
-  // header row: empty (WA), fields, actions
-  const headerRow = document.createElement('tr');
-  headerRow.innerHTML = `<th></th>
-    <th>Client Name</th><th>Mobile</th><th>Amount (₹)</th><th>Date</th><th>Status</th><th>Address</th><th>Actions</th>`;
-  th.appendChild(headerRow);
+  // HEAD titles order
+  const titles = {
+    clientname:'Client Name', mobile:'Mobile', amount:'Amount (₹)',
+    date:'Date', status:'Status', address:'Address'
+  };
 
+  const trHead = document.createElement('tr');
+  Object.keys(titles).forEach(k=>{
+    const thCell = document.createElement('th');
+    thCell.textContent = titles[k];
+    trHead.appendChild(thCell);
+  });
+  // actions header
+  const thActions = document.createElement('th'); thActions.textContent = 'Actions';
+  trHead.appendChild(thActions);
+  th.appendChild(trHead);
+
+  // filter & search
   const search = document.getElementById('searchBox').value.trim().toLowerCase();
 
-  const filtered = (lastData||[]).filter(r=>{
+  // paging slice
+  const filtered = lastData.filter(r=>{
+    const joined = Object.values(r).join(' ').toLowerCase();
+    if(search && !joined.includes(search)) return false;
     if(filterPending){
-      const s = String(r[ headerMap.status ] || '').toLowerCase();
-      if(!s.includes('pending')) return false;
-    }
-    if(search){
-      const hay = Object.values(r).join(' ').toLowerCase();
-      if(!hay.includes(search)) return false;
+      const stat = String(r[ headerMap.status ] || r[ headerMap.status ] || '').toLowerCase();
+      return stat.includes('pending');
     }
     return true;
   });
 
-  perPage = Number(document.getElementById('perPage').value||20);
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
-  if(currentPage > totalPages) currentPage = totalPages;
-  const pageItems = filtered.slice((currentPage-1)*perPage, (currentPage-1)*perPage + perPage);
-
-  if(pageItems.length === 0){
-    tb.innerHTML = '<tr><td colspan="8" style="color:var(--muted);padding:12px">No clients to show.</td></tr>';
-    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-    return;
-  }
+  const total = filtered.length;
+  const start = (currentPage-1)*perPage;
+  const pageItems = filtered.slice(start, start+perPage);
 
   pageItems.forEach(row=>{
     const tr = document.createElement('tr');
-
-    // WhatsApp button (extreme left)
-    const tdWA = document.createElement('td');
-    const waBtn = document.createElement('button');
-    waBtn.className = 'waBtn';
-    waBtn.textContent = 'Send';
-    waBtn.title = 'Send payment message on WhatsApp';
-    waBtn.addEventListener('click', ()=>{
-      const raw = row[ headerMap.mobile ] || '';
-      const phone = normalizePhone(raw);
-      const text = buildWhatsAppText(row);
-      if(phone && phone.length >= 11){
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
-      } else {
-        window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-      }
-    });
-    tdWA.appendChild(waBtn);
-    tr.appendChild(tdWA);
-
-    // data cols
-    const keys = ['clientname','mobile','amount','date','status','address'];
-    keys.forEach(k=>{
+    Object.keys(titles).forEach(k=>{
       const td = document.createElement('td');
-      td.textContent = row[ headerMap[k] ] !== undefined ? row[ headerMap[k] ] : '';
+      const actual = headerMap[k];
+      td.textContent = (actual && row[actual] !== undefined) ? row[actual] : '';
       tr.appendChild(td);
     });
 
-    // actions (Edit on right). Edit updates the sheet (PATCH).
-    const tdAct = document.createElement('td');
+    // Actions cell: WhatsApp + Show QR + Edit
+    const tdActions = document.createElement('td');
 
+    // WhatsApp button
+    const waBtn = document.createElement('button');
+    waBtn.className = 'actionBtn';
+    waBtn.textContent = 'Send WhatsApp';
+    waBtn.addEventListener('click', () => {
+      const rawPhone = row[ headerMap.mobile ] || '';
+      const phone = formatPhoneForWhatsApp(rawPhone);
+      if(!phone){ alert('Phone number missing or invalid'); return; }
+      const text = buildWhatsAppText(row);
+      // include QR link so user can click from WhatsApp if desired
+      const finalText = text + ' (UPI QR: ' + QR_IMAGE_URL + ')';
+      const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(finalText);
+      window.open(url, '_blank');
+    });
+    tdActions.appendChild(waBtn);
+
+    // Show QR button
+    const qrBtn = document.createElement('button');
+    qrBtn.className = 'actionBtn';
+    qrBtn.style.marginLeft = '8px';
+    qrBtn.textContent = 'Show QR';
+    qrBtn.addEventListener('click', () => openQrModal());
+    tdActions.appendChild(qrBtn);
+
+    // Edit button (prefill form so you can modify then press Add -> creates new row)
     const editBtn = document.createElement('button');
     editBtn.className = 'actionBtn';
+    editBtn.style.marginLeft = '8px';
     editBtn.textContent = 'Edit';
-    editBtn.title = 'Edit this row (updates sheet)';
-    editBtn.addEventListener('click', ()=> openEditFlow(row));
-    tdAct.appendChild(editBtn);
+    editBtn.addEventListener('click', () => {
+      // prefill add form with this row's values so you can edit and re-add/update as desired
+      document.getElementById('f_name').value = row[ headerMap.clientname ] || '';
+      document.getElementById('f_mobile').value = row[ headerMap.mobile ] || '';
+      document.getElementById('f_amount').value = row[ headerMap.amount ] || '';
+      document.getElementById('f_date').value = row[ headerMap.date ] || '';
+      document.getElementById('f_status').value = row[ headerMap.status ] || 'pending';
+      document.getElementById('f_address').value = row[ headerMap.address ] || '';
+      // focus
+      window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
+      document.getElementById('msg').textContent = 'Edit mode: change values and press Add to append (or we can implement server-side update later).';
+    });
+    tdActions.appendChild(editBtn);
 
-    tr.appendChild(tdAct);
+    tr.appendChild(tdActions);
     tb.appendChild(tr);
   });
 
-  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+  // page info
+  const pageCount = Math.max(1, Math.ceil( (filtered.length||0) / perPage ));
+  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${pageCount}`;
 }
 
-/* openEditFlow: prompt-based edit then PATCH to SheetDB */
-function openEditFlow(row){
-  try {
-    // make a shallow copy
-    const copy = Object.assign({}, row);
-    const nameKey = headerMap.clientname;
-    const mobileKey = headerMap.mobile;
-    const amountKey = headerMap.amount;
-    const dateKey = headerMap.date;
-    const statusKey = headerMap.status;
-    const addressKey = headerMap.address;
-
-    const newName = prompt('Edit client name:', copy[nameKey] || '');
-    if(newName === null) return;
-    copy[nameKey] = newName;
-
-    const newMobile = prompt('Edit mobile:', copy[mobileKey] || '');
-    if(newMobile === null) return;
-    copy[mobileKey] = newMobile;
-
-    const newAmount = prompt('Edit amount (₹):', copy[amountKey] || '');
-    if(newAmount === null) return;
-    copy[amountKey] = newAmount;
-
-    const newDate = prompt('Edit date:', copy[dateKey] || '');
-    if(newDate === null) return;
-    copy[dateKey] = newDate;
-
-    const newStatus = prompt('Edit status (pending/paid/other):', copy[statusKey] || 'pending');
-    if(newStatus === null) return;
-    copy[statusKey] = newStatus;
-
-    const newAddr = prompt('Edit address:', copy[addressKey] || '');
-    if(newAddr === null) return;
-    copy[addressKey] = newAddr;
-
-    // prepare payload: only the fields we care about
-    const payload = {};
-    payload[ nameKey ] = copy[nameKey];
-    payload[ mobileKey ] = copy[mobileKey];
-    payload[ amountKey ] = copy[amountKey];
-    payload[ dateKey ] = copy[dateKey];
-    payload[ statusKey ] = copy[statusKey];
-    payload[ addressKey ] = copy[addressKey];
-
-    // find a row identifier
-    const idKey = Object.keys(row).find(k => /(^id$)|(_?rowid$)|(^_?row$)/i.test(k)) || null;
-
-    let url = SHEETDB_API;
-    let options = {
-      method: 'PATCH',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ data: [ payload ] })
-    };
-
-    if(idKey && row[idKey]){
-      // safe direct id-based PATCH (SheetDB supports /{id})
-      url = SHEETDB_API + '/' + encodeURIComponent(row[idKey]);
-    } else {
-      // fallback: search by mobile (assuming mobile is unique enough)
-      const mobileVal = encodeURIComponent(String(row[mobileKey] || ''));
-      if(!mobileVal){
-        alert('Cannot determine row id or mobile to update — edit cancelled.');
-        return;
-      }
-      url = SHEETDB_API + '/search?mobile=' + mobileVal;
-    }
-
-    // perform PATCH
-    fetch(url, options).then(async res=>{
-      const j = await res.json().catch(()=>null);
-      if(!res.ok){
-        console.error('Patch error:', res.status, j);
-        alert('Error updating row. Check console.');
-        return;
-      }
-      // success — reload
-      document.getElementById('msg').textContent = 'Updated — reloading...';
-      setTimeout(()=>fetchData().then(()=> document.getElementById('msg').textContent = ''), 400);
-    }).catch(err=>{
-      console.error(err);
-      alert('Network error updating row: '+err.message);
-    });
-
-  } catch(e){
-    console.error(e);
-    alert('Unexpected error in edit flow. See console.');
-  }
-}
-
-/* update stats */
+/* Update summary stats */
 function updateStats(){
   const total = lastData.length || 0;
-  const pendingRows = lastData.filter(r => String(r[ headerMap.status ] || '').toLowerCase().includes('pending'));
+  const pendingRows = lastData.filter(r => {
+    const s = String(r[ headerMap.status ] || '').toLowerCase();
+    return s.includes('pending');
+  });
   const pendingCount = pendingRows.length;
-  const pendingAmount = pendingRows.reduce((s,r)=>{
-    const v = parseFloat(String(r[ headerMap.amount ] || '0').replace(/[^0-9.\-]/g,'')) || 0;
-    return s + v;
+  const pendingAmount = pendingRows.reduce((sum, r) => {
+    const amt = parseFloat( String(r[ headerMap.amount ] || '0' ).replace(/[^\d.\-]/g,'') ) || 0;
+    return sum + amt;
   }, 0);
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statPending').textContent = pendingCount;
-  document.getElementById('statPendingAmt').textContent = pendingAmount ? '₹'+pendingAmount.toFixed(0) : '₹0';
+  document.getElementById('statTotal').textContent = total || '—';
+  document.getElementById('statPending').textContent = pendingCount || '—';
+  document.getElementById('statPendingAmt').textContent = pendingAmount ? '₹' + pendingAmount.toFixed(0) : '—';
 }
 
-/* add row (POST) */
-document.getElementById('addBtn').addEventListener('click', async ()=>{
+/* Open QR modal */
+function openQrModal(){
+  document.getElementById('qrImg').src = QR_IMAGE_URL;
+  document.getElementById('upiText').textContent = UPI_ID;
+  document.getElementById('modalBackdrop').style.display = 'flex';
+}
+
+/* Close QR modal */
+document.getElementById('closeModal').addEventListener('click', ()=> {
+  document.getElementById('modalBackdrop').style.display = 'none';
+});
+document.getElementById('modalBackdrop').addEventListener('click',(e)=>{
+  if(e.target === document.getElementById('modalBackdrop')) document.getElementById('modalBackdrop').style.display = 'none';
+});
+document.getElementById('copyUpi').addEventListener('click', () => {
+  navigator.clipboard.writeText(UPI_ID).then(()=> alert('UPI copied'));
+});
+
+/* Add new row */
+document.getElementById('addBtn').addEventListener('click', async () => {
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
   const amount = document.getElementById('f_amount').value.trim();
   const date = document.getElementById('f_date').value.trim();
   const status = document.getElementById('f_status').value.trim();
   const address = document.getElementById('f_address').value.trim();
+
   if(!name && !mobile){ alert('Please provide at least name or mobile'); return; }
+
+  // ensure headerMap exists
   if(!Object.keys(headerMap).length) await fetchData();
-  const obj = {};
-  obj[ headerMap.clientname || 'clientname' ] = name || '';
-  obj[ headerMap.mobile || 'mobile' ] = mobile || '';
-  obj[ headerMap.amount || 'amount' ] = amount || '';
-  obj[ headerMap.date || 'date' ] = date || '';
-  obj[ headerMap.status || 'status' ] = status || '';
-  obj[ headerMap.address || 'address' ] = address || '';
+
+  const payloadObj = {};
+  payloadObj[ headerMap.clientname || 'clientname' ] = name || '';
+  payloadObj[ headerMap.mobile || 'mobile' ] = mobile || '';
+  payloadObj[ headerMap.amount || 'amount' ] = amount || '';
+  payloadObj[ headerMap.date || 'date' ] = date || '';
+  payloadObj[ headerMap.status || 'status' ] = status || '';
+  payloadObj[ headerMap.address || 'address' ] = address || '';
+
+  const body = { data: [ payloadObj ] };
+
   try{
     const res = await fetch(SHEETDB_API, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ data: [ obj ] })
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
     });
-    const j = await res.json().catch(()=>null);
-    if(!res.ok){ console.error('Add error', j); alert('Error adding row'); return; }
+    const j = await res.json();
+    if(!res.ok){
+      console.error('SheetDB error:', j);
+      alert('Error adding row: check console');
+      return;
+    }
     document.getElementById('msg').textContent = 'Added — reloading...';
     ['f_name','f_mobile','f_amount','f_date','f_address'].forEach(id=>document.getElementById(id).value='');
-    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),500);
-  }catch(err){ console.error(err); alert('Network error: '+err.message); }
+    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''), 400);
+  }catch(err){
+    console.error(err);
+    alert('Network error: '+err.message);
+  }
 });
 
-/* UI wiring */
-document.getElementById('reloadBtn').addEventListener('click', ()=> { document.getElementById('msg').textContent='Reloading…'; fetchData().then(()=>document.getElementById('msg').textContent=''); });
-document.getElementById('pendingToggle').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
-document.getElementById('searchBox').addEventListener('input', ()=>{ currentPage=1; renderTable(); });
-document.getElementById('perPage').addEventListener('change', ()=>{ perPage = Number(document.getElementById('perPage').value); currentPage=1; renderTable(); });
-document.getElementById('nextPage').addEventListener('click', ()=>{ currentPage++; renderTable(); });
-document.getElementById('prevPage').addEventListener('click', ()=>{ if(currentPage>1) currentPage--; renderTable(); });
-document.getElementById('refreshSel').addEventListener('change', (e)=>{ const v=Number(e.target.value); if(refreshTimer) clearInterval(refreshTimer); if(v>0) refreshTimer = setInterval(fetchData, v*1000); });
+/* misc controls */
+document.getElementById('reloadBtn').addEventListener('click', ()=> { document.getElementById('msg').textContent = 'Reloading…'; fetchData().then(()=> document.getElementById('msg').textContent = ''); });
+document.getElementById('pendingToggle').addEventListener('click',(e)=>{
+  filterPending = !filterPending;
+  e.target.classList.toggle('btn', filterPending);
+  e.target.classList.toggle('ghost', !filterPending);
+  e.target.textContent = filterPending ? 'Pending only' : 'Pending only';
+  renderTable();
+});
+document.getElementById('searchBox').addEventListener('input', ()=> { currentPage = 1; renderTable(); });
+
+document.getElementById('perPage').addEventListener('change', (e)=>{
+  perPage = Number(e.target.value);
+  currentPage = 1;
+  renderTable();
+});
+document.getElementById('nextPage').addEventListener('click', ()=>{
+  currentPage++;
+  renderTable();
+});
+document.getElementById('prevPage').addEventListener('click', ()=>{
+  if(currentPage>1) currentPage--;
+  renderTable();
+});
+
+document.getElementById('fillTest').addEventListener('click', ()=>{
+  document.getElementById('f_name').value = 'Test Client';
+  document.getElementById('f_mobile').value = '9810976377';
+  document.getElementById('f_amount').value = '100';
+  document.getElementById('f_date').value = '10/1/2025';
+  document.getElementById('f_status').value = 'pending';
+  document.getElementById('f_address').value = 'Wazirpur';
+});
+
+/* auto-refresh control */
+document.getElementById('refreshSel').addEventListener('change', (e)=> {
+  const v = Number(e.target.value);
+  if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; }
+  if(v>0) refreshTimer = setInterval(fetchData, v*1000);
+});
+
+/* global QR button */
+document.getElementById('showQRGlobal').addEventListener('click', openQrModal);
 
 /* initial load */
 fetchData();
 
+/* END */
 </script>
 </body>
 </html>
