@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK – Pending Payments</title>
+<title>PERFECT DIGITAL NETWORK – Pending Payments (Edit/Delete)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -12,29 +12,35 @@
     --card:#ffffff;
     --bg:#f6f7f8;
     --radius:10px;
+    --danger:#cc3b3b;
   }
   *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
-  body{margin:0;background:var(--bg);color:#1f2933;padding:28px;}
+  body{margin:0;background:var(--bg);color:#1f2933;padding:24px;}
   .wrap{max-width:980px;margin:0 auto}
-  header{display:flex;align-items:center;justify-content:center;margin-bottom:22px}
-  header h1{margin:0;font-size:30px;font-weight:700;color:var(--green)}
-  .card{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
-  .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-  .controls input[type=search]{width:100%;max-width:540px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-  .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
-  .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
+  header{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  header h1{margin:0;font-size:28px;color:var(--green)}
+  .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .controls input[type=search]{width:100%;max-width:480px;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
+  .btn{background:var(--green);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}
+  .btn.warn{background:var(--danger);color:#fff}
   .tableWrap{overflow-x:auto;margin-top:12px}
   table{border-collapse:collapse;width:100%;min-width:700px}
-  thead th{background:var(--green);color:#fff;padding:18px 14px;text-align:left}
-  tbody td{padding:18px 14px;border-bottom:1px solid #f1f2f3}
-  .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .formRow input,.formRow select,.formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  thead th{background:var(--green);color:#fff;padding:12px 10px;text-align:left}
+  tbody td{padding:12px 10px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
+  .status-paid{background:#d1fae5;color:#065f46;padding:4px 8px;border-radius:8px;font-weight:600}
+  .status-pending{background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:8px;font-weight:600}
+  .formRow{display:flex;flex-direction:column;gap:10px;margin-top:14px}
   .formRow .row{display:flex;gap:10px;flex-wrap:wrap}
-  .formRow .row input{flex:1}
-  .notice{font-size:13px;color:var(--muted);margin-top:12px}
-  @media(min-width:900px){
-    .formRow .row{flex-direction:row}
-    .controls input[type=search]{width:540px}
+  .formRow input,.formRow select{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
+  .actions button{margin-right:6px;padding:6px 8px;border-radius:6px;cursor:pointer;border:0}
+  .actions .edit{background:#fff8ef;border:1px solid #f5e6d6;color:#8a5b00}
+  .actions .del{background:#fff6f6;border:1px solid #ffecec;color:var(--danger)}
+  .muted{color:var(--muted)}
+  @media (max-width:780px){
+    .formRow .row{flex-direction:column}
+    .controls input[type=search]{max-width:100%}
   }
 </style>
 </head>
@@ -53,6 +59,7 @@
       </select>
       <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>
       <button id="reloadBtn" class="btn">Reload now</button>
+      <div style="margin-left:auto" id="msg" class="muted"></div>
     </div>
 
     <div class="tableWrap">
@@ -62,7 +69,7 @@
       </table>
     </div>
 
-    <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
+    <hr style="margin:14px 0;border:none;border-top:1px solid #eee" />
 
     <h2>Add New Pending Client</h2>
     <div class="formRow">
@@ -78,10 +85,7 @@
         <select id="f_status">
           <option>pending</option>
           <option>paid</option>
-          <option>other</option>
         </select>
-
-        <!-- Address dropdown as requested -->
         <select id="f_address">
           <option value="">-- Select Area --</option>
           <option>Wazirpur</option>
@@ -90,42 +94,36 @@
           <option>Gulabi Bagh</option>
         </select>
       </div>
-      <div style="display:flex;gap:12px;align-items:center">
+      <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
         <button id="addBtn" class="btn">Add</button>
-        <div id="msg" style="color:var(--muted)"></div>
+        <div id="addMsg" class="muted"></div>
       </div>
-      <div class="notice">Tip: choose area from the dropdown before adding new client.</div>
     </div>
   </div>
 </div>
 
 <script>
-/* Only change from Code X1: remark removed, address added (dropdown).
-   Safe header detection: prefer 'address' column, fall back to reading from 'remark' (so old data still visible).
-   When posting, will write to 'address' (creating the column if not present).
-*/
-
+/* ----- CONFIG - keep your SheetDB API ----- */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 
-// canonical now includes address
-const CANONICAL = ['clientname','mobile','amount','date','status','address'];
+/* canonical columns */
+const CANON = ['clientname','mobile','amount','date','status','address'];
 
-function normKey(s){
-  return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
-}
+/* normalize helper */
+function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
 
+/* state */
 let rawRows = [];
-let headerMap = {};
+let headerMap = {}; // canonical -> actual sheet key or canonical if missing
 let refreshTimer = null;
 let filterPending = false;
 
-// detect headers safely (prefer address; if address missing but remark exists, map address -> remark key)
+/* ---------- Header detection - safe ---------- */
 function detectHeaders(rows){
   headerMap = {};
   if(Array.isArray(rows) && rows.length){
     const keys = Object.keys(rows[0]);
-    const lookup = {};
-    keys.forEach(k => lookup[normKey(k)] = k);
+    const lookup = {}; keys.forEach(k => lookup[normKey(k)] = k);
 
     const variants = {
       clientname:['clientname','client','name','client_name','client name'],
@@ -133,113 +131,111 @@ function detectHeaders(rows){
       amount:['amount','amt','price'],
       date:['date','duedate','due_date','billingdate'],
       status:['status','paymentstatus','st','payment_status'],
-      address:['address','addr','location'] // prefer address variants
+      address:['address','addr','location','area']
     };
 
-    CANONICAL.forEach(c => {
+    CANON.forEach(c => {
       if(lookup[normKey(c)]){ headerMap[c] = lookup[normKey(c)]; return; }
       let found = null;
-      const vs = variants[c] || [c];
-      for(const v of vs){
-        if(lookup[normKey(v)]){ found = lookup[normKey(v)]; break; }
-      }
+      (variants[c]||[c]).forEach(v => { if(!found && lookup[normKey(v)]) found = lookup[normKey(v)]; });
       if(found){ headerMap[c] = found; return; }
 
-      // special fallback for address: if sheet has 'remark' or 'remarks', map address -> that key so existing data shows
+      // special fallback: if address not present but remark/remarks exists, map address->that key for display purposes
       if(c === 'address'){
-        if(lookup['remark']) { headerMap[c] = lookup['remark']; return; }
-        if(lookup['remarks']) { headerMap[c] = lookup['remarks']; return; }
+        if(lookup['remark']){ headerMap[c] = lookup['remark']; return; }
+        if(lookup['remarks']){ headerMap[c] = lookup['remarks']; return; }
       }
 
-      // safe default: canonical name (so POST will create this column instead of overwriting existing ones)
+      // safe fallback: map to canonical (so POST will create that column instead of overwriting existing)
       headerMap[c] = c;
     });
   } else {
-    // no rows yet
-    CANONICAL.forEach(c => headerMap[c] = c);
+    CANON.forEach(c => headerMap[c] = c);
   }
 }
 
-// safe get cell using headerMap with small fallbacks
+/* safe get cell */
 function getCell(row, canonical){
   if(!row) return '';
   const ak = headerMap[canonical];
   if(ak && row.hasOwnProperty(ak)) return row[ak];
-  // fallback list per key
-  const fallbacks = {
-    clientname: ['Client Name','clientname','name'],
-    mobile: ['mobile','Mobile','phone'],
-    amount: ['amount','Amount','amt'],
-    date: ['date','Date'],
-    status: ['status','Status'],
-    address: ['address','Address','remark','Remark','remarks']
+  // fallbacks
+  const fallbackKeys = {
+    clientname:['Client Name','clientname','name'],
+    mobile:['mobile','Mobile','phone'],
+    amount:['amount','Amount','amt'],
+    date:['date','Date'],
+    status:['status','Status'],
+    address:['address','Address','remark','Remark','remarks']
   };
-  const alts = fallbacks[canonical] || [];
-  for(const a of alts){
-    if(row.hasOwnProperty(a)) return row[a];
+  for(const k of (fallbackKeys[canonical]||[])){
+    if(row.hasOwnProperty(k)) return row[k];
   }
   return '';
 }
 
-// fetch and render
+/* fetch data */
 async function fetchData(){
   try{
-    msg.textContent = 'Loading…';
+    setMsg('Loading…');
     const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: ' + res.status);
+    if(!res.ok) throw new Error('Fetch failed: '+res.status);
     const json = await res.json();
     rawRows = Array.isArray(json) ? json : (json.data || []);
     detectHeaders(rawRows);
     renderTable();
-    msg.textContent = '';
+    setMsg('');
   }catch(err){
     console.error(err);
-    msg.textContent = 'Error loading data — check API & console';
+    setMsg('Error loading data — check console');
   }
 }
 
+/* render table with Edit/Delete buttons */
 function renderTable(){
   const head = document.getElementById('tableHead');
   const body = document.getElementById('tableBody');
   head.innerHTML = ''; body.innerHTML = '';
 
-  // headers: address replaces remark
+  // header labels
   const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
-  const hRow = document.createElement('tr');
-  Object.keys(titles).forEach(k => {
-    const th = document.createElement('th'); th.textContent = titles[k]; hRow.appendChild(th);
-  });
-  head.appendChild(hRow);
+  const hr = document.createElement('tr');
+  Object.keys(titles).forEach(k => { const th = document.createElement('th'); th.textContent = titles[k]; hr.appendChild(th); });
+  // add actions column
+  const thActions = document.createElement('th'); thActions.textContent = 'Actions'; hr.appendChild(thActions);
+  head.appendChild(hr);
 
-  const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();
-
+  const q = (document.getElementById('searchBox').value||'').trim().toLowerCase();
   const rows = rawRows.filter(r => {
-    const hay = Object.values(r).join(' ').toLowerCase();
-    if(q && !hay.includes(q)) return false;
+    if(q){
+      const hay = Object.values(r).join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
     if(filterPending){
-      const st = (getCell(r,'status') || '').toString().toLowerCase();
+      const st = (getCell(r,'status')||'').toString().toLowerCase();
       if(!st.includes('pending')) return false;
     }
     return true;
   });
 
   if(!rows.length){
-    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No records found</td></tr>';
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:14px;color:var(--muted)">No records</td></tr>';
     return;
   }
 
-  for(const r of rows){
+  rows.forEach(row => {
     const tr = document.createElement('tr');
-    const name = getCell(r,'clientname') || '';
-    const mobile = getCell(r,'mobile') || '';
-    const amount = getCell(r,'amount') || '';
-    const date = getCell(r,'date') || '';
-    const statusRaw = (getCell(r,'status') || '').toString().toLowerCase();
-    const address = getCell(r,'address') || '';
+
+    const name = getCell(row,'clientname') || '';
+    const mobile = getCell(row,'mobile') || '';
+    const amount = getCell(row,'amount') || '';
+    const date = getCell(row,'date') || '';
+    const statusRaw = (getCell(row,'status') || '').toString().toLowerCase();
+    const address = getCell(row,'address') || '';
 
     const statusHtml = statusRaw === 'paid'
-      ? `<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:8px;font-weight:600">Paid</span>`
-      : `<span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:8px;font-weight:600">Pending</span>`;
+      ? `<span class="status-paid">Paid</span>`
+      : `<span class="status-pending">Pending</span>`;
 
     tr.innerHTML = `
       <td>${escapeHtml(name)}</td>
@@ -248,14 +244,20 @@ function renderTable(){
       <td>${escapeHtml(date)}</td>
       <td>${statusHtml}</td>
       <td>${escapeHtml(address)}</td>
+      <td class="actions" style="white-space:nowrap">
+        <button class="edit" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>
+        <button class="del" data-payload="${encodeURIComponent(JSON.stringify(row))}">Delete</button>
+      </td>
     `;
     body.appendChild(tr);
-  }
+  });
 }
 
-function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+/* helpers */
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function setMsg(m){ document.getElementById('msg').textContent = m || ''; }
 
-// add row
+/* Add row (writes to headerMap keys or canonical keys) */
 async function addRow(){
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
@@ -265,7 +267,6 @@ async function addRow(){
   const address = document.getElementById('f_address').value.trim();
 
   if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }
-
   if(!Object.keys(headerMap).length) await fetchData();
 
   const payload = {};
@@ -274,49 +275,121 @@ async function addRow(){
   payload[ headerMap['amount'] || 'amount' ] = amount || '';
   payload[ headerMap['date'] || 'date' ] = date || '';
   payload[ headerMap['status'] || 'status' ] = status || '';
-  // Important: write to address column (prefer actual 'address' key; if headerMap mapped address->remark that's fine)
   payload[ headerMap['address'] || 'address' ] = address || '';
 
   try{
-    msg.textContent = 'Adding…';
+    document.getElementById('addMsg').textContent = 'Adding…';
     const res = await fetch(SHEETDB_API, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type':'application/json' },
       body: JSON.stringify({ data: [ payload ] })
     });
     if(!res.ok){
       const txt = await res.text();
       throw new Error(txt || res.status);
     }
-
-    // reload
     await fetchData();
 
-    // quick verification that row exists (by mobile or name)
+    // verify by mobile or name present
     const found = rawRows.some(r => {
-      const nm = (getCell(r,'clientname') || '').toString().trim();
-      const mob = (getCell(r,'mobile') || '').toString().trim();
+      const nm = (getCell(r,'clientname')||'').toString().trim();
+      const mob = (getCell(r,'mobile')||'').toString().trim();
       return (mobile && mob === mobile) || (name && nm === name);
     });
-
     if(!found){
-      msg.textContent = 'Added — but could not verify placement. Check Sheet headers.';
-      console.warn('Add verification failed. headerMap:', headerMap, 'payload:', payload, 'sample rows:', rawRows.slice(0,3));
+      document.getElementById('addMsg').textContent = 'Added — but verification failed. Check Sheet headers.';
+      console.warn('Add verification failed', headerMap, payload, rawRows.slice(0,2));
       return;
     }
 
-    // success: clear form
+    // clear form
     ['f_name','f_mobile','f_amount','f_date'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f_address').value = '';
     document.getElementById('f_status').value = 'pending';
-    msg.textContent = 'Added ✓';
-    setTimeout(()=>msg.textContent = '', 1600);
+    document.getElementById('addMsg').textContent = 'Added ✓';
+    setTimeout(()=>document.getElementById('addMsg').textContent = '', 1500);
   }catch(err){
     console.error(err);
-    alert('Add failed — see console');
-    msg.textContent = '';
+    alert('Add failed — see console.');
+    document.getElementById('addMsg').textContent = '';
   }
 }
+
+/* Edit / Delete handlers (delegated) */
+document.getElementById('tableBody').addEventListener('click', async (ev) => {
+  const btn = ev.target.closest('button');
+  if(!btn) return;
+  const payloadEncoded = btn.dataset.payload;
+  if(!payloadEncoded) return;
+  const row = JSON.parse(decodeURIComponent(payloadEncoded));
+
+  // derive identifiers
+  const mobileVal = row[ headerMap['mobile'] ] || row.mobile || '';
+  const nameVal = row[ headerMap['clientname'] ] || row['Client Name'] || row.clientname || '';
+
+  if(btn.classList.contains('del')){
+    if(!confirm('Delete client: ' + (nameVal || mobileVal || 'this row') + ' ?')) return;
+    try{
+      let delUrl;
+      if(mobileVal) delUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
+      else delUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
+      const res = await fetch(delUrl, { method: 'DELETE' });
+      if(!res.ok) throw new Error('Delete failed: ' + res.status);
+      await fetchData();
+      setMsg('Deleted ✓');
+      setTimeout(()=>setMsg(''),1400);
+    }catch(err){
+      console.error(err);
+      alert('Delete failed — check console.');
+    }
+    return;
+  }
+
+  if(btn.classList.contains('edit')){
+    // prompt-based edit
+    const currentName = getCell(row,'clientname') || '';
+    const currentMobile = getCell(row,'mobile') || '';
+    const currentAmount = getCell(row,'amount') || '';
+    const currentDate = getCell(row,'date') || '';
+    const currentStatus = getCell(row,'status') || 'pending';
+    const currentAddress = getCell(row,'address') || '';
+
+    const newName = prompt('Client name', currentName) || currentName;
+    const newMobile = prompt('Mobile', currentMobile) || currentMobile;
+    const newAmount = prompt('Amount', currentAmount) || currentAmount;
+    const newDate = prompt('Date', currentDate) || currentDate;
+    const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;
+    // address - give current and allow free edit
+    const newAddress = prompt('Address', currentAddress) || currentAddress;
+
+    const patchObj = {};
+    patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
+    patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;
+    patchObj[ headerMap['amount'] || 'amount' ] = newAmount;
+    patchObj[ headerMap['date'] || 'date' ] = newDate;
+    patchObj[ headerMap['status'] || 'status' ] = newStatus;
+    patchObj[ headerMap['address'] || 'address' ] = newAddress;
+
+    try{
+      let patchUrl;
+      if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
+      else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
+
+      const res = await fetch(patchUrl, {
+        method: 'PATCH',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ data: [ patchObj ] })
+      });
+      if(!res.ok) throw new Error('Update failed: ' + res.status);
+      await fetchData();
+      setMsg('Updated ✓');
+      setTimeout(()=>setMsg(''),1200);
+    }catch(err){
+      console.error(err);
+      alert('Update failed — check console.');
+    }
+  }
+});
 
 /* UI wiring */
 document.getElementById('reloadBtn').addEventListener('click', fetchData);
@@ -325,8 +398,9 @@ document.getElementById('filterPendingBtn').addEventListener('click', (e) => { f
 document.getElementById('refreshSel').addEventListener('change', (e) => { const v = Number(e.target.value); if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; } if(v>0) refreshTimer = setInterval(fetchData, v*1000); });
 document.getElementById('addBtn').addEventListener('click', addRow);
 
-/* init */
+/* initial load */
 fetchData();
+
 </script>
 </body>
 </html>
