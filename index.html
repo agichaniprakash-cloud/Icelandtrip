@@ -1,64 +1,78 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pending Payments — Live from Google Sheet</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{--accent:#138a5a;--muted:#6b7280;--card:#fff;--bg:#f6f8f9;--radius:12px}
-  body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;margin:0;background:var(--bg);color:#111827;padding:28px}
-  .wrap{max-width:980px;margin:0 auto}
-  .card{background:var(--card);border-radius:var(--radius);padding:20px 28px;box-shadow:0 4px 18px rgba(16,24,40,0.06)}
-  header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
-  header h1{font-size:28px;margin:0}
-  header p{margin:0;color:var(--muted);font-size:14px}
-  .controls{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
-  .controls input[type="search"]{flex:1 1 320px;padding:12px 14px;border-radius:10px;border:1px solid #e6e9ee;font-size:14px}
-  .btn{background:var(--accent);color:white;padding:10px 16px;border-radius:9px;border:none;cursor:pointer;font-weight:600}
-  .btn.small{padding:8px 12px;font-size:14px}
-  .select{padding:10px;border-radius:10px;border:1px solid #e6e9ee;background:white;min-width:140px}
-  table{width:100%;border-collapse:collapse;margin-top:18px}
-  thead th{text-align:left;padding:16px;background:var(--accent);color:white;font-weight:700;font-size:15px}
-  tbody tr{background:#fbfcfd}
-  td{padding:16px;border-bottom:1px solid #eef2f6;vertical-align:middle}
-  .empty{color:var(--muted);text-align:center;padding:28px}
-  form .field{margin-top:12px}
-  form input, form textarea, form select{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ee;font-size:15px}
-  .tip{color:var(--muted);font-size:13px;margin-top:14px}
-  @media (max-width:700px){header{flex-direction:column;align-items:flex-start}.controls{flex-direction:column}thead th{font-size:13px;padding:12px}td{padding:12px}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pending Payments — Live</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --green:#13824b;
+      --muted:#61707a;
+      --card:#ffffff;
+      --bg:#f7faf9;
+      --glass: rgba(19,130,75,0.08);
+    }
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{background:var(--bg);color:#172028;line-height:1.45}
+    .wrap{max-width:980px;margin:28px auto;padding:26px;background:linear-gradient(180deg,#fff, #fbffff);box-shadow:0 8px 30px rgba(20,20,20,0.06);border-radius:12px}
+    h1{display:flex;align-items:center;gap:12px;font-size:28px;margin:0 0 18px}
+    .icon{font-size:28px}
+    .sub{color:var(--muted);margin:6px 0 18px}
+    .actions{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .search{flex:1;min-width:220px}
+    input[type=search], input[type=text], input[type=date], select, textarea{
+      width:100%;padding:12px 14px;border-radius:8px;border:1px solid #e6eef0;background:#fff;box-sizing:border-box;
+      font-size:15px;color:#1b2b2f;
+    }
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;background:var(--green);color:#fff;border:none;cursor:pointer;font-weight:600}
+    .btn.secondary{background:transparent;color:var(--green);border:1px solid rgba(19,130,75,0.12)}
+    .controls{display:flex;gap:10px;align-items:center}
+    .refresh-select{padding:10px;border-radius:8px;border:1px solid #e6eef0;background:#fff}
+    .table-wrap{margin-top:18px;overflow:auto;border-radius:10px;background:#fff;padding:12px;box-shadow:0 8px 20px rgba(18,18,18,0.03)}
+    table{width:100%;border-collapse:collapse;font-size:15px}
+    thead th{background:var(--green);color:#fff;padding:16px 14px;text-align:left;position:sticky;top:0}
+    tbody td{padding:18px 14px;border-bottom:1px solid #f1f5f6}
+    .muted{color:var(--muted)}
+    .form-section{margin-top:24px;padding-top:20px;border-top:1px solid #eef3f3}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-grid .full{grid-column:1/-1}
+    label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
+    .hint{font-size:13px;color:var(--muted);margin-top:8px}
+    @media(max-width:720px){
+      .form-grid{grid-template-columns:1fr}
+      thead th{font-size:14px}
+      tbody td{padding:12px}
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <header>
-      <div style="font-size:30px">📋</div>
-      <div>
-        <h1>Pending Payments</h1>
-        <p>Live from Google Sheet (via SheetDB)</p>
-      </div>
-    </header>
+  <div class="wrap" role="main">
+    <h1><span class="icon">📋</span> Pending Payments</h1>
+    <div class="sub">Live from Google Sheet (via SheetDB)</div>
 
-    <div class="controls">
-      <input id="search" type="search" placeholder="Search client, mobile or remark" aria-label="Search">
-      <div style="display:flex;gap:10px;align-items:center">
-        <select id="refreshInterval" class="select" title="Auto refresh interval">
-          <option value="0">Auto refresh: Off</option>
-          <option value="15">Refresh every 15s</option>
-          <option value="30">Refresh every 30s</option>
-          <option value="60" selected>Refresh every 60s</option>
-          <option value="300">Refresh every 5m</option>
+    <div class="actions">
+      <div class="search">
+        <input id="q" type="search" placeholder="Search client, mobile or remark" />
+      </div>
+
+      <div class="controls">
+        <select id="refreshInterval" class="refresh-select" title="Auto refresh">
+          <option value="0">No auto refresh</option>
+          <option value="15000">Refresh every 15s</option>
+          <option value="30000">Refresh every 30s</option>
+          <option value="60000" selected>Refresh every 60s</option>
         </select>
-        <button id="pendingOnlyBtn" class="btn small">Show: Pending only</button>
-        <button id="reload" class="btn small">Reload now</button>
+
+        <button id="showPendingBtn" class="btn secondary">Show: Pending only</button>
+        <button id="reloadBtn" class="btn">Reload now</button>
       </div>
     </div>
 
-    <div id="tableWrap">
-      <table id="dataTable" role="table" aria-label="Pending payments table">
+    <div class="table-wrap" id="tableWrap">
+      <table id="dataTable" aria-live="polite">
         <thead>
-          <tr id="theadRow">
+          <tr>
             <th>Client Name</th>
             <th>Mobile</th>
             <th>Amount</th>
@@ -69,268 +83,209 @@
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td class="empty" colspan="7">Loading…</td></tr>
+          <!-- content injected -->
         </tbody>
       </table>
     </div>
 
-    <hr style="margin:22px 0;border:0;border-top:1px solid #eef2f6">
+    <div class="form-section">
+      <h2 style="margin:18px 0 12px">Add New Pending Client</h2>
 
-    <h2>Add New Pending Client</h2>
+      <div class="form-grid" style="margin-bottom:12px">
+        <div class="full"><label for="f_clientname">Client Name</label><input id="f_clientname" type="text" placeholder="Client Name"></div>
+        <div><label for="f_mobile">Mobile</label><input id="f_mobile" type="text" placeholder="Mobile"></div>
+        <div><label for="f_amount">Amount</label><input id="f_amount" type="text" placeholder="Amount"></div>
+        <div><label for="f_date">Date (e.g. 10/1/2025)</label><input id="f_date" type="text" placeholder="10/1/2025"></div>
 
-    <form id="addForm">
-      <div class="field"><input id="clientname" name="clientname" placeholder="Client Name"></div>
-      <div class="field"><input id="mobile" name="mobile" placeholder="Mobile"></div>
-      <div class="field"><input id="amount" name="amount" placeholder="Amount"></div>
-      <div class="field"><input id="date" name="date" placeholder="Date (e.g. 10/1/2025)"></div>
-      <div class="field">
-        <select id="status" name="status">
-          <option value="pending" selected>Pending</option>
-          <option value="paid">Paid</option>
-          <option value="other">Other</option>
-        </select>
+        <div><label for="f_status">Status</label>
+          <select id="f_status">
+            <option value="pending" selected>Pending</option>
+            <option value="paid">Paid</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div><label for="f_remark">Remark</label><input id="f_remark" type="text" placeholder="Remark"></div>
+
+        <div class="full" style="margin-top:8px">
+          <button id="addBtn" class="btn">Add</button>
+          <span class="hint">Tip: To update existing rows, edit the Google Sheet directly or use SheetDB's update endpoints.</span>
+        </div>
       </div>
-      <div class="field"><input id="remark" name="remark" placeholder="Remark"></div>
-
-      <div style="margin-top:12px">
-        <button id="addBtn" class="btn" type="submit">Add</button>
-        <span id="formMsg" style="margin-left:12px;color:var(--muted)"></span>
-      </div>
-
-      <div class="tip">Tip: Editing the Google Sheet directly (published as CSV) will update this site when refreshed.</div>
-    </form>
+    </div>
   </div>
-</div>
 
 <script>
-/* ---------- CONFIG ---------- */
-/* Replace this with your current SheetDB endpoint if it changes */
-const API_URL = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
+/*
+  FINAL HTML + JS — SheetDB integration
+  Make sure your Google Sheet headers are exactly:
+  clientname  mobile  amount  date  status  remark  days_pending
+  (lowercase, underscore for days_pending).
+*/
 
-/* canonical keys we want inside the app */
-const CANONICAL = ['clientname','mobile','amount','date','status','remark','days_pending'];
+// POINT THIS TO YOUR SHEETDB API endpoint (from sheetdb dashboard)
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // <-- replace if different
 
-/* ---------- DOM ---------- */
-const tbody = document.getElementById('tbody');
-const searchInput = document.getElementById('search');
-const reloadBtn = document.getElementById('reload');
-const pendingOnlyBtn = document.getElementById('pendingOnlyBtn');
-const refreshInterval = document.getElementById('refreshInterval');
-const addForm = document.getElementById('addForm');
-const formMsg = document.getElementById('formMsg');
-const theadRow = document.getElementById('theadRow');
-
-let allData = [];
-let mapping = {};        // maps canonical -> actual key from API response
-let showPendingOnly = true;
+let dataCache = [];
 let autoTimer = null;
+let showPendingOnly = false;
 
-/* ---------- UTILITIES ---------- */
-function normKey(k){
-  // normalize: lowercase, remove spaces/underscores, remove non-alphanum
-  return String(k||'').toLowerCase().replace(/[\s_]+/g,'').replace(/[^a-z0-9]/g,'');
-}
-function escapeHtml(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function daysDiffFromToday(dateStr){
-  if(!dateStr) return '';
-  let d = new Date(dateStr);
-  if(isNaN(d)){
-    const parts = dateStr.split(/[\/\-\.]/).map(t=>t.trim());
-    if(parts.length>=3){
-      let mm=+parts[0], dd=+parts[1], yy=+parts[2];
-      if(mm>12){ let tmp=mm; mm=dd; dd=tmp; }
-      d = new Date(yy, mm-1, dd);
-    }
-  }
-  if(isNaN(d)) return '';
-  const today = new Date();
-  const diffDays = Math.floor((today - new Date(d.getFullYear(),d.getMonth(),d.getDate()))/(1000*60*60*24));
-  return diffDays >= 0 ? String(diffDays) : '';
-}
+// util: safe get
+const $ = id => document.getElementById(id);
 
-/* flexible mapping: take first object keys and map them to canonical keys */
-function buildMapping(firstObj){
-  mapping = {};
-  const keys = Object.keys(firstObj || {});
-  const normMap = {};
-  keys.forEach(k => { normMap[normKey(k)] = k; });
+async function loadData(){
+  try {
+    $('reloadBtn').disabled = true;
+    $('reloadBtn').textContent = 'Loading...';
 
-  CANONICAL.forEach(can => {
-    // try exact normalized match
-    const candidate = normMap[normKey(can)] || 
-                      normMap['clientname'] && can==='clientname' && (normMap['clientname']) ||
-                      null;
-    // fallback: if not found try heuristics (e.g. 'clientname' match 'clientname', 'client' etc.)
-    if(!candidate){
-      // attempt partial matches
-      for(const nk in normMap){
-        if(nk.includes(normKey(can)) || normKey(can).includes(nk)){
-          mapping[can] = normMap[nk];
-          break;
-        }
-      }
-    } else {
-      mapping[can] = candidate;
-    }
-  });
-
-  // last resort: if mapping missing, assign first columns in order
-  const missing = CANONICAL.filter(c => !mapping[c]);
-  let idx=0;
-  for(const c of missing){
-    // find next key not used
-    while(idx<keys.length && Object.values(mapping).includes(keys[idx])) idx++;
-    if(idx < keys.length) mapping[c] = keys[idx++];
-  }
-
-  // If still missing, leave undefined
-  console.log('Field mapping:', mapping);
-}
-
-/* get value from an object using mapping */
-function getField(obj, canonicalKey){
-  const k = mapping[canonicalKey];
-  return k ? obj[k] : '';
-}
-
-/* ---------- RENDER ---------- */
-function renderTableFromJson(json){
-  if(!Array.isArray(json)) json = [];
-  if(json.length === 0){
-    tbody.innerHTML = '<tr><td class="empty" colspan="7">No records</td></tr>';
-    return;
-  }
-
-  // build mapping from first row
-  buildMapping(json[0]);
-
-  // rebuild header labels to show nice names (keep UI consistent)
-  // not strictly necessary, but safe to keep standard headers.
-  theadRow.innerHTML = `
-    <th>Client Name</th>
-    <th>Mobile</th>
-    <th>Amount</th>
-    <th>Date</th>
-    <th>Status</th>
-    <th>Remark</th>
-    <th>Days Pending</th>
-  `;
-
-  // build normalized rows array (canonical keys)
-  allData = json.map(raw => {
-    const row = {};
-    CANONICAL.forEach(k => {
-      row[k] = getField(raw, k) || '';
-    });
-    // compute days_pending if blank
-    if(!row.days_pending){
-      row.days_pending = daysDiffFromToday(row.date);
-    }
-    return row;
-  });
-
-  applyAndRender();
-}
-
-function applyAndRender(){
-  const q = (searchInput.value || '').trim().toLowerCase();
-  let rows = allData.slice();
-  if(showPendingOnly) rows = rows.filter(r => (r.status||'').toLowerCase() === 'pending');
-  if(q){
-    rows = rows.filter(r => CANONICAL.some(k => (r[k]||'').toString().toLowerCase().includes(q)));
-  }
-  if(rows.length === 0){
-    tbody.innerHTML = '<tr><td class="empty" colspan="7">No records</td></tr>';
-    return;
-  }
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td>${escapeHtml(r.clientname)}</td>
-      <td>${escapeHtml(r.mobile)}</td>
-      <td>${escapeHtml(r.amount)}</td>
-      <td>${escapeHtml(r.date)}</td>
-      <td>${escapeHtml(r.status)}</td>
-      <td>${escapeHtml(r.remark)}</td>
-      <td style="text-align:center">${escapeHtml(r.days_pending)}</td>
-    </tr>`).join('');
-}
-
-/* ---------- NETWORK ---------- */
-async function fetchData(){
-  try{
-    tbody.innerHTML = '<tr><td class="empty" colspan="7">Loading…</td></tr>';
-    const res = await fetch(API_URL);
-    if(!res.ok) throw new Error('Network response not OK: ' + res.status);
+    const res = await fetch(SHEETDB_API);
+    if (!res.ok) throw new Error('Failed to fetch sheet data');
     const json = await res.json();
-    renderTableFromJson(json);
-  }catch(err){
-    console.error(err);
-    tbody.innerHTML = `<tr><td class="empty" colspan="7">Error loading data — ${escapeHtml(err.message || err)}</td></tr>`;
+
+    // SheetDB returns array of objects; normalize keys to expected ones
+    dataCache = json.map(item => ({
+      clientname: (item.clientname || item['Client Name'] || item['Client Name '] || item['Client Name'] || '').toString().trim(),
+      mobile: (item.mobile || item.Mobile || item['mobile '] || '').toString().trim(),
+      amount: (item.amount || item.Amount || '').toString().trim(),
+      date: (item.date || item.Date || '').toString().trim(),
+      status: (item.status || '').toString().trim(),
+      remark: (item.remark || item.Remark || item.remark || '').toString().trim(),
+      days_pending: (item.days_pending || item['days_pending'] || item['Days Pending'] || '').toString().trim()
+    }));
+
+    renderTable();
+  } catch (err){
+    console.error('loadData error', err);
+    alert('Error loading data: ' + err.message);
+  } finally {
+    $('reloadBtn').disabled = false;
+    $('reloadBtn').textContent = 'Reload now';
   }
 }
 
-/* POST / add row to SheetDB (SheetDB accepts {"data":[{...}]}) */
-async function addRowFromForm(fd){
-  const obj = {
-    clientname: (fd.get('clientname')||'').trim(),
-    mobile: (fd.get('mobile')||'').trim(),
-    amount: (fd.get('amount')||'').trim(),
-    date: (fd.get('date')||'').trim(),
-    status: (fd.get('status')||'').trim() || 'pending',
-    remark: (fd.get('remark')||'').trim()
+function renderTable(){
+  const q = $('q').value.trim().toLowerCase();
+  const tbody = $('tbody');
+  tbody.innerHTML = '';
+
+  const rows = dataCache.filter(r => {
+    if (showPendingOnly && r.status.toLowerCase() !== 'pending') return false;
+    if (!q) return true;
+    return (r.clientname||'').toLowerCase().includes(q)
+        || (r.mobile||'').toLowerCase().includes(q)
+        || (r.remark||'').toLowerCase().includes(q)
+        || (r.status||'').toLowerCase().includes(q);
+  });
+
+  if (rows.length === 0){
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 7;
+    td.className = 'muted';
+    td.textContent = 'No rows found';
+    td.style.padding = '18px';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+
+    const make = txt => {
+      const td = document.createElement('td');
+      td.textContent = txt || '';
+      return td;
+    };
+
+    tr.appendChild(make(row.clientname));
+    tr.appendChild(make(row.mobile));
+    tr.appendChild(make(row.amount));
+    tr.appendChild(make(row.date));
+    tr.appendChild(make(row.status));
+    tr.appendChild(make(row.remark));
+    tr.appendChild(make(row.days_pending));
+    tbody.appendChild(tr);
+  });
+}
+
+
+// Add form handler — IMPORTANT: post uses EXACT keys expected by sheet
+$('addBtn').addEventListener('click', async () => {
+  const clientname = $('f_clientname').value.trim();
+  const mobile = $('f_mobile').value.trim();
+  const amount = $('f_amount').value.trim();
+  const date = $('f_date').value.trim();
+  const status = $('f_status').value;
+  const remark = $('f_remark').value.trim();
+
+  if (!clientname) { alert('Please enter Client Name'); return; }
+
+  // Build row object with EXACT header keys as in your sheet
+  const row = {
+    clientname: clientname,
+    mobile: mobile,
+    amount: amount,
+    date: date,
+    status: status,
+    remark: remark,
+    days_pending: '' // optional; can be computed in sheet if desired
   };
-  obj.days_pending = daysDiffFromToday(obj.date);
 
-  try{
-    formMsg.textContent = 'Sending…';
-    document.getElementById('addBtn').disabled = true;
+  const payload = { data: [ row ] }; // SheetDB expects { data: [ {...} ] }
 
-    const payload = { data: [obj] };
-    const r = await fetch(API_URL, {
+  try {
+    $('addBtn').disabled = true;
+    $('addBtn').textContent = 'Adding...';
+
+    const resp = await fetch(SHEETDB_API, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if(!r.ok){
-      const txt = await r.text();
-      throw new Error('Failed to add: ' + (txt || r.statusText));
+
+    if (!resp.ok){
+      const body = await resp.text();
+      throw new Error('SheetDB error: ' + resp.status + ' ' + body);
     }
-    formMsg.textContent = 'Added ✓';
-    setTimeout(()=>formMsg.textContent='', 2200);
-    addForm.reset();
-    await fetchData();
-  }catch(err){
-    console.error(err);
-    formMsg.textContent = 'Error: ' + (err.message || err);
+
+    // Clear form
+    $('f_clientname').value = '';
+    $('f_mobile').value = '';
+    $('f_amount').value = '';
+    $('f_date').value = '';
+    $('f_remark').value = '';
+
+    // Wait a moment then reload data (SheetDB sometimes needs a short time)
+    setTimeout(() => loadData(), 800);
+    alert('Added successfully — reload should show it in a second.');
+  } catch (err){
+    console.error('Add error', err);
+    alert('Error adding row: ' + (err.message || err));
   } finally {
-    document.getElementById('addBtn').disabled = false;
+    $('addBtn').disabled = false;
+    $('addBtn').textContent = 'Add';
   }
-}
+});
 
-/* ---------- EVENTS ---------- */
-searchInput.addEventListener('input', () => applyAndRender());
-reloadBtn.addEventListener('click', fetchData);
-pendingOnlyBtn.addEventListener('click', () => {
+// UI controls
+$('reloadBtn').addEventListener('click', loadData);
+$('q').addEventListener('input', renderTable);
+$('showPendingBtn').addEventListener('click', () => {
   showPendingOnly = !showPendingOnly;
-  pendingOnlyBtn.textContent = showPendingOnly ? 'Show: Pending only' : 'Show: All';
-  applyAndRender();
-});
-refreshInterval.addEventListener('change', ()=>{
-  const val = Number(refreshInterval.value || 0);
-  if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
-  if(val>0) autoTimer = setInterval(fetchData, val*1000);
+  $('showPendingBtn').textContent = showPendingOnly ? 'Show: All' : 'Show: Pending only';
+  renderTable();
 });
 
-addForm.addEventListener('submit', (ev)=>{
-  ev.preventDefault();
-  const fd = new FormData(addForm);
-  if(!fd.get('clientname')) { formMsg.textContent = 'Please enter client name'; return; }
-  addRowFromForm(fd);
+// auto refresh
+$('refreshInterval').addEventListener('change', () => {
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+  const val = Number($('refreshInterval').value);
+  if (val > 0) autoTimer = setInterval(loadData, val);
 });
 
-/* initial load */
-fetchData();
-window._sheetdb = { fetchData, mapping, allData }; // debug
+// initial load
+loadData();
 </script>
 </body>
 </html>
