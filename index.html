@@ -21,7 +21,6 @@
   .brand{display:flex;align-items:center;gap:12px}
   .brand .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#e9faf0,#d9f2e8);display:flex;align-items:center;justify-content:center;font-size:22px}
   .brand h1{margin:0;font-size:18px;letter-spacing:0.6px;color:var(--accent);text-transform:uppercase}
-  .brand .small{font-size:12px;color:var(--muted);margin-top:2px}
   /* body area */
   .container{max-width:1100px;margin:100px auto 60px;padding:16px}
   .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(7,25,16,0.06)}
@@ -55,6 +54,10 @@
   .toast{position:fixed;right:20px;bottom:18px;padding:10px 12px;border-radius:10px;color:#fff;z-index:110}
   .toast.success{background:var(--green)}
   .toast.error{background:var(--danger)}
+  /* pagination */
+  .pagination{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .pagination button{padding:8px 10px;border-radius:8px;border:1px solid #e5eee7;background:#fff;cursor:pointer}
+  .pagination button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
   @media (max-width:860px){ .container{margin-top:120px;padding:12px} table{min-width:720px}}
 </style>
 </head>
@@ -65,11 +68,9 @@
     <div class="logo">📡</div>
     <div>
       <h1>PERFECT DIGITAL NETWORK</h1>
-      <!-- no tagline as requested -->
     </div>
   </div>
 
-  <!-- quick reload on header -->
   <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
     <button id="reloadBtn" class="btn" title="Reload data">Reload</button>
     <button id="addQuickBtn" class="btn ghost" style="margin-left:8px">Add client</button>
@@ -84,13 +85,13 @@
       <div class="item"><div class="muted">Total clients</div><div id="summaryTotal" style="font-weight:700">—</div></div>
       <div class="item"><div class="muted">Pending amount (₹)</div><div id="summaryPending" style="font-weight:700">—</div></div>
       <div class="item"><div class="muted">Paid amount (₹)</div><div id="summaryPaid" style="font-weight:700">—</div></div>
-      <div class="item"><div class="muted">Overdue (days)</div><div id="summaryOverdue" style="font-weight:700">—</div></div>
+      <div class="item"><div class="muted">Overdue (count)</div><div id="summaryOverdue" style="font-weight:700">—</div></div>
     </div>
 
     <!-- controls -->
     <div class="controls" role="region" aria-label="Controls">
       <input id="searchInput" class="input" placeholder="Search client or mobile or address">
-      <div class="area-filters" id="areaFilters">
+      <div class="area-filters" id="areaFilters" style="margin-left:8px">
         <button data-area="all" class="active">All</button>
         <button data-area="Wazirpur">Wazirpur</button>
         <button data-area="Shastri Nagar">Shastri Nagar</button>
@@ -121,6 +122,9 @@
         </tbody>
       </table>
     </div>
+
+    <!-- pagination controls - fixed 20 per page -->
+    <div id="paginationArea" class="pagination" aria-label="Pagination"></div>
 
     <!-- add form -->
     <div style="margin-top:14px">
@@ -199,109 +203,90 @@
 <div id="toastRoot" style="pointer-events:none"></div>
 
 <script>
-/*  FINAL app
-    - Uses your SheetDB API (replace if different)
-    - Admin PIN default: '1234' (change below)
-    - Edit/Delete match rows by mobile value (mobile should be unique)
+/* FINAL app
+   - Pagination: 20 rows per page, controls below the table
+   - Admin PIN: 1914 (change ADMIN_PIN variable if needed)
+   - Edit/Delete use SheetDB PATCH and DELETE by mobile column
+   - Ensure your sheet headers include: clientname, mobile, amount, date, status, address, days_pending
 */
 
-/* === CONFIG === */
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // your endpoint
-const ADMIN_PIN = '1234'; // default PIN for testing — change this to your preferred PIN
+/* ========== CONFIG ========== */
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
+const ADMIN_PIN = '1914';
+const PAGE_SIZE = 20;
 
-/* === helpers & state === */
+/* ========== UTIL ========== */
 const $ = id => document.getElementById(id);
-const toastRoot = $('toastRoot');
-
 function showToast(msg, kind='success', t=3000){
   const el = document.createElement('div'); el.className = 'toast ' + (kind==='success' ? 'success' : 'error'); el.textContent = msg;
   el.style.pointerEvents = 'auto';
-  toastRoot.appendChild(el);
+  $('toastRoot').appendChild(el);
   setTimeout(()=> el.style.opacity = 0, t-400);
   setTimeout(()=> el.remove(), t);
 }
-
 function normalizeKey(s){ return String(s||'').toLowerCase().trim().replace(/\s+/g,' ').replace(/\./g,'').trim(); }
-function normalizeMatch(s){ return String(s||'').toLowerCase().replace(/\s+/g,' ').trim(); }
+function parseDateFlexible(s){
+  if(!s) return null;
+  s = String(s).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s);
+  if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s)){
+    const parts = s.split('/');
+    let d = parseInt(parts[0],10), m = parseInt(parts[1],10), y = parseInt(parts[2],10);
+    if(y<100) y+=2000;
+    // treat as DD/MM/YYYY by default; if day>31 swap
+    if(d>31 || m>12){ [d,m] = [m,d]; }
+    return new Date(y, m-1, d);
+  }
+  const dd = new Date(s); return isNaN(dd.valueOf()) ? null : dd;
+}
 
-// store rows
-let rows = []; // array of raw objects from sheet
+/* ========== STATE ========== */
+let rows = []; // raw objects
 let filters = { search:'', address:'all', pendingOnly:false };
+let currentPage = 1;
 
-/* === fetch data === */
+/* ========== DATA LOADING ========== */
 async function loadData(){
   try{
     $('tableBody').innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">Loading…</td></tr>';
     const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Failed to fetch: ' + res.status);
+    if(!res.ok) throw new Error('Fetch failed: '+res.status);
     const j = await res.json();
     rows = Array.isArray(j) ? j : (j.data || []);
-    // compute derived days_pending if missing
+    // normalize rows: add __norm map
     rows = rows.map(r => {
-      const copy = Object.assign({}, r);
-      copy.__norm = {};
-      Object.keys(r).forEach(k => copy.__norm[normalizeKey(k)] = r[k]);
-      // compute days_pending if empty or missing
-      if(!('days_pending' in copy.__norm) || copy.__norm['days_pending'] === '') {
-        const d = parseDateFlexible(copy.__norm['date'] || '');
-        if(d) {
-          const days = Math.floor((Date.now() - d.getTime())/(1000*60*60*24));
-          copy.__norm['days_pending'] = String(Math.max(0, days));
-        } else {
-          copy.__norm['days_pending'] = '';
-        }
+      const m = {};
+      Object.keys(r).forEach(k => m[normalizeKey(k)] = r[k]);
+      // compute days_pending if missing
+      if(!m['days_pending'] || m['days_pending']==='') {
+        const d = parseDateFlexible(m['date']||'');
+        if(d) { const days = Math.floor((Date.now()-d.getTime())/(1000*60*60*24)); m['days_pending']=String(Math.max(0,days)); }
+        else m['days_pending']='';
       }
-      return copy;
+      return { raw: r, norm: m };
     });
+    currentPage = 1;
     renderAll();
   } catch(err){
     console.error(err);
     $('tableBody').innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">Error loading data</td></tr>';
-    showToast('Error loading data: ' + err.message, 'error', 5000);
+    showToast('Error loading data: ' + err.message, 'error', 6000);
   }
 }
 
-/* flexible date parser: accepts YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY heuristically */
-function parseDateFlexible(s){
-  if(!s) return null;
-  s = String(s).trim();
-  // ISO-like
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s);
-  // try slash form
-  if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s)){
-    const parts = s.split('/');
-    // if day>12 treat as DD/MM/YYYY else prefer DD/MM/YYYY because local usage often dd/mm
-    let day = parseInt(parts[0],10), month = parseInt(parts[1],10), year = parseInt(parts[2],10);
-    if(year<100) year += 2000;
-    // assume DD/MM/YYYY first
-    if(day > 31 || month > 12) {
-      // try swap
-      [day,month] = [month,day];
-    }
-    // JS Date: monthIndex is 0-based
-    return new Date(year, month-1, day);
-  }
-  // try JS parse (fallback)
-  const d = new Date(s);
-  return isNaN(d.valueOf()) ? null : d;
-}
-
-/* === rendering === */
+/* ========== RENDERING ========== */
 function renderSummary(){
   const total = rows.length;
   let pendingAmt = 0, paidAmt = 0, overdueCount = 0;
   const today = new Date();
   rows.forEach(r => {
-    const n = r.__norm;
-    const amt = parseFloat((n.amount||'').toString().replace(/[^0-9.-]+/g,'')) || 0;
-    const status = (n.status||'').toLowerCase();
-    if(status === 'pending') pendingAmt += amt;
-    if(status === 'paid') paidAmt += amt;
-    // overdue: pending and date older than today
+    const n = r.norm;
+    const amt = parseFloat(String(n.amount||'').replace(/[^0-9.-]+/g,'')) || 0;
+    const st = String(n.status||'').toLowerCase();
+    if(st === 'pending') pendingAmt += amt;
+    if(st === 'paid') paidAmt += amt;
     const d = parseDateFlexible(n.date || '');
-    if(status === 'pending' && d && d < today){
-      overdueCount++;
-    }
+    if(st === 'pending' && d && d < today) overdueCount++;
   });
   $('summaryTotal').textContent = total;
   $('summaryPending').textContent = Math.round(pendingAmt);
@@ -309,111 +294,125 @@ function renderSummary(){
   $('summaryOverdue').textContent = overdueCount;
 }
 
-function renderTable(){
-  const tbody = $('tableBody'); tbody.innerHTML = '';
-  const s = filters.search.toLowerCase().trim();
-  const addr = filters.address;
-  const pendingOnly = filters.pendingOnly;
-  // filter rows
-  const filtered = rows.filter(r => {
-    const n = r.__norm;
-    if(addr && addr !== 'all'){
-      if(!( (n.address||'').toLowerCase().includes(addr.toLowerCase()) )) return false;
-    }
-    if(pendingOnly && !( (n.status||'').toLowerCase().includes('pending') )) return false;
+function filteredRows(){
+  const s = (filters.search||'').toLowerCase().trim();
+  const a = (filters.address||'').toLowerCase().trim();
+  const pendingOnly = !!filters.pendingOnly;
+  return rows.filter(r => {
+    const n = r.norm;
+    if(a && a !== 'all' && !(String(n.address||'').toLowerCase().includes(a))) return false;
+    if(pendingOnly && !String(n.status||'').toLowerCase().includes('pending')) return false;
     if(s){
       const hay = ((n.clientname||'') + ' ' + (n.mobile||'') + ' ' + (n.address||'')).toLowerCase();
       if(!hay.includes(s)) return false;
     }
     return true;
   });
-
-  if(!filtered.length){
-    tbody.innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">No rows to show</td></tr>';
-    return;
-  }
-
-  filtered.forEach(row => {
-    const n = row.__norm;
-    const tr = document.createElement('tr');
-
-    // clientname
-    const tdName = document.createElement('td'); tdName.textContent = n.clientname || '';
-    tr.appendChild(tdName);
-    // mobile
-    const tdMobile = document.createElement('td'); tdMobile.textContent = n.mobile || '';
-    tr.appendChild(tdMobile);
-    // amount
-    const tdAmt = document.createElement('td'); tdAmt.textContent = n.amount || '';
-    tr.appendChild(tdAmt);
-    // date
-    const tdDate = document.createElement('td'); tdDate.textContent = n.date || '';
-    tr.appendChild(tdDate);
-    // status with color
-    const tdStatus = document.createElement('td');
-    const st = (n.status||'').toLowerCase();
-    const pill = document.createElement('span'); pill.className = 'status-pill ' + (st === 'paid' ? 'status-paid' : 'status-pending');
-    pill.textContent = (st === 'paid' ? 'Paid' : 'Pending');
-    tdStatus.appendChild(pill);
-    tr.appendChild(tdStatus);
-    // address
-    const tdAddr = document.createElement('td'); tdAddr.textContent = n.address || '';
-    tr.appendChild(tdAddr);
-    // days pending
-    const tdDays = document.createElement('td'); tdDays.textContent = n.days_pending || '';
-    tr.appendChild(tdDays);
-    // actions
-    const tdAct = document.createElement('td'); tdAct.className = 'actions';
-    const editBtn = document.createElement('button'); editBtn.className = 'btn ghost'; editBtn.textContent = 'Edit';
-    editBtn.onclick = () => openEditModal(row);
-    const delBtn = document.createElement('button'); delBtn.className = 'btn ghost'; delBtn.textContent = 'Delete';
-    delBtn.onclick = () => confirmDelete(row);
-    tdAct.appendChild(editBtn); tdAct.appendChild(delBtn);
-    tr.appendChild(tdAct);
-
-    tbody.appendChild(tr);
-  });
 }
 
+function renderTable(){
+  const all = filteredRows();
+  const total = all.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if(currentPage > pages) currentPage = pages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = all.slice(start, start + PAGE_SIZE);
+
+  const tbody = $('tableBody'); tbody.innerHTML = '';
+  if(pageRows.length === 0){
+    tbody.innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">No rows to show</td></tr>';
+  } else {
+    pageRows.forEach(entry => {
+      const n = entry.norm;
+      const tr = document.createElement('tr');
+      // name
+      const td1 = document.createElement('td'); td1.textContent = n.clientname || ''; tr.appendChild(td1);
+      // mobile
+      const td2 = document.createElement('td'); td2.textContent = n.mobile || ''; tr.appendChild(td2);
+      // amount
+      const td3 = document.createElement('td'); td3.textContent = n.amount || ''; tr.appendChild(td3);
+      // date
+      const td4 = document.createElement('td'); td4.textContent = n.date || ''; tr.appendChild(td4);
+      // status
+      const td5 = document.createElement('td'); 
+      const st = (n.status||'').toLowerCase();
+      const pill = document.createElement('span'); pill.className = 'status-pill ' + (st === 'paid' ? 'status-paid' : 'status-pending');
+      pill.textContent = st === 'paid' ? 'Paid' : 'Pending';
+      td5.appendChild(pill); tr.appendChild(td5);
+      // address
+      const td6 = document.createElement('td'); td6.textContent = n.address || ''; tr.appendChild(td6);
+      // days
+      const td7 = document.createElement('td'); td7.textContent = n.days_pending || ''; tr.appendChild(td7);
+      // actions
+      const td8 = document.createElement('td');
+      const editBtn = document.createElement('button'); editBtn.className = 'btn ghost'; editBtn.textContent = 'Edit';
+      editBtn.onclick = ()=> openEditModal(entry);
+      const delBtn = document.createElement('button'); delBtn.className = 'btn ghost'; delBtn.textContent = 'Delete';
+      delBtn.onclick = ()=> confirmDelete(entry);
+      td8.appendChild(editBtn); td8.appendChild(delBtn);
+      tr.appendChild(td8);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  renderPaginationControls(total, pages);
+}
+
+function renderPaginationControls(totalItems, pages){
+  const area = $('paginationArea'); area.innerHTML = '';
+  if(pages <= 1) return; // no controls needed
+  const prev = document.createElement('button'); prev.textContent = '‹ Prev'; prev.disabled = currentPage === 1;
+  prev.onclick = ()=> { currentPage = Math.max(1, currentPage - 1); renderTable(); };
+  area.appendChild(prev);
+
+  // show page numbers (limit displayed)
+  const maxButtons = 7;
+  let start = Math.max(1, currentPage - 3);
+  let end = Math.min(pages, start + maxButtons - 1);
+  if(end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
+
+  for(let p = start; p <= end; p++){
+    const b = document.createElement('button'); b.textContent = p; if(p === currentPage) b.className = 'active';
+    b.onclick = (()=>p)=>{ currentPage = p; renderTable(); }(p);
+    area.appendChild(b);
+  }
+
+  const next = document.createElement('button'); next.textContent = 'Next ›'; next.disabled = currentPage >= pages;
+  next.onclick = ()=> { currentPage = Math.min(pages, currentPage + 1); renderTable(); };
+  area.appendChild(next);
+}
+
+/* ========== RENDER ALL ========== */
 function renderAll(){
   renderSummary();
   renderTable();
 }
 
-/* === area filter UI === */
+/* ========== FILTER UI ========== */
 document.getElementById('areaFilters').addEventListener('click', (e) => {
   if(e.target.tagName !== 'BUTTON') return;
   const area = e.target.getAttribute('data-area');
-  // toggle active
+  // toggle active class
   Array.from(document.querySelectorAll('#areaFilters button')).forEach(b=>b.classList.remove('active'));
-  if(area === 'all') {
-    e.target.classList.add('active'); filters.address = 'all';
-  } else {
-    e.target.classList.add('active'); filters.address = area;
-  }
+  e.target.classList.add('active');
+  filters.address = area === 'all' ? 'all' : area;
+  currentPage = 1;
   renderAll();
 });
-
-/* show pending toggle */
-$('showPendingBtn').addEventListener('click', () => {
+$('showPendingBtn').addEventListener('click', ()=>{
   filters.pendingOnly = !filters.pendingOnly;
   $('showPendingBtn').textContent = filters.pendingOnly ? 'Showing pending only' : 'Pending only';
+  currentPage = 1;
   renderAll();
 });
-
-/* search */
-$('searchInput').addEventListener('input', (e)=> {
+$('searchInput').addEventListener('input', (e)=>{
   filters.search = e.target.value;
+  currentPage = 1;
   renderAll();
 });
 
-/* reload */
-$('reloadBtn').addEventListener('click', loadData);
-
-/* quick add button to focus add form */
-$('addQuickBtn').addEventListener('click', () => $('f_clientname').focus());
-
-/* === Add new client === */
+/* ========== ADD NEW ========== */
 $('addBtn').addEventListener('click', async () => {
   const clientname = $('f_clientname').value.trim();
   const mobile = $('f_mobile').value.trim();
@@ -425,42 +424,28 @@ $('addBtn').addEventListener('click', async () => {
   if(!clientname) { showToast('Client name required','error'); return; }
   if(!mobile) { showToast('Mobile required','error'); return; }
 
-  const payload = {
-    data: [
-      {
-        clientname, mobile, amount, date, status, address,
-        days_pending: '' // sheet or UI can compute it later
-      }
-    ]
-  };
+  const payload = { data: [ { clientname, mobile, amount, date, status, address, days_pending: '' } ] };
 
   try {
     $('addBtn').disabled = true; $('addBtn').textContent = 'Adding…';
-    const res = await fetch(SHEETDB_API, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if(!res.ok) {
+    const res = await fetch(SHEETDB_API, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    if(!res.ok){
       const txt = await res.text();
       throw new Error(txt || res.status);
     }
     showToast('Added successfully');
-    // clear
-    ['f_clientname','f_mobile','f_amount','f_date','f_address'].forEach(id => $(id).value = '');
-    // reload
+    ['f_clientname','f_mobile','f_amount','f_date','f_address'].forEach(id=>$(id).value='');
     setTimeout(loadData, 800);
   } catch(err){
-    console.error(err);
-    showToast('Add failed: ' + err.message, 'error', 6000);
+    console.error(err); showToast('Add failed: ' + err.message,'error',6000);
   } finally { $('addBtn').disabled = false; $('addBtn').textContent = 'Add client'; }
 });
 
-/* === Edit modal === */
-let editingRow = null;
-function openEditModal(row){
-  editingRow = row;
-  const n = row.__norm;
+/* ========== EDIT ========= */
+let editingEntry = null;
+function openEditModal(entry){
+  editingEntry = entry;
+  const n = entry.norm;
   $('e_clientname').value = n.clientname || '';
   $('e_mobile').value = n.mobile || '';
   $('e_amount').value = n.amount || '';
@@ -471,10 +456,9 @@ function openEditModal(row){
 }
 $('cancelEdit').addEventListener('click', ()=> $('editModal').style.display = 'none');
 
-/* Save edit — protected by PIN */
 $('saveEdit').addEventListener('click', async () => {
-  if(!editingRow) return;
-  const oldMobile = (editingRow.__norm.mobile || '').toString().trim();
+  if(!editingEntry) return;
+  const oldMobile = (editingEntry.norm.mobile || '').toString().trim();
   const clientname = $('e_clientname').value.trim();
   const mobile = $('e_mobile').value.trim();
   const amount = $('e_amount').value.trim();
@@ -482,72 +466,59 @@ $('saveEdit').addEventListener('click', async () => {
   const status = $('e_status').value;
   const address = $('e_address').value;
 
-  // ask for PIN
   const pin = prompt('Enter admin PIN to save changes');
-  if(pin === null) return; // cancelled
-  if(pin !== ADMIN_PIN){
-    showToast('Incorrect PIN — action cancelled','error',3000);
-    return;
-  }
+  if(pin === null) return;
+  if(pin !== ADMIN_PIN){ showToast('Incorrect PIN — action cancelled','error'); return; }
 
-  // build payload for PATCH (update only these fields)
-  const dataObj = { clientname, mobile, amount, date, status, address };
-  // Send PATCH to SheetDB to update the row(s) with mobile == oldMobile
+  const obj = { clientname, mobile, amount, date, status, address };
   try {
     $('saveEdit').disabled = true; $('saveEdit').textContent = 'Saving…';
     const patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(oldMobile);
-    const res = await fetch(patchUrl, {
-      method: 'PATCH',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ data: dataObj })
-    });
-    if(!res.ok) {
+    const res = await fetch(patchUrl, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ data: [ obj ] }) });
+    if(!res.ok){
       const txt = await res.text();
       throw new Error(txt || res.status);
     }
     showToast('Updated successfully');
     $('editModal').style.display = 'none';
-    setTimeout(loadData, 600);
+    setTimeout(loadData, 700);
   } catch(err){
-    console.error(err);
-    showToast('Update failed: ' + (err.message||'') , 'error', 6000);
-  } finally {
-    $('saveEdit').disabled = false; $('saveEdit').textContent = 'Save changes';
-  }
+    console.error(err); showToast('Update failed: ' + (err.message||''),'error',6000);
+  } finally { $('saveEdit').disabled = false; $('saveEdit').textContent = 'Save changes'; }
 });
 
-/* === Delete === */
-async function confirmDelete(row){
-  const n = row.__norm;
+/* ========== DELETE ========= */
+async function confirmDelete(entry){
+  const n = entry.norm;
   const mobile = (n.mobile||'').toString().trim();
   if(!confirm('Delete client: ' + (n.clientname||'') + ' ? This will remove the row from the sheet.')) return;
   const pin = prompt('Enter admin PIN to delete this row');
   if(pin === null) return;
-  if(pin !== ADMIN_PIN){
-    showToast('Incorrect PIN — delete cancelled','error'); return;
-  }
+  if(pin !== ADMIN_PIN){ showToast('Incorrect PIN — delete cancelled','error'); return; }
+
   try {
     const delUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobile);
     const res = await fetch(delUrl, { method: 'DELETE' });
-    if(!res.ok) {
-      const txt = await res.text();
-      throw new Error(txt || res.status);
-    }
+    if(!res.ok){ const txt = await res.text(); throw new Error(txt || res.status); }
     showToast('Deleted');
     setTimeout(loadData, 700);
   } catch(err){
-    console.error(err);
-    showToast('Delete failed: ' + err.message, 'error', 6000);
+    console.error(err); showToast('Delete failed: ' + (err.message||''),'error',6000);
   }
 }
+
+/* ========== UI actions ========== */
+$('reloadBtn').addEventListener('click', loadData);
+$('addQuickBtn').addEventListener('click', ()=> $('f_clientname').focus());
+
+/* close modal on background click */
+$('editModal').addEventListener('click', (e)=> {
+  if(e.target.id === 'editModal') $('editModal').style.display = 'none';
+});
 
 /* initial load */
 loadData();
 
-/* small UX: close modal on outside click */
-document.getElementById('editModal').addEventListener('click', (e)=> {
-  if(e.target.id === 'editModal') $('editModal').style.display = 'none';
-});
 </script>
 </body>
 </html>
