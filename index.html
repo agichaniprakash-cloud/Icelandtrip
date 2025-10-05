@@ -1,291 +1,289 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pending Payments — Live</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --green:#13824b;
-      --muted:#61707a;
-      --card:#ffffff;
-      --bg:#f7faf9;
-      --glass: rgba(19,130,75,0.08);
-    }
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-    body{background:var(--bg);color:#172028;line-height:1.45}
-    .wrap{max-width:980px;margin:28px auto;padding:26px;background:linear-gradient(180deg,#fff, #fbffff);box-shadow:0 8px 30px rgba(20,20,20,0.06);border-radius:12px}
-    h1{display:flex;align-items:center;gap:12px;font-size:28px;margin:0 0 18px}
-    .icon{font-size:28px}
-    .sub{color:var(--muted);margin:6px 0 18px}
-    .actions{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-    .search{flex:1;min-width:220px}
-    input[type=search], input[type=text], input[type=date], select, textarea{
-      width:100%;padding:12px 14px;border-radius:8px;border:1px solid #e6eef0;background:#fff;box-sizing:border-box;
-      font-size:15px;color:#1b2b2f;
-    }
-    .btn{display:inline-block;padding:10px 16px;border-radius:8px;background:var(--green);color:#fff;border:none;cursor:pointer;font-weight:600}
-    .btn.secondary{background:transparent;color:var(--green);border:1px solid rgba(19,130,75,0.12)}
-    .controls{display:flex;gap:10px;align-items:center}
-    .refresh-select{padding:10px;border-radius:8px;border:1px solid #e6eef0;background:#fff}
-    .table-wrap{margin-top:18px;overflow:auto;border-radius:10px;background:#fff;padding:12px;box-shadow:0 8px 20px rgba(18,18,18,0.03)}
-    table{width:100%;border-collapse:collapse;font-size:15px}
-    thead th{background:var(--green);color:#fff;padding:16px 14px;text-align:left;position:sticky;top:0}
-    tbody td{padding:18px 14px;border-bottom:1px solid #f1f5f6}
-    .muted{color:var(--muted)}
-    .form-section{margin-top:24px;padding-top:20px;border-top:1px solid #eef3f3}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .form-grid .full{grid-column:1/-1}
-    label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
-    .hint{font-size:13px;color:var(--muted);margin-top:8px}
-    @media(max-width:720px){
-      .form-grid{grid-template-columns:1fr}
-      thead th{font-size:14px}
-      tbody td{padding:12px}
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pending Payments</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#138a55;
+    --muted:#6b6f72;
+    --card:#ffffff;
+    --bg:#f6f7f8;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
+  body{margin:0;background:var(--bg);color:#1f2933;padding:28px;}
+  .wrap{max-width:980px;margin:0 auto}
+  header{display:flex;align-items:center;gap:18px;margin-bottom:18px}
+  header h1{margin:0;font-size:28px}
+  .card{background:var(--card);padding:22px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
+  .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  .controls input[type=search]{width:100%;max-width:540px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
+  .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
+  .tableWrap{overflow-x:auto;margin-top:12px}
+  table{border-collapse:collapse;width:100%;min-width:700px}
+  thead th{background:var(--green);color:#fff;padding:18px 14px;text-align:left}
+  tbody td{padding:18px 14px;border-bottom:1px solid #f1f2f3}
+  .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+  .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .formRow .row{display:flex;gap:10px}
+  .formRow .row input{flex:1}
+  .notice{font-size:13px;color:var(--muted);margin-top:12px}
+  @media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:540px}}
+</style>
 </head>
 <body>
-  <div class="wrap" role="main">
-    <h1><span class="icon">📋</span> Pending Payments</h1>
-    <div class="sub">Live from Google Sheet (via SheetDB)</div>
+<div class="wrap">
+  <header>
+    <div style="font-size:28px">📋</div>
+    <div>
+      <h1>Pending Payments</h1>
+      <div style="color:var(--muted);font-size:14px">Live from Google Sheet (via SheetDB)</div>
+    </div>
+  </header>
 
-    <div class="actions">
-      <div class="search">
-        <input id="q" type="search" placeholder="Search client, mobile or remark" />
-      </div>
-
-      <div class="controls">
-        <select id="refreshInterval" class="refresh-select" title="Auto refresh">
-          <option value="0">No auto refresh</option>
-          <option value="15000">Refresh every 15s</option>
-          <option value="30000">Refresh every 30s</option>
-          <option value="60000" selected>Refresh every 60s</option>
-        </select>
-
-        <button id="showPendingBtn" class="btn secondary">Show: Pending only</button>
-        <button id="reloadBtn" class="btn">Reload now</button>
-      </div>
+  <div class="card">
+    <div class="controls">
+      <input id="searchBox" type="search" placeholder="Search client, mobile or remark" />
+      <select id="refreshSel" title="Auto refresh">
+        <option value="0">Refresh off</option>
+        <option value="15">Refresh every 15s</option>
+        <option value="30">Refresh every 30s</option>
+        <option value="60" selected>Refresh every 60s</option>
+      </select>
+      <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>
+      <button id="reloadBtn" class="btn">Reload now</button>
     </div>
 
-    <div class="table-wrap" id="tableWrap">
-      <table id="dataTable" aria-live="polite">
-        <thead>
-          <tr>
-            <th>Client Name</th>
-            <th>Mobile</th>
-            <th>Amount</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Remark</th>
-            <th>Days Pending</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <!-- content injected -->
-        </tbody>
+    <div class="tableWrap" id="tableWrap">
+      <table id="dataTable" role="table" aria-label="Pending payments table">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
       </table>
     </div>
 
-    <div class="form-section">
-      <h2 style="margin:18px 0 12px">Add New Pending Client</h2>
+    <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
 
-      <div class="form-grid" style="margin-bottom:12px">
-        <div class="full"><label for="f_clientname">Client Name</label><input id="f_clientname" type="text" placeholder="Client Name"></div>
-        <div><label for="f_mobile">Mobile</label><input id="f_mobile" type="text" placeholder="Mobile"></div>
-        <div><label for="f_amount">Amount</label><input id="f_amount" type="text" placeholder="Amount"></div>
-        <div><label for="f_date">Date (e.g. 10/1/2025)</label><input id="f_date" type="text" placeholder="10/1/2025"></div>
-
-        <div><label for="f_status">Status</label>
-          <select id="f_status">
-            <option value="pending" selected>Pending</option>
-            <option value="paid">Paid</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div><label for="f_remark">Remark</label><input id="f_remark" type="text" placeholder="Remark"></div>
-
-        <div class="full" style="margin-top:8px">
-          <button id="addBtn" class="btn">Add</button>
-          <span class="hint">Tip: To update existing rows, edit the Google Sheet directly or use SheetDB's update endpoints.</span>
-        </div>
+    <h2>Add New Pending Client</h2>
+    <div class="formRow">
+      <div class="row">
+        <input id="f_name" placeholder="Client Name" />
+        <input id="f_mobile" placeholder="Mobile" />
       </div>
+      <div class="row">
+        <input id="f_amount" placeholder="Amount" />
+        <input id="f_date" placeholder="Date (e.g. 10/1/2025)" />
+      </div>
+      <div class="row">
+        <select id="f_status">
+          <option>pending</option>
+          <option>paid</option>
+          <option>other</option>
+        </select>
+        <input id="f_days" placeholder="Days pending (optional)" />
+      </div>
+      <textarea id="f_remark" rows="2" placeholder="Remark"></textarea>
+      <div style="display:flex;gap:12px;align-items:center">
+        <button id="addBtn" class="btn">Add</button>
+        <div id="msg" style="color:var(--muted)"></div>
+      </div>
+      <div class="notice">Tip: To update sheet directly, edit your Google Sheet and publish to the web (CSV) — or add via this form.</div>
     </div>
   </div>
+</div>
 
 <script>
 /*
-  FINAL HTML + JS — SheetDB integration
-  Make sure your Google Sheet headers are exactly:
-  clientname  mobile  amount  date  status  remark  days_pending
-  (lowercase, underscore for days_pending).
+  FINAL single-file app.
+  Replace the SHEETDB_API with your SheetDB API if different.
 */
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 
-// POINT THIS TO YOUR SHEETDB API endpoint (from sheetdb dashboard)
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // <-- replace if different
+// canonical fields we expect
+const canonical = ["clientname","mobile","amount","date","status","remark","days_pending"];
 
-let dataCache = [];
-let autoTimer = null;
-let showPendingOnly = false;
+// utility to normalize a header name to compare
+function norm(s){
+  return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');
+}
 
-// util: safe get
-const $ = id => document.getElementById(id);
+// fetch data and render
+let lastData = [];
+let headerMap = {}; // canonical -> actual sheet key
 
-async function loadData(){
-  try {
-    $('reloadBtn').disabled = true;
-    $('reloadBtn').textContent = 'Loading...';
-
+async function fetchData(){
+  try{
     const res = await fetch(SHEETDB_API);
-    if (!res.ok) throw new Error('Failed to fetch sheet data');
-    const json = await res.json();
-
-    // SheetDB returns array of objects; normalize keys to expected ones
-    dataCache = json.map(item => ({
-      clientname: (item.clientname || item['Client Name'] || item['Client Name '] || item['Client Name'] || '').toString().trim(),
-      mobile: (item.mobile || item.Mobile || item['mobile '] || '').toString().trim(),
-      amount: (item.amount || item.Amount || '').toString().trim(),
-      date: (item.date || item.Date || '').toString().trim(),
-      status: (item.status || '').toString().trim(),
-      remark: (item.remark || item.Remark || item.remark || '').toString().trim(),
-      days_pending: (item.days_pending || item['days_pending'] || item['Days Pending'] || '').toString().trim()
-    }));
-
-    renderTable();
-  } catch (err){
-    console.error('loadData error', err);
-    alert('Error loading data: ' + err.message);
-  } finally {
-    $('reloadBtn').disabled = false;
-    $('reloadBtn').textContent = 'Reload now';
+    if(!res.ok) throw new Error('Fetch failed: '+res.status);
+    const data = await res.json();
+    lastData = Array.isArray(data) ? data : [];
+    detectHeaders(lastData);
+    renderTable(lastData);
+    return lastData;
+  }catch(e){
+    console.error(e);
+    document.getElementById('msg').textContent = 'Error loading data: '+e.message;
+    return [];
   }
 }
 
-function renderTable(){
-  const q = $('q').value.trim().toLowerCase();
-  const tbody = $('tbody');
-  tbody.innerHTML = '';
+// detect which actual keys correspond to each canonical field
+function detectHeaders(data){
+  headerMap = {};
+  if(data && data.length){
+    const keys = Object.keys(data[0]);
+    // build lookup normalized -> original
+    const lookup = {};
+    keys.forEach(k => lookup[norm(k)] = k);
+    canonical.forEach(c => {
+      // try direct norm match
+      if(lookup[norm(c)]) headerMap[c] = lookup[norm(c)];
+      else {
+        // try common variants
+        const variants = {
+          clientname:['clientname','client','name','clientname','client_name','clientname'],
+          mobile:['mobile','phone','mobilephone','phoneNumber','mobilenumber','mobile_number'],
+          amount:['amount','amt','price'],
+          date:['date','duedate','due_date'],
+          status:['status','statu'],
+          remark:['remark','remarks','note','notes'],
+          days_pending:['dayspending','days_pending','dayspending','days','days_pending']
+        };
+        const vs = variants[c]||[c];
+        for(const v of vs){
+          if(lookup[norm(v)]){ headerMap[c]=lookup[norm(v)]; break; }
+        }
+        // fallback to first key if nothing matched
+        if(!headerMap[c] && keys.length) headerMap[c] = keys[0];
+      }
+    });
+  } else {
+    // no rows yet — fallback to canonical as headers
+    canonical.forEach(c=> headerMap[c] = c);
+  }
+}
 
-  const rows = dataCache.filter(r => {
-    if (showPendingOnly && r.status.toLowerCase() !== 'pending') return false;
-    if (!q) return true;
-    return (r.clientname||'').toLowerCase().includes(q)
-        || (r.mobile||'').toLowerCase().includes(q)
-        || (r.remark||'').toLowerCase().includes(q)
-        || (r.status||'').toLowerCase().includes(q);
+// render table head & body using headerMap
+function renderTable(data){
+  const th = document.getElementById('tableHead');
+  const tb = document.getElementById('tableBody');
+  th.innerHTML = ''; tb.innerHTML = '';
+
+  // build head using canonical label -> nicer title
+  const titles = {
+    clientname:'Client Name', mobile:'Mobile', amount:'Amount',
+    date:'Date', status:'Status', remark:'Remark', days_pending:'Days Pending'
+  };
+
+  const headRow = document.createElement('tr');
+  Object.keys(titles).forEach(k => {
+    const thcell = document.createElement('th');
+    thcell.textContent = titles[k];
+    headRow.appendChild(thcell);
   });
+  th.appendChild(headRow);
 
-  if (rows.length === 0){
+  // filter/search
+  const search = document.getElementById('searchBox').value.trim().toLowerCase();
+
+  const showOnlyPending = filterPending;
+  (data||[]).forEach(row => {
+    const visible = Object.values(row).join(' ').toLowerCase().includes(search);
+    if(!visible) return;
+    if(showOnlyPending && !String(row[headerMap['status']]||'').toLowerCase().includes('pending')) return;
+
     const tr = document.createElement('tr');
-    const td = document.createElement('td');
-    td.colSpan = 7;
-    td.className = 'muted';
-    td.textContent = 'No rows found';
-    td.style.padding = '18px';
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+    canonical.forEach(k => {
+      const td = document.createElement('td');
+      const actualKey = headerMap[k];
+      td.textContent = (actualKey && row[actualKey]!==undefined) ? row[actualKey] : '';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+}
+
+let refreshTimer = null;
+let filterPending = false;
+
+document.getElementById('reloadBtn').addEventListener('click', () => {
+  document.getElementById('msg').textContent = 'Reloading…';
+  fetchData().then(()=> document.getElementById('msg').textContent = '');
+});
+
+document.getElementById('filterPendingBtn').addEventListener('click', (e) => {
+  filterPending = !filterPending;
+  e.target.classList.toggle('btn', filterPending);
+  e.target.classList.toggle('ghost', !filterPending);
+  e.target.textContent = filterPending ? 'Show: Pending only' : 'Show: Pending only';
+  renderTable(lastData);
+});
+
+document.getElementById('searchBox').addEventListener('input', ()=>renderTable(lastData));
+
+document.getElementById('refreshSel').addEventListener('change', (e) => {
+  const v = Number(e.target.value);
+  if(refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+  if(v>0) refreshTimer = setInterval(fetchData, v*1000);
+});
+
+document.getElementById('addBtn').addEventListener('click', async () => {
+  const name = document.getElementById('f_name').value.trim();
+  const mobile = document.getElementById('f_mobile').value.trim();
+  const amount = document.getElementById('f_amount').value.trim();
+  const date = document.getElementById('f_date').value.trim();
+  const status = document.getElementById('f_status').value.trim();
+  const days = document.getElementById('f_days').value.trim();
+  const remark = document.getElementById('f_remark').value.trim();
+
+  if(!name && !mobile){
+    alert('Please provide at least Client Name or Mobile.');
     return;
   }
 
-  rows.forEach(row => {
-    const tr = document.createElement('tr');
+  // ensure headers detected (if no data yet, fetch first)
+  if(!Object.keys(headerMap).length) await fetchData();
 
-    const make = txt => {
-      const td = document.createElement('td');
-      td.textContent = txt || '';
-      return td;
-    };
+  // build payload using detected headerMap
+  const payloadObj = {};
+  payloadObj[ headerMap['clientname'] || 'clientname' ] = name || '';
+  payloadObj[ headerMap['mobile'] || 'mobile' ] = mobile || '';
+  payloadObj[ headerMap['amount'] || 'amount' ] = amount || '';
+  payloadObj[ headerMap['date'] || 'date' ] = date || '';
+  payloadObj[ headerMap['status'] || 'status' ] = status || '';
+  payloadObj[ headerMap['remark'] || 'remark' ] = remark || '';
+  payloadObj[ headerMap['days_pending'] || 'days_pending' ] = days || '';
 
-    tr.appendChild(make(row.clientname));
-    tr.appendChild(make(row.mobile));
-    tr.appendChild(make(row.amount));
-    tr.appendChild(make(row.date));
-    tr.appendChild(make(row.status));
-    tr.appendChild(make(row.remark));
-    tr.appendChild(make(row.days_pending));
-    tbody.appendChild(tr);
-  });
-}
+  const body = { data: [ payloadObj ] };
 
-
-// Add form handler — IMPORTANT: post uses EXACT keys expected by sheet
-$('addBtn').addEventListener('click', async () => {
-  const clientname = $('f_clientname').value.trim();
-  const mobile = $('f_mobile').value.trim();
-  const amount = $('f_amount').value.trim();
-  const date = $('f_date').value.trim();
-  const status = $('f_status').value;
-  const remark = $('f_remark').value.trim();
-
-  if (!clientname) { alert('Please enter Client Name'); return; }
-
-  // Build row object with EXACT header keys as in your sheet
-  const row = {
-    clientname: clientname,
-    mobile: mobile,
-    amount: amount,
-    date: date,
-    status: status,
-    remark: remark,
-    days_pending: '' // optional; can be computed in sheet if desired
-  };
-
-  const payload = { data: [ row ] }; // SheetDB expects { data: [ {...} ] }
-
-  try {
-    $('addBtn').disabled = true;
-    $('addBtn').textContent = 'Adding...';
-
-    const resp = await fetch(SHEETDB_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+  try{
+    const res = await fetch(SHEETDB_API, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
     });
-
-    if (!resp.ok){
-      const body = await resp.text();
-      throw new Error('SheetDB error: ' + resp.status + ' ' + body);
+    const j = await res.json();
+    if(!res.ok){
+      console.error('SheetDB error:', j);
+      alert('Error adding row: '+(j.message||res.status));
+      return;
     }
-
-    // Clear form
-    $('f_clientname').value = '';
-    $('f_mobile').value = '';
-    $('f_amount').value = '';
-    $('f_date').value = '';
-    $('f_remark').value = '';
-
-    // Wait a moment then reload data (SheetDB sometimes needs a short time)
-    setTimeout(() => loadData(), 800);
-    alert('Added successfully — reload should show it in a second.');
-  } catch (err){
-    console.error('Add error', err);
-    alert('Error adding row: ' + (err.message || err));
-  } finally {
-    $('addBtn').disabled = false;
-    $('addBtn').textContent = 'Add';
+    document.getElementById('msg').textContent = 'Added — reloading...';
+    // clear form
+    ['f_name','f_mobile','f_amount','f_date','f_days','f_remark'].forEach(id=>document.getElementById(id).value='');
+    // small delay then reload
+    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),400);
+  }catch(err){
+    console.error(err);
+    alert('Network error adding row: '+err.message);
   }
 });
 
-// UI controls
-$('reloadBtn').addEventListener('click', loadData);
-$('q').addEventListener('input', renderTable);
-$('showPendingBtn').addEventListener('click', () => {
-  showPendingOnly = !showPendingOnly;
-  $('showPendingBtn').textContent = showPendingOnly ? 'Show: All' : 'Show: Pending only';
-  renderTable();
-});
-
-// auto refresh
-$('refreshInterval').addEventListener('change', () => {
-  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-  const val = Number($('refreshInterval').value);
-  if (val > 0) autoTimer = setInterval(loadData, val);
-});
-
 // initial load
-loadData();
+fetchData();
 </script>
 </body>
 </html>
