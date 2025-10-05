@@ -41,6 +41,16 @@
   .pageBtn{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ea;background:#fff;cursor:pointer}
   .pageBtn.active{background:var(--green);color:#fff;border-color:var(--green)}
   .pageInfo{margin-right:auto;color:var(--muted)}
+  /* PASSWORD GATE STYLES (overlay) */
+  #pwOverlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.45),rgba(0,0,0,0.55));display:flex;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(2px)}
+  #pwBox{width:95%;max-width:420px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:left}
+  #pwBox h2{margin:0 0 8px 0;color:#153;font-size:18px}
+  #pwBox p{margin:0 0 12px 0;color:#666;font-size:13px}
+  #pwBox input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ea;margin-bottom:10px}
+  #pwBox button{background:#138a55;color:#fff;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+  #pwMsg{font-size:13px;color:#cc3b3b;margin-top:8px;min-height:18px}
+  #pwBox .linkish{background:#fff;border:1px solid #e6e9ea;color:#333;padding:10px 12px;border-radius:8px;cursor:pointer}
+  @media (max-width:420px){#pwBox{padding:14px}}
   @media (max-width:780px){
     .formRow .row{flex-direction:column}
     .controls input[type=search]{max-width:100%}
@@ -50,7 +60,28 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<!-- PASSWORD OVERLAY: appears before the site -->
+<div id="pwOverlay" role="dialog" aria-label="Login required">
+  <div id="pwBox" role="document" aria-live="polite">
+    <h2>Admin login</h2>
+    <p>Enter username and password to open the dashboard.</p>
+
+    <label style="font-size:13px;color:var(--muted)">Username</label>
+    <input id="pwUser" type="text" value="" placeholder="admin" />
+
+    <label style="font-size:13px;color:var(--muted)">Password</label>
+    <input id="pwInput" type="password" placeholder="Password" />
+
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button id="pwSubmit">Open</button>
+      <button id="pwChangeBtn" class="linkish" title="Change password (requires your email)">Change password</button>
+    </div>
+    <div id="pwMsg"></div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted)">Username: <strong>admin</strong>. Password can be changed only with the email <strong>agichaniprakash@gmail.com</strong>.</div>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap" style="display:none">
   <header><h1>PERFECT DIGITAL NETWORK</h1></header>
 
   <div class="card">
@@ -116,7 +147,174 @@
   </div>
 </div>
 
+<!-- PASSWORD-CHANGE MODAL (hidden until requested) -->
+<div id="pwChangeOverlay" style="display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)">
+  <div style="background:#fff;padding:16px;border-radius:12px;max-width:480px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+    <h3 style="margin:0 0 8px 0">Change password</h3>
+    <p style="margin:0 0 10px 0;color:var(--muted)">Provide your email (must be <strong>agichaniprakash@gmail.com</strong>), current password, and new password.</p>
+    <input id="chgEmail" placeholder="Your email" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ea;margin-bottom:8px" />
+    <input id="chgCurrent" type="password" placeholder="Current password" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ea;margin-bottom:8px" />
+    <input id="chgNew" type="password" placeholder="New password" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ea;margin-bottom:8px" />
+    <input id="chgNew2" type="password" placeholder="Confirm new password" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ea;margin-bottom:12px" />
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="chgCancel" class="linkish">Cancel</button>
+      <button id="chgSave" class="btn">Save</button>
+    </div>
+    <div id="chgMsg" style="margin-top:8px;color:#b33"></div>
+  </div>
+</div>
+
 <script>
+/*
+  Client-side password gate + password-change restricted by email.
+
+  Behavior:
+  - Username must be "admin".
+  - Initial password (if none stored) = 'pdn@secure#2025'.
+  - Password stored in localStorage (base64-encoded).
+  - Session authentication is kept in sessionStorage.
+  - Password change allowed only if email exactly matches 'agichaniprakash@gmail.com'.
+*/
+
+/* CONFIG */
+const ADMIN_USER = 'admin';
+const AUTH_SESSION_KEY = 'codem1_auth_ok_v1';
+const STORAGE_PW_KEY = 'codem1_pw_v1'; // stores base64 of password
+const OWNER_EMAIL = 'agichaniprakash@gmail.com';
+
+// initial password we set (will be stored only if no password exists in storage)
+const INITIAL_PW = 'pdn@secure#2025';
+
+/* utilities */
+function setStoredPassword(pw){
+  try{ localStorage.setItem(STORAGE_PW_KEY, btoa(String(pw))); return true; } catch(e){ console.error(e); return false; }
+}
+function getStoredPassword(){
+  try{
+    const v = localStorage.getItem(STORAGE_PW_KEY);
+    if(!v) return null;
+    return atob(v);
+  }catch(e){ return null; }
+}
+function clearAuthSession(){ sessionStorage.removeItem(AUTH_SESSION_KEY); document.getElementById('mainWrap').style.display='none'; document.getElementById('pwOverlay').style.display='flex'; }
+
+/* ensure a stored password exists */
+if(!getStoredPassword()){
+  setStoredPassword(INITIAL_PW);
+}
+
+/* elements */
+const overlay = document.getElementById('pwOverlay');
+const mainWrap = document.getElementById('mainWrap');
+const userInput = document.getElementById('pwUser');
+const pwInput = document.getElementById('pwInput');
+const submitBtn = document.getElementById('pwSubmit');
+const msgDiv = document.getElementById('pwMsg');
+const changeBtn = document.getElementById('pwChangeBtn');
+
+const changeOverlay = document.getElementById('pwChangeOverlay');
+const chgEmail = document.getElementById('chgEmail');
+const chgCurrent = document.getElementById('chgCurrent');
+const chgNew = document.getElementById('chgNew');
+const chgNew2 = document.getElementById('chgNew2');
+const chgSave = document.getElementById('chgSave');
+const chgCancel = document.getElementById('chgCancel');
+const chgMsg = document.getElementById('chgMsg');
+
+/* On load — if session authenticated, hide overlay and show main */
+if(sessionStorage.getItem(AUTH_SESSION_KEY) === '1'){
+  overlay.style.display = 'none';
+  mainWrap.style.display = '';
+} else {
+  overlay.style.display = 'flex';
+  mainWrap.style.display = 'none';
+  userInput.value = ADMIN_USER;
+  pwInput.value = '';
+  pwInput.focus();
+}
+
+/* login function */
+function attemptLogin(){
+  const u = (userInput.value || '').trim();
+  const p = (pwInput.value || '');
+  const stored = getStoredPassword() || '';
+  if(u !== ADMIN_USER){
+    msgDiv.textContent = 'Wrong username.';
+    return;
+  }
+  if(p === stored){
+    sessionStorage.setItem(AUTH_SESSION_KEY, '1');
+    overlay.style.transition = 'opacity 220ms';
+    overlay.style.opacity = '0';
+    setTimeout(()=>{ overlay.style.display='none'; mainWrap.style.display=''; overlay.style.opacity='1'; }, 240);
+    msgDiv.textContent = '';
+  } else {
+    msgDiv.textContent = 'Incorrect password.';
+    pwInput.value = '';
+    pwInput.focus();
+  }
+}
+
+/* events */
+submitBtn.addEventListener('click', attemptLogin);
+pwInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') attemptLogin(); });
+
+changeBtn.addEventListener('click', ()=>{
+  // show change modal
+  chgEmail.value = '';
+  chgCurrent.value = '';
+  chgNew.value = '';
+  chgNew2.value = '';
+  chgMsg.textContent = '';
+  changeOverlay.style.display = 'flex';
+  chgEmail.focus();
+});
+
+/* handle change cancel */
+chgCancel.addEventListener('click', ()=>{ changeOverlay.style.display='none'; });
+
+/* change save handler */
+chgSave.addEventListener('click', ()=>{
+  chgMsg.textContent = '';
+  const email = (chgEmail.value || '').trim();
+  const cur = chgCurrent.value || '';
+  const n1 = chgNew.value || '';
+  const n2 = chgNew2.value || '';
+
+  if(!email || !cur || !n1 || !n2){ chgMsg.textContent = 'Please fill all fields.'; return; }
+  if(email.toLowerCase() !== OWNER_EMAIL.toLowerCase()){ chgMsg.textContent = 'Password change allowed only via owner email.'; return; }
+
+  const stored = getStoredPassword() || '';
+  if(cur !== stored){ chgMsg.textContent = 'Current password incorrect.'; return; }
+  if(n1 !== n2){ chgMsg.textContent = 'New passwords do not match.'; return; }
+  if(n1.length < 6){ chgMsg.textContent = 'Choose a stronger password (min 6 chars).'; return; }
+
+  // save new password
+  const ok = setStoredPassword(n1);
+  if(ok){
+    chgMsg.style.color = '#138a55';
+    chgMsg.textContent = 'Password updated ✓';
+    setTimeout(()=>{ chgMsg.style.color = '#b33'; changeOverlay.style.display='none'; }, 900);
+  } else {
+    chgMsg.style.color = '#b33';
+    chgMsg.textContent = 'Failed to save password (browser blocked).';
+  }
+});
+
+/* allow pressing Escape to close change overlay only if shown */
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape'){
+    if(changeOverlay.style.display === 'flex') changeOverlay.style.display = 'none';
+  }
+});
+
+/* If logout needed later, you can call clearAuthSession() from console to test */
+
+/* -------------------------
+   Below this point: your Code M1 logic (unchanged)
+   - SheetDB fetch, render, pagination, add, edit, WA send.
+   -------------------------*/
+
 /* CONFIG - keep your API */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 const CANON = ['clientname','mobile','amount','date','status','address'];
@@ -389,7 +587,7 @@ async function addRow(){
   }
 }
 
-/* edit - same prompt-based edit */
+/* edit - prompt-based patch */
 async function editRow(rowObj){
   try{
     const currentName = getCell(rowObj,'clientname')||'';
