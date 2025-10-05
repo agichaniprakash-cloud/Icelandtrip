@@ -1,110 +1,90 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK — Pending Payments</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#f4fbf7; --card:#ffffff; --accent:#118a53; --muted:#6b7874;
-    --orange:#ff9500; --green:#0ea45f; --danger:#d9534f;
-    --radius:12px;
-  }
-  *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
-  body{margin:0;background:var(--bg);color:#123;min-height:100vh}
-  /* fixed header */
-  header.appbar{
-    position:fixed;left:0;right:0;top:0;height:72px;background:linear-gradient(90deg,#f8fff9,#eef9f3);
-    display:flex;align-items:center;gap:18px;padding:12px 20px;border-bottom:1px solid rgba(0,0,0,0.04);z-index:40;
-  }
-  .brand{display:flex;align-items:center;gap:12px}
-  .brand .logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,#e9faf0,#d9f2e8);display:flex;align-items:center;justify-content:center;font-size:22px}
-  .brand h1{margin:0;font-size:18px;letter-spacing:0.6px;color:var(--accent);text-transform:uppercase}
-  /* body area */
-  .container{max-width:1100px;margin:100px auto 60px;padding:16px}
-  .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 8px 30px rgba(7,25,16,0.06)}
-  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-  input.input, select.select, button.btn{padding:10px 12px;border-radius:10px;border:1px solid #e9f0ec;background:#fff}
-  input.input{min-width:220px;flex:1}
-  .btn{background:var(--accent);color:#fff;border:0;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px dashed #dfeee4;color:var(--muted)}
-  .btn.orange{background:var(--orange)}
-  .summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
-  .summary .item{background:#f8fff9;padding:10px 12px;border-radius:10px;border:1px solid rgba(17,138,83,0.06);min-width:160px}
-  .tableWrap{overflow:auto;border-radius:10px}
-  table{width:100%;border-collapse:collapse;min-width:860px}
-  thead th{background:var(--accent);color:#fff;padding:12px 10px;text-align:left;position:sticky;top:0;z-index:5}
-  tbody td{padding:12px 10px;border-bottom:1px solid #f0f6f3;background:#fff}
-  tbody tr:nth-child(even) td{background:#fbfdfb}
-  .status-pill{padding:6px 8px;border-radius:999px;color:#fff;font-weight:600;display:inline-block;font-size:13px}
-  .status-pending{background:var(--orange)}
-  .status-paid{background:var(--green)}
-  .actions button{margin-right:6px}
-  .area-filters{display:flex;gap:8px;flex-wrap:wrap}
-  .area-filters button{padding:8px 12px;border-radius:999px;border:1px solid #e6eee8;background:#fff;cursor:pointer}
-  .area-filters button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-  /* modal */
-  .modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(3,8,4,0.35);display:flex;align-items:center;justify-content:center;z-index:80}
-  .modal .sheet{background:#fff;padding:18px;border-radius:12px;min-width:320px;max-width:620px}
-  .modal .row{display:flex;gap:8px;margin-bottom:8px}
-  .modal label{font-size:13px;color:var(--muted);margin-bottom:5px}
-  .muted{color:var(--muted)}
-  /* toast */
-  .toast{position:fixed;right:20px;bottom:18px;padding:10px 12px;border-radius:10px;color:#fff;z-index:110}
-  .toast.success{background:var(--green)}
-  .toast.error{background:var(--danger)}
-  /* pagination */
-  .pagination{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
-  .pagination button{padding:8px 10px;border-radius:8px;border:1px solid #e5eee7;background:#fff;cursor:pointer}
-  .pagination button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-  @media (max-width:860px){ .container{margin-top:120px;padding:12px} table{min-width:720px}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pending Payments — Perfect Digital Network</title>
+  <style>
+    /* --- simple modern styles --- */
+    :root{
+      --accent:#1f8a56;
+      --accent-dark:#177043;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --bg:#f7faf7;
+      --pending:#f59e0b;
+      --paid:#10b981;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{margin:0;background:var(--bg);color:#0f172a}
+    .wrap{max-width:980px;margin:28px auto;padding:22px}
+    header.site{display:flex;align-items:center;gap:18px;background:#f1fbf6;border-radius:8px;padding:18px 22px}
+    header.site h1{margin:0;font-size:26px;color:var(--accent-dark)}
+    .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:18px 0}
+    .search{flex:1}
+    input[type=text], select, textarea{width:100%;padding:12px;border:1px solid #e6eef0;border-radius:8px;font-size:15px}
+    button{background:var(--accent);border:none;color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer}
+    button.secondary{background:#fff;color:var(--accent);border:1px solid #e5f0ea}
+    .btn-orange{background:var(--pending)}
+    .top-stats{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+    .stat{background:#fff;padding:14px;border-radius:10px;min-width:140px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
+    .table-wrap{background:#fff;padding:18px;border-radius:10px;box-shadow:0 8px 30px rgba(16,24,40,0.04);margin-top:18px}
+    table{width:100%;border-collapse:collapse;font-size:15px}
+    thead th{background:var(--accent);color:white;padding:14px;text-align:left;border-radius:6px}
+    tbody td{padding:16px;border-bottom:1px solid #f1f5f9}
+    .status-pill{display:inline-block;padding:6px 10px;border-radius:999px;color:white;font-weight:600}
+    .status-paid{background:var(--paid)}
+    .status-pending{background:var(--pending)}
+    .row-actions button{margin-right:8px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .full{grid-column:1/-1}
+    .pager{display:flex;gap:8px;align-items:center;margin-top:12px}
+    .filter-chips{display:flex;gap:8px;align-items:center}
+    .chip{padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #e6eef0;cursor:pointer}
+    .chip.active{background:var(--accent);color:#fff}
+    .loading{padding:20px;text-align:center;color:var(--muted)}
+    footer{margin-top:30px;color:var(--muted);font-size:13px;text-align:center}
+    @media(max-width:700px){ .form-grid{grid-template-columns:1fr} thead th{font-size:13px} tbody td{font-size:14px} }
+  </style>
 </head>
 <body>
-
-<header class="appbar" role="banner">
-  <div class="brand" aria-hidden="true">
-    <div class="logo">📡</div>
-    <div>
-      <h1>PERFECT DIGITAL NETWORK</h1>
-    </div>
-  </div>
-
-  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-    <button id="reloadBtn" class="btn" title="Reload data">Reload</button>
-    <button id="addQuickBtn" class="btn ghost" style="margin-left:8px">Add client</button>
-  </div>
-</header>
-
-<div class="container">
-  <div class="card">
-
-    <!-- summary bar -->
-    <div class="summary" id="summaryBar" aria-live="polite">
-      <div class="item"><div class="muted">Total clients</div><div id="summaryTotal" style="font-weight:700">—</div></div>
-      <div class="item"><div class="muted">Pending amount (₹)</div><div id="summaryPending" style="font-weight:700">—</div></div>
-      <div class="item"><div class="muted">Paid amount (₹)</div><div id="summaryPaid" style="font-weight:700">—</div></div>
-      <div class="item"><div class="muted">Overdue (count)</div><div id="summaryOverdue" style="font-weight:700">—</div></div>
-    </div>
-
-    <!-- controls -->
-    <div class="controls" role="region" aria-label="Controls">
-      <input id="searchInput" class="input" placeholder="Search client or mobile or address">
-      <div class="area-filters" id="areaFilters" style="margin-left:8px">
-        <button data-area="all" class="active">All</button>
-        <button data-area="Wazirpur">Wazirpur</button>
-        <button data-area="Shastri Nagar">Shastri Nagar</button>
-        <button data-area="Ashok Vihar">Ashok Vihar</button>
+  <div class="wrap">
+    <header class="site">
+      <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><path fill='%231f8a56' d='M12 2l3 7h6l-4.5 3.5L20 22l-8-5-8 5 1.5-9.5L1 9h6z'/></svg>" alt="" width="44" height="44">
+      <div>
+        <h1>PERFECT DIGITAL NETWORK</h1>
+        <div style="color:var(--muted);font-size:13px">Pending Payments dashboard</div>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button id="showPendingBtn" class="btn orange">Pending only</button>
-      </div>
+    </header>
+
+    <div class="top-stats">
+      <div class="stat">Total clients: <strong id="stat-total">—</strong></div>
+      <div class="stat">Pending: <strong id="stat-pending">—</strong></div>
+      <div class="stat">Paid: <strong id="stat-paid">—</strong></div>
+      <div class="stat">Overdue (count): <strong id="stat-overdue">—</strong></div>
     </div>
 
-    <!-- table -->
-    <div class="tableWrap" id="tableWrap">
-      <table aria-live="polite">
+    <div class="controls">
+      <input id="search" class="search" type="text" placeholder="Search client or mobile or address" />
+      <div style="min-width:120px">
+        <select id="refreshInterval">
+          <option value="0">No auto refresh</option>
+          <option value="60000">Refresh every 60s</option>
+          <option value="120000">120s</option>
+        </select>
+      </div>
+      <div class="filter-chips">
+        <div class="chip active" data-area="__all__">All</div>
+        <div class="chip" data-area="Wazirpur">Wazirpur</div>
+        <div class="chip" data-area="Shastri Nagar">Shastri Nagar</div>
+        <div class="chip" data-area="Ashok Vihar">Ashok Vihar</div>
+      </div>
+      <button class="secondary btn-orange" id="pendingOnly">Pending only</button>
+      <button id="reload">Reload now</button>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-describedby="pending-list">
         <thead>
           <tr>
             <th>Client Name</th>
@@ -117,408 +97,342 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody id="tableBody">
-          <tr><td colspan="8" class="muted" style="text-align:center;padding:18px">Loading…</td></tr>
+        <tbody id="rows">
+          <tr><td colspan="8" class="loading">Loading...</td></tr>
         </tbody>
       </table>
-    </div>
 
-    <!-- pagination controls - fixed 20 per page -->
-    <div id="paginationArea" class="pagination" aria-label="Pagination"></div>
-
-    <!-- add form -->
-    <div style="margin-top:14px">
-      <h3 style="margin:6px 0 10px">Add new client</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <div><label class="muted">Client name</label><input id="f_clientname" class="input" /></div>
-        <div><label class="muted">Mobile</label><input id="f_mobile" class="input" /></div>
-        <div><label class="muted">Amount (₹)</label><input id="f_amount" class="input" /></div>
-        <div><label class="muted">Date</label><input id="f_date" class="input" placeholder="DD/MM/YYYY or MM/DD/YYYY" /></div>
-        <div><label class="muted">Status</label>
-          <select id="f_status" class="select">
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-          </select>
-        </div>
-        <div><label class="muted">Address</label>
-          <select id="f_address" class="select">
-            <option value="">-- choose address --</option>
-            <option>Wazirpur</option>
-            <option>Shastri Nagar</option>
-            <option>Ashok Vihar</option>
-          </select>
-        </div>
-        <div style="grid-column:1/-1;margin-top:8px">
-          <button id="addBtn" class="btn">Add client</button>
-        </div>
+      <div class="pager">
+        <div>Show per page:</div>
+        <select id="perPage">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+        </select>
+        <button id="prev" class="secondary">Prev</button>
+        <button id="next" class="secondary">Next</button>
+        <div style="margin-left:auto;color:var(--muted)">Page <span id="pageNum">1</span></div>
       </div>
     </div>
 
+    <section style="margin-top:22px;background:#fff;padding:18px;border-radius:10px">
+      <h2>Add new client</h2>
+      <form id="addForm">
+        <div class="form-grid">
+          <div><input id="f_clientname" placeholder="Client name" required /></div>
+          <div><input id="f_mobile" placeholder="Mobile" required /></div>
+          <div><input id="f_amount" placeholder="Amount (₹)" /></div>
+          <div><input id="f_date" placeholder="DD/MM/YYYY or MM/DD/YYYY" /></div>
+          <div>
+            <select id="f_status">
+              <option value="pending">Pending</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div>
+            <select id="f_address">
+              <option value="">-- choose address --</option>
+              <option>Wazirpur</option>
+              <option>Shastri Nagar</option>
+              <option>Ashok Vihar</option>
+            </select>
+          </div>
+          <div class="full"><input id="f_days_pending" placeholder="Days pending" /></div>
+          <div class="full">
+            <button type="submit">Add</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <footer>Powered by SheetDB • Make sure your SheetDB API URL is set in the script</footer>
   </div>
-</div>
 
-<!-- edit modal (hidden) -->
-<div id="editModal" class="modal" style="display:none" role="dialog" aria-modal="true">
-  <div class="sheet">
-    <h3>Edit client</h3>
-    <div style="margin-top:6px">
-      <label class="muted">Client name</label>
-      <input id="e_clientname" class="input" />
-    </div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <div style="flex:1">
-        <label class="muted">Mobile</label>
-        <input id="e_mobile" class="input" />
-      </div>
-      <div style="flex:1">
-        <label class="muted">Amount</label>
-        <input id="e_amount" class="input" />
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <div style="flex:1">
-        <label class="muted">Date</label>
-        <input id="e_date" class="input" />
-      </div>
-      <div style="flex:1">
-        <label class="muted">Status</label>
-        <select id="e_status" class="select"><option value="pending">Pending</option><option value="paid">Paid</option></select>
-      </div>
-    </div>
-    <div style="margin-top:8px">
-      <label class="muted">Address</label>
-      <select id="e_address" class="select">
-        <option>Wazirpur</option><option>Shastri Nagar</option><option>Ashok Vihar</option>
-      </select>
-    </div>
+  <script>
+  /* -------------------------
+     CONFIG - replace with your SheetDB API
+     ------------------------- */
+  const API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // <-- REPLACE with your SheetDB API URL
 
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-      <button id="cancelEdit" class="btn ghost">Cancel</button>
-      <button id="saveEdit" class="btn">Save changes</button>
-    </div>
-  </div>
-</div>
-
-<!-- toast root -->
-<div id="toastRoot" style="pointer-events:none"></div>
-
-<script>
-/* FINAL app
-   - Pagination: 20 rows per page, controls below the table
-   - Admin PIN: 1914 (change ADMIN_PIN variable if needed)
-   - Edit/Delete use SheetDB PATCH and DELETE by mobile column
-   - Ensure your sheet headers include: clientname, mobile, amount, date, status, address, days_pending
-*/
-
-/* ========== CONFIG ========== */
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
-const ADMIN_PIN = '1914';
-const PAGE_SIZE = 20;
-
-/* ========== UTIL ========== */
-const $ = id => document.getElementById(id);
-function showToast(msg, kind='success', t=3000){
-  const el = document.createElement('div'); el.className = 'toast ' + (kind==='success' ? 'success' : 'error'); el.textContent = msg;
-  el.style.pointerEvents = 'auto';
-  $('toastRoot').appendChild(el);
-  setTimeout(()=> el.style.opacity = 0, t-400);
-  setTimeout(()=> el.remove(), t);
-}
-function normalizeKey(s){ return String(s||'').toLowerCase().trim().replace(/\s+/g,' ').replace(/\./g,'').trim(); }
-function parseDateFlexible(s){
-  if(!s) return null;
-  s = String(s).trim();
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s);
-  if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s)){
-    const parts = s.split('/');
-    let d = parseInt(parts[0],10), m = parseInt(parts[1],10), y = parseInt(parts[2],10);
-    if(y<100) y+=2000;
-    // treat as DD/MM/YYYY by default; if day>31 swap
-    if(d>31 || m>12){ [d,m] = [m,d]; }
-    return new Date(y, m-1, d);
+  /* -------------------------
+     Helpers
+     ------------------------- */
+  function normalizeKey(k){
+    // lowercase, remove spaces and punctuation and underscores; map to canonical keys
+    if(!k) return '';
+    const s = k.toString().toLowerCase().replace(/[^a-z0-9]/g,'');
+    // common header normalization
+    if(s.includes('client') && s.includes('name')) return 'clientname';
+    if(s === 'clientname') return 'clientname';
+    if(s.includes('mobile') ) return 'mobile';
+    if(s.includes('amount')) return 'amount';
+    if(s.includes('date')) return 'date';
+    if(s.includes('status')) return 'status';
+    if(s.includes('address')) return 'address';
+    if(s.includes('days') && s.includes('pending')) return 'days_pending';
+    // fallback
+    return s;
   }
-  const dd = new Date(s); return isNaN(dd.valueOf()) ? null : dd;
-}
 
-/* ========== STATE ========== */
-let rows = []; // raw objects
-let filters = { search:'', address:'all', pendingOnly:false };
-let currentPage = 1;
+  function normalizeRow(raw){
+    // raw is an object with whatever keys SheetDB returned
+    const row = {};
+    for(const k in raw){
+      const nk = normalizeKey(k);
+      row[nk] = raw[k];
+    }
+    // ensure canonical fields exist
+    return {
+      clientname: row.clientname || '',
+      mobile: row.mobile || '',
+      amount: row.amount || '',
+      date: row.date || '',
+      status: (row.status || '').toString().toLowerCase(),
+      address: row.address || '',
+      days_pending: row.days_pending || row.dayspending || ''
+    };
+  }
 
-/* ========== DATA LOADING ========== */
-async function loadData(){
-  try{
-    $('tableBody').innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">Loading…</td></tr>';
-    const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: '+res.status);
-    const j = await res.json();
-    rows = Array.isArray(j) ? j : (j.data || []);
-    // normalize rows: add __norm map
-    rows = rows.map(r => {
-      const m = {};
-      Object.keys(r).forEach(k => m[normalizeKey(k)] = r[k]);
-      // compute days_pending if missing
-      if(!m['days_pending'] || m['days_pending']==='') {
-        const d = parseDateFlexible(m['date']||'');
-        if(d) { const days = Math.floor((Date.now()-d.getTime())/(1000*60*60*24)); m['days_pending']=String(Math.max(0,days)); }
-        else m['days_pending']='';
+  function htmlEscape(s){ return (s===null||s===undefined)?'':String(s); }
+
+  /* -------------------------
+     State
+     ------------------------- */
+  let rawData = []; // normalized rows
+  let filtered = [];
+  let page = 1;
+  let perPage = parseInt(document.getElementById('perPage').value,10);
+  let autoRefreshTimer = null;
+  let activeArea = '__all__';
+  let showPendingOnly = false;
+
+  /* -------------------------
+     Fetch & render
+     ------------------------- */
+  async function loadData(){
+    const tbody = document.getElementById('rows');
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">Loading...</td></tr>';
+    try{
+      const res = await fetch(API);
+      if(!res.ok) throw new Error('API error '+res.status);
+      const j = await res.json();
+      if(!Array.isArray(j)){
+        // sometimes sheetdb returns object? try to find data property
+        console.warn('unexpected API response', j);
       }
-      return { raw: r, norm: m };
+      rawData = j.map(normalizeRow);
+      // compute stats
+      updateStats();
+      applyFiltersAndRender();
+    }catch(err){
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="8" class="loading">Error loading data: '+htmlEscape(err.message)+'</td></tr>';
+    }
+  }
+
+  function updateStats(){
+    const total = rawData.length;
+    const pending = rawData.filter(r=> (r.status||'').toLowerCase()==='pending').length;
+    const paid = rawData.filter(r=> (r.status||'').toLowerCase()==='paid').length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-paid').textContent = paid;
+    document.getElementById('stat-overdue').textContent = rawData.filter(r=>parseInt(r.days_pending||0,10)>30).length;
+  }
+
+  function applyFiltersAndRender(){
+    const q = (document.getElementById('search').value||'').trim().toLowerCase();
+    filtered = rawData.filter(r=>{
+      if(activeArea !== '__all__' && (r.address||'').toLowerCase() !== activeArea.toLowerCase()) return false;
+      if(showPendingOnly && (r.status||'').toLowerCase() !== 'pending') return false;
+      if(!q) return true;
+      return (r.clientname||'').toLowerCase().includes(q) ||
+             (r.mobile||'').toLowerCase().includes(q) ||
+             (r.address||'').toLowerCase().includes(q) ||
+             (r.remark||'').toLowerCase().includes(q);
     });
-    currentPage = 1;
-    renderAll();
-  } catch(err){
-    console.error(err);
-    $('tableBody').innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">Error loading data</td></tr>';
-    showToast('Error loading data: ' + err.message, 'error', 6000);
+    renderPage();
   }
-}
 
-/* ========== RENDERING ========== */
-function renderSummary(){
-  const total = rows.length;
-  let pendingAmt = 0, paidAmt = 0, overdueCount = 0;
-  const today = new Date();
-  rows.forEach(r => {
-    const n = r.norm;
-    const amt = parseFloat(String(n.amount||'').replace(/[^0-9.-]+/g,'')) || 0;
-    const st = String(n.status||'').toLowerCase();
-    if(st === 'pending') pendingAmt += amt;
-    if(st === 'paid') paidAmt += amt;
-    const d = parseDateFlexible(n.date || '');
-    if(st === 'pending' && d && d < today) overdueCount++;
-  });
-  $('summaryTotal').textContent = total;
-  $('summaryPending').textContent = Math.round(pendingAmt);
-  $('summaryPaid').textContent = Math.round(paidAmt);
-  $('summaryOverdue').textContent = overdueCount;
-}
-
-function filteredRows(){
-  const s = (filters.search||'').toLowerCase().trim();
-  const a = (filters.address||'').toLowerCase().trim();
-  const pendingOnly = !!filters.pendingOnly;
-  return rows.filter(r => {
-    const n = r.norm;
-    if(a && a !== 'all' && !(String(n.address||'').toLowerCase().includes(a))) return false;
-    if(pendingOnly && !String(n.status||'').toLowerCase().includes('pending')) return false;
-    if(s){
-      const hay = ((n.clientname||'') + ' ' + (n.mobile||'') + ' ' + (n.address||'')).toLowerCase();
-      if(!hay.includes(s)) return false;
+  function renderPage(){
+    perPage = parseInt(document.getElementById('perPage').value,10);
+    const start = (page-1)*perPage;
+    const pageData = filtered.slice(start,start+perPage);
+    const tbody = document.getElementById('rows');
+    if(pageData.length===0){
+      tbody.innerHTML = '<tr><td colspan="8" class="loading">No records</td></tr>';
+      document.getElementById('pageNum').textContent = page;
+      return;
     }
-    return true;
+    const rowsHtml = pageData.map((r, idx)=>{
+      const statusClass = (r.status==='paid') ? 'status-paid' : 'status-pending';
+      return `<tr>
+        <td>${htmlEscape(r.clientname)}</td>
+        <td>${htmlEscape(r.mobile)}</td>
+        <td>${htmlEscape(r.amount)}</td>
+        <td>${htmlEscape(r.date)}</td>
+        <td><span class="status-pill ${statusClass}">${htmlEscape(r.status||'')}</span></td>
+        <td>${htmlEscape(r.address)}</td>
+        <td>${htmlEscape(r.days_pending)}</td>
+        <td class="row-actions">
+          <button class="secondary" data-action="edit" data-idx="${start+idx}">Edit</button>
+          <button class="secondary" data-action="delete" data-idx="${start+idx}">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+    tbody.innerHTML = rowsHtml;
+    document.getElementById('pageNum').textContent = page;
+  }
+
+  /* -------------------------
+     Add / Edit / Delete
+     ------------------------- */
+  async function addClient(payload){
+    // payload keys should be canonical: clientname, mobile, amount, date, status, address, days_pending
+    try{
+      const res = await fetch(API, {
+        method: 'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ data: payload })
+      });
+      if(!res.ok) throw new Error('Add failed: '+res.status);
+      await res.json();
+      await loadData();
+      return true;
+    }catch(err){
+      alert('Add error: '+err.message);
+      console.error(err);
+      return false;
+    }
+  }
+
+  async function deleteClientByField(key, value){
+    // SheetDB supports DELETE /api/v1/{id}/{column}/{value}
+    try{
+      const url = `${API}/${encodeURIComponent(key)}/${encodeURIComponent(value)}`;
+      const res = await fetch(url, { method:'DELETE' });
+      if(!res.ok) throw new Error('Delete failed: '+res.status);
+      await res.json();
+      await loadData();
+    }catch(err){
+      alert('Delete error: '+err.message);
+      console.error(err);
+    }
+  }
+
+  async function editClientByField(key, value, patchObj){
+    // PATCH /api/v1/{id}/{column}/{value}
+    try{
+      const url = `${API}/${encodeURIComponent(key)}/${encodeURIComponent(value)}`;
+      const res = await fetch(url, {
+        method:'PATCH',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ data: patchObj })
+      });
+      if(!res.ok) throw new Error('Edit failed: '+res.status);
+      await res.json();
+      await loadData();
+    }catch(err){
+      alert('Edit error: '+err.message);
+      console.error(err);
+    }
+  }
+
+  /* -------------------------
+     Event wiring
+     ------------------------- */
+  document.getElementById('reload').addEventListener('click', ()=>{ page=1; loadData(); });
+  document.getElementById('perPage').addEventListener('change', ()=>{ page=1; renderPage(); });
+  document.getElementById('next').addEventListener('click', ()=>{ if((page*perPage) < filtered.length){ page++; renderPage(); }});
+  document.getElementById('prev').addEventListener('click', ()=>{ if(page>1){ page--; renderPage(); }});
+  document.getElementById('search').addEventListener('input', ()=>{ page=1; applyFiltersAndRender(); });
+  document.getElementById('refreshInterval').addEventListener('change', (e)=>{
+    if(autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer=null; }
+    const v = parseInt(e.target.value,10);
+    if(v>0) autoRefreshTimer = setInterval(()=>loadData(), v);
   });
-}
 
-function renderTable(){
-  const all = filteredRows();
-  const total = all.length;
-  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  if(currentPage > pages) currentPage = pages;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageRows = all.slice(start, start + PAGE_SIZE);
-
-  const tbody = $('tableBody'); tbody.innerHTML = '';
-  if(pageRows.length === 0){
-    tbody.innerHTML = '<tr><td colspan="8" class="muted" style="text-align:center;padding:18px">No rows to show</td></tr>';
-  } else {
-    pageRows.forEach(entry => {
-      const n = entry.norm;
-      const tr = document.createElement('tr');
-      // name
-      const td1 = document.createElement('td'); td1.textContent = n.clientname || ''; tr.appendChild(td1);
-      // mobile
-      const td2 = document.createElement('td'); td2.textContent = n.mobile || ''; tr.appendChild(td2);
-      // amount
-      const td3 = document.createElement('td'); td3.textContent = n.amount || ''; tr.appendChild(td3);
-      // date
-      const td4 = document.createElement('td'); td4.textContent = n.date || ''; tr.appendChild(td4);
-      // status
-      const td5 = document.createElement('td'); 
-      const st = (n.status||'').toLowerCase();
-      const pill = document.createElement('span'); pill.className = 'status-pill ' + (st === 'paid' ? 'status-paid' : 'status-pending');
-      pill.textContent = st === 'paid' ? 'Paid' : 'Pending';
-      td5.appendChild(pill); tr.appendChild(td5);
-      // address
-      const td6 = document.createElement('td'); td6.textContent = n.address || ''; tr.appendChild(td6);
-      // days
-      const td7 = document.createElement('td'); td7.textContent = n.days_pending || ''; tr.appendChild(td7);
-      // actions
-      const td8 = document.createElement('td');
-      const editBtn = document.createElement('button'); editBtn.className = 'btn ghost'; editBtn.textContent = 'Edit';
-      editBtn.onclick = ()=> openEditModal(entry);
-      const delBtn = document.createElement('button'); delBtn.className = 'btn ghost'; delBtn.textContent = 'Delete';
-      delBtn.onclick = ()=> confirmDelete(entry);
-      td8.appendChild(editBtn); td8.appendChild(delBtn);
-      tr.appendChild(td8);
-
-      tbody.appendChild(tr);
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      activeArea = chip.dataset.area || '__all__';
+      page=1;
+      applyFiltersAndRender();
     });
-  }
+  });
 
-  renderPaginationControls(total, pages);
-}
+  document.getElementById('pendingOnly').addEventListener('click', (e)=>{
+    showPendingOnly = !showPendingOnly;
+    e.target.classList.toggle('btn-orange', showPendingOnly);
+    page=1; applyFiltersAndRender();
+  });
 
-function renderPaginationControls(totalItems, pages){
-  const area = $('paginationArea'); area.innerHTML = '';
-  if(pages <= 1) return; // no controls needed
-  const prev = document.createElement('button'); prev.textContent = '‹ Prev'; prev.disabled = currentPage === 1;
-  prev.onclick = ()=> { currentPage = Math.max(1, currentPage - 1); renderTable(); };
-  area.appendChild(prev);
-
-  // show page numbers (limit displayed)
-  const maxButtons = 7;
-  let start = Math.max(1, currentPage - 3);
-  let end = Math.min(pages, start + maxButtons - 1);
-  if(end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
-
-  for(let p = start; p <= end; p++){
-    const b = document.createElement('button'); b.textContent = p; if(p === currentPage) b.className = 'active';
-    b.onclick = (()=>p)=>{ currentPage = p; renderTable(); }(p);
-    area.appendChild(b);
-  }
-
-  const next = document.createElement('button'); next.textContent = 'Next ›'; next.disabled = currentPage >= pages;
-  next.onclick = ()=> { currentPage = Math.min(pages, currentPage + 1); renderTable(); };
-  area.appendChild(next);
-}
-
-/* ========== RENDER ALL ========== */
-function renderAll(){
-  renderSummary();
-  renderTable();
-}
-
-/* ========== FILTER UI ========== */
-document.getElementById('areaFilters').addEventListener('click', (e) => {
-  if(e.target.tagName !== 'BUTTON') return;
-  const area = e.target.getAttribute('data-area');
-  // toggle active class
-  Array.from(document.querySelectorAll('#areaFilters button')).forEach(b=>b.classList.remove('active'));
-  e.target.classList.add('active');
-  filters.address = area === 'all' ? 'all' : area;
-  currentPage = 1;
-  renderAll();
-});
-$('showPendingBtn').addEventListener('click', ()=>{
-  filters.pendingOnly = !filters.pendingOnly;
-  $('showPendingBtn').textContent = filters.pendingOnly ? 'Showing pending only' : 'Pending only';
-  currentPage = 1;
-  renderAll();
-});
-$('searchInput').addEventListener('input', (e)=>{
-  filters.search = e.target.value;
-  currentPage = 1;
-  renderAll();
-});
-
-/* ========== ADD NEW ========== */
-$('addBtn').addEventListener('click', async () => {
-  const clientname = $('f_clientname').value.trim();
-  const mobile = $('f_mobile').value.trim();
-  const amount = $('f_amount').value.trim();
-  const date = $('f_date').value.trim();
-  const status = $('f_status').value;
-  const address = $('f_address').value;
-
-  if(!clientname) { showToast('Client name required','error'); return; }
-  if(!mobile) { showToast('Mobile required','error'); return; }
-
-  const payload = { data: [ { clientname, mobile, amount, date, status, address, days_pending: '' } ] };
-
-  try {
-    $('addBtn').disabled = true; $('addBtn').textContent = 'Adding…';
-    const res = await fetch(SHEETDB_API, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    if(!res.ok){
-      const txt = await res.text();
-      throw new Error(txt || res.status);
+  // row actions (edit/delete) using event delegation
+  document.getElementById('rows').addEventListener('click', async (ev)=>{
+    const btn = ev.target.closest('button');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    const idx = parseInt(btn.dataset.idx,10);
+    if(isNaN(idx)) return;
+    const row = filtered[idx];
+    if(!row) return;
+    if(action === 'delete'){
+      if(confirm(`Delete client "${row.clientname}"?`)){
+        // delete by clientname (works if clientname unique); otherwise adapt to another unique field
+        await deleteClientByField('clientname', row.clientname);
+      }
+      return;
     }
-    showToast('Added successfully');
-    ['f_clientname','f_mobile','f_amount','f_date','f_address'].forEach(id=>$(id).value='');
-    setTimeout(loadData, 800);
-  } catch(err){
-    console.error(err); showToast('Add failed: ' + err.message,'error',6000);
-  } finally { $('addBtn').disabled = false; $('addBtn').textContent = 'Add client'; }
-});
-
-/* ========== EDIT ========= */
-let editingEntry = null;
-function openEditModal(entry){
-  editingEntry = entry;
-  const n = entry.norm;
-  $('e_clientname').value = n.clientname || '';
-  $('e_mobile').value = n.mobile || '';
-  $('e_amount').value = n.amount || '';
-  $('e_date').value = n.date || '';
-  $('e_status').value = n.status || 'pending';
-  $('e_address').value = n.address || '';
-  $('editModal').style.display = 'flex';
-}
-$('cancelEdit').addEventListener('click', ()=> $('editModal').style.display = 'none');
-
-$('saveEdit').addEventListener('click', async () => {
-  if(!editingEntry) return;
-  const oldMobile = (editingEntry.norm.mobile || '').toString().trim();
-  const clientname = $('e_clientname').value.trim();
-  const mobile = $('e_mobile').value.trim();
-  const amount = $('e_amount').value.trim();
-  const date = $('e_date').value.trim();
-  const status = $('e_status').value;
-  const address = $('e_address').value;
-
-  const pin = prompt('Enter admin PIN to save changes');
-  if(pin === null) return;
-  if(pin !== ADMIN_PIN){ showToast('Incorrect PIN — action cancelled','error'); return; }
-
-  const obj = { clientname, mobile, amount, date, status, address };
-  try {
-    $('saveEdit').disabled = true; $('saveEdit').textContent = 'Saving…';
-    const patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(oldMobile);
-    const res = await fetch(patchUrl, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ data: [ obj ] }) });
-    if(!res.ok){
-      const txt = await res.text();
-      throw new Error(txt || res.status);
+    if(action === 'edit'){
+      // show a simple prompt-based edit flow
+      const newName = prompt('Client name', row.clientname) || row.clientname;
+      const newMobile = prompt('Mobile', row.mobile) || row.mobile;
+      const newAmount = prompt('Amount', row.amount) || row.amount;
+      const newDate = prompt('Date', row.date) || row.date;
+      const newStatus = prompt('Status (pending/paid)', row.status) || row.status;
+      const newAddress = prompt('Address', row.address) || row.address;
+      const newDays = prompt('Days pending', row.days_pending) || row.days_pending;
+      const patch = {
+        clientname:newName, mobile:newMobile, amount:newAmount, date:newDate, status:newStatus, address:newAddress, days_pending:newDays
+      };
+      await editClientByField('clientname', row.clientname, patch);
+      return;
     }
-    showToast('Updated successfully');
-    $('editModal').style.display = 'none';
-    setTimeout(loadData, 700);
-  } catch(err){
-    console.error(err); showToast('Update failed: ' + (err.message||''),'error',6000);
-  } finally { $('saveEdit').disabled = false; $('saveEdit').textContent = 'Save changes'; }
-});
+  });
 
-/* ========== DELETE ========= */
-async function confirmDelete(entry){
-  const n = entry.norm;
-  const mobile = (n.mobile||'').toString().trim();
-  if(!confirm('Delete client: ' + (n.clientname||'') + ' ? This will remove the row from the sheet.')) return;
-  const pin = prompt('Enter admin PIN to delete this row');
-  if(pin === null) return;
-  if(pin !== ADMIN_PIN){ showToast('Incorrect PIN — delete cancelled','error'); return; }
+  // Add form
+  document.getElementById('addForm').addEventListener('submit', async (ev)=>{
+    ev.preventDefault();
+    const payload = {
+      clientname: document.getElementById('f_clientname').value.trim(),
+      mobile: document.getElementById('f_mobile').value.trim(),
+      amount: document.getElementById('f_amount').value.trim(),
+      date: document.getElementById('f_date').value.trim(),
+      status: document.getElementById('f_status').value,
+      address: document.getElementById('f_address').value,
+      days_pending: document.getElementById('f_days_pending').value.trim()
+    };
+    if(!payload.clientname || !payload.mobile){
+      alert('Please enter name and mobile.');
+      return;
+    }
+    const ok = await addClient(payload);
+    if(ok){
+      // clear form
+      document.getElementById('addForm').reset();
+      page = 1;
+    }
+  });
 
-  try {
-    const delUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobile);
-    const res = await fetch(delUrl, { method: 'DELETE' });
-    if(!res.ok){ const txt = await res.text(); throw new Error(txt || res.status); }
-    showToast('Deleted');
-    setTimeout(loadData, 700);
-  } catch(err){
-    console.error(err); showToast('Delete failed: ' + (err.message||''),'error',6000);
-  }
-}
+  /* -------------------------
+     Init
+     ------------------------- */
+  (function init(){
+    loadData();
+    // handle click on rows for event delegation is already set
+  })();
 
-/* ========== UI actions ========== */
-$('reloadBtn').addEventListener('click', loadData);
-$('addQuickBtn').addEventListener('click', ()=> $('f_clientname').focus());
-
-/* close modal on background click */
-$('editModal').addEventListener('click', (e)=> {
-  if(e.target.id === 'editModal') $('editModal').style.display = 'none';
-});
-
-/* initial load */
-loadData();
-
-</script>
+  </script>
 </body>
 </html>
