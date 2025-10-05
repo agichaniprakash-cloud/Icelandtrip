@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK – Pending Payments (Edit/Delete)</title>
+<title>PERFECT DIGITAL NETWORK – Pending Payments (Edit/Delete safe delete)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -103,14 +103,15 @@
 </div>
 
 <script>
-/* ----- CONFIG - keep your SheetDB API ----- */
+/* ---------------- CONFIG ---------------- */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 
 /* canonical columns */
 const CANON = ['clientname','mobile','amount','date','status','address'];
 
-/* normalize helper */
+/* helpers */
 function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
 /* state */
 let rawRows = [];
@@ -118,7 +119,7 @@ let headerMap = {}; // canonical -> actual sheet key or canonical if missing
 let refreshTimer = null;
 let filterPending = false;
 
-/* ---------- Header detection - safe ---------- */
+/* detect headers safely */
 function detectHeaders(rows){
   headerMap = {};
   if(Array.isArray(rows) && rows.length){
@@ -140,14 +141,13 @@ function detectHeaders(rows){
       (variants[c]||[c]).forEach(v => { if(!found && lookup[normKey(v)]) found = lookup[normKey(v)]; });
       if(found){ headerMap[c] = found; return; }
 
-      // special fallback: if address not present but remark/remarks exists, map address->that key for display purposes
+      // special fallback for address: if address not present but remark exists, show remark as address
       if(c === 'address'){
         if(lookup['remark']){ headerMap[c] = lookup['remark']; return; }
         if(lookup['remarks']){ headerMap[c] = lookup['remarks']; return; }
       }
 
-      // safe fallback: map to canonical (so POST will create that column instead of overwriting existing)
-      headerMap[c] = c;
+      headerMap[c] = c; // safe fallback
     });
   } else {
     CANON.forEach(c => headerMap[c] = c);
@@ -159,7 +159,6 @@ function getCell(row, canonical){
   if(!row) return '';
   const ak = headerMap[canonical];
   if(ak && row.hasOwnProperty(ak)) return row[ak];
-  // fallbacks
   const fallbackKeys = {
     clientname:['Client Name','clientname','name'],
     mobile:['mobile','Mobile','phone'],
@@ -168,10 +167,35 @@ function getCell(row, canonical){
     status:['status','Status'],
     address:['address','Address','remark','Remark','remarks']
   };
-  for(const k of (fallbackKeys[canonical]||[])){
-    if(row.hasOwnProperty(k)) return row[k];
-  }
+  for(const k of (fallbackKeys[canonical]||[])) if(row.hasOwnProperty(k)) return row[k];
   return '';
+}
+
+/* Look for a row-id in a raw row object (common keys returned by SheetDB) */
+function findRowId(row){
+  if(!row || typeof row !== 'object') return null;
+  const candidates = ['_row','__rownum','_rownum','row','Row','_id','id','_rid'];
+  for(const c of candidates){
+    if(Object.prototype.hasOwnProperty.call(row, c)){
+      const v = row[c];
+      // accept numeric-like values
+      if(v !== null && v !== undefined && String(v).trim() !== '') return v;
+    }
+  }
+  // Some SheetDB responses include metadata under properties like: row['_row'] or row['__row']
+  // Also check nested metadata keys
+  for(const k of Object.keys(row)){
+    try{
+      const val = row[k];
+      if(val && typeof val === 'object'){
+        // search inside nested object for row identifiers
+        for(const c of ['_row','__rownum','_rownum','row','_id']){
+          if(Object.prototype.hasOwnProperty.call(val, c) && val[c]) return val[c];
+        }
+      }
+    }catch(e){}
+  }
+  return null;
 }
 
 /* fetch data */
@@ -191,18 +215,16 @@ async function fetchData(){
   }
 }
 
-/* render table with Edit/Delete buttons */
+/* render table with edit/delete buttons */
 function renderTable(){
   const head = document.getElementById('tableHead');
   const body = document.getElementById('tableBody');
   head.innerHTML = ''; body.innerHTML = '';
 
-  // header labels
   const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
   const hr = document.createElement('tr');
   Object.keys(titles).forEach(k => { const th = document.createElement('th'); th.textContent = titles[k]; hr.appendChild(th); });
-  // add actions column
-  const thActions = document.createElement('th'); thActions.textContent = 'Actions'; hr.appendChild(thActions);
+  const thA = document.createElement('th'); thA.textContent = 'Actions'; hr.appendChild(thA);
   head.appendChild(hr);
 
   const q = (document.getElementById('searchBox').value||'').trim().toLowerCase();
@@ -225,7 +247,6 @@ function renderTable(){
 
   rows.forEach(row => {
     const tr = document.createElement('tr');
-
     const name = getCell(row,'clientname') || '';
     const mobile = getCell(row,'mobile') || '';
     const amount = getCell(row,'amount') || '';
@@ -253,11 +274,10 @@ function renderTable(){
   });
 }
 
-/* helpers */
-function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+/* utility to show small message */
 function setMsg(m){ document.getElementById('msg').textContent = m || ''; }
 
-/* Add row (writes to headerMap keys or canonical keys) */
+/* add row (POST) */
 async function addRow(){
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
@@ -289,8 +309,7 @@ async function addRow(){
       throw new Error(txt || res.status);
     }
     await fetchData();
-
-    // verify by mobile or name present
+    // verify
     const found = rawRows.some(r => {
       const nm = (getCell(r,'clientname')||'').toString().trim();
       const mob = (getCell(r,'mobile')||'').toString().trim();
@@ -301,13 +320,11 @@ async function addRow(){
       console.warn('Add verification failed', headerMap, payload, rawRows.slice(0,2));
       return;
     }
-
-    // clear form
     ['f_name','f_mobile','f_amount','f_date'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('f_address').value = '';
     document.getElementById('f_status').value = 'pending';
     document.getElementById('addMsg').textContent = 'Added ✓';
-    setTimeout(()=>document.getElementById('addMsg').textContent = '', 1500);
+    setTimeout(()=>document.getElementById('addMsg').textContent = '',1500);
   }catch(err){
     console.error(err);
     alert('Add failed — see console.');
@@ -315,51 +332,64 @@ async function addRow(){
   }
 }
 
-/* Edit / Delete handlers (delegated) */
-document.getElementById('tableBody').addEventListener('click', async (ev) => {
-  const btn = ev.target.closest('button');
-  if(!btn) return;
-  const payloadEncoded = btn.dataset.payload;
-  if(!payloadEncoded) return;
-  const row = JSON.parse(decodeURIComponent(payloadEncoded));
-
-  // derive identifiers
-  const mobileVal = row[ headerMap['mobile'] ] || row.mobile || '';
-  const nameVal = row[ headerMap['clientname'] ] || row['Client Name'] || row.clientname || '';
-
-  if(btn.classList.contains('del')){
-    if(!confirm('Delete client: ' + (nameVal || mobileVal || 'this row') + ' ?')) return;
-    try{
-      let delUrl;
-      if(mobileVal) delUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
-      else delUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-      const res = await fetch(delUrl, { method: 'DELETE' });
-      if(!res.ok) throw new Error('Delete failed: ' + res.status);
+/* delete by row-id when available */
+async function deleteSingleRow(rowObj){
+  try{
+    // try to find a row-id inside the row object
+    const rowId = findRowId(rowObj);
+    if(rowId){
+      // call SheetDB row delete endpoint
+      const url = SHEETDB_API.replace(/\/+$/,'') + '/_row/' + encodeURIComponent(rowId);
+      const res = await fetch(url, { method: 'DELETE' });
+      if(!res.ok) throw new Error('Delete failed: '+res.status);
       await fetchData();
       setMsg('Deleted ✓');
-      setTimeout(()=>setMsg(''),1400);
-    }catch(err){
-      console.error(err);
-      alert('Delete failed — check console.');
+      setTimeout(()=>setMsg(''),1200);
+      return;
     }
-    return;
-  }
 
-  if(btn.classList.contains('edit')){
-    // prompt-based edit
-    const currentName = getCell(row,'clientname') || '';
-    const currentMobile = getCell(row,'mobile') || '';
-    const currentAmount = getCell(row,'amount') || '';
-    const currentDate = getCell(row,'date') || '';
-    const currentStatus = getCell(row,'status') || 'pending';
-    const currentAddress = getCell(row,'address') || '';
+    // no row-id found: fallback to delete by unique-ish fields (mobile preferred)
+    const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';
+    const nameVal = rowObj[ headerMap['clientname'] ] || rowObj['Client Name'] || rowObj.clientname || '';
+
+    if(!mobileVal && !nameVal){
+      alert('Cannot delete row safely (no row id, no mobile or name). Please delete from your sheet.');
+      return;
+    }
+
+    // warn user about possible multiple deletes
+    if(!confirm('Delete by mobile/name may remove all rows sharing that value. Confirm delete?')) return;
+
+    let delUrl;
+    if(mobileVal) delUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
+    else delUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
+
+    const res = await fetch(delUrl, { method: 'DELETE' });
+    if(!res.ok) throw new Error('Delete failed: '+res.status);
+    await fetchData();
+    setMsg('Deleted ✓');
+    setTimeout(()=>setMsg(''),1200);
+  }catch(err){
+    console.error(err);
+    alert('Delete failed — see console.');
+  }
+}
+
+/* Edit (prompt-based) */
+async function editRow(rowObj){
+  try{
+    const currentName = getCell(rowObj,'clientname')||'';
+    const currentMobile = getCell(rowObj,'mobile')||'';
+    const currentAmount = getCell(rowObj,'amount')||'';
+    const currentDate = getCell(rowObj,'date')||'';
+    const currentStatus = getCell(rowObj,'status')||'pending';
+    const currentAddress = getCell(rowObj,'address')||'';
 
     const newName = prompt('Client name', currentName) || currentName;
     const newMobile = prompt('Mobile', currentMobile) || currentMobile;
     const newAmount = prompt('Amount', currentAmount) || currentAmount;
     const newDate = prompt('Date', currentDate) || currentDate;
     const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;
-    // address - give current and allow free edit
     const newAddress = prompt('Address', currentAddress) || currentAddress;
 
     const patchObj = {};
@@ -370,24 +400,45 @@ document.getElementById('tableBody').addEventListener('click', async (ev) => {
     patchObj[ headerMap['status'] || 'status' ] = newStatus;
     patchObj[ headerMap['address'] || 'address' ] = newAddress;
 
-    try{
-      let patchUrl;
+    // Prefer patch by row-id if present
+    const rowId = findRowId(rowObj);
+    let patchUrl;
+    if(rowId){
+      patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/_row/' + encodeURIComponent(rowId);
+    } else {
+      // fallback: patch by mobile or clientname
+      const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';
+      const nameVal = rowObj[ headerMap['clientname'] ] || rowObj['Client Name'] || rowObj.clientname || '';
       if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
       else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-
-      const res = await fetch(patchUrl, {
-        method: 'PATCH',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ data: [ patchObj ] })
-      });
-      if(!res.ok) throw new Error('Update failed: ' + res.status);
-      await fetchData();
-      setMsg('Updated ✓');
-      setTimeout(()=>setMsg(''),1200);
-    }catch(err){
-      console.error(err);
-      alert('Update failed — check console.');
     }
+
+    const res = await fetch(patchUrl, {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ data: [ patchObj ] })
+    });
+    if(!res.ok) throw new Error('Update failed: '+res.status);
+    await fetchData();
+    setMsg('Updated ✓');
+    setTimeout(()=>setMsg(''),1200);
+  }catch(err){
+    console.error(err);
+    alert('Update failed — see console.');
+  }
+}
+
+/* delegated handlers for edit/delete clicks */
+document.getElementById('tableBody').addEventListener('click', (ev) => {
+  const btn = ev.target.closest('button');
+  if(!btn) return;
+  const payloadEncoded = btn.dataset.payload;
+  if(!payloadEncoded) return;
+  const rowObj = JSON.parse(decodeURIComponent(payloadEncoded));
+  if(btn.classList.contains('del')){
+    deleteSingleRow(rowObj);
+  } else if(btn.classList.contains('edit')){
+    editRow(rowObj);
   }
 });
 
