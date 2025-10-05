@@ -3,93 +3,93 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Pending Payments — Perfect Digital Network</title>
+<title>Pending Payments — Codex3</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --green:#138a55;
-  --muted:#6b6f72;
-  --card:#ffffff;
-  --bg:#f6f7f8;
-  --accent:#f59e0b;
-  --radius:10px;
-}
-*{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
-body{margin:0;background:var(--bg);color:#1f2933;padding:20px;}
-.wrap{max-width:980px;margin:0 auto}
-.header{display:flex;align-items:center;gap:18px;margin-bottom:14px}
-.logo{width:52px;height:52px;border-radius:10px;background:#eaf6ef;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--green)}
-h1{margin:0;font-size:26px}
-.sub{color:var(--muted);font-size:13px}
-.card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
-.controls{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-.controls input[type=search]{width:100%;max-width:520px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-.btn{background:var(--green);color:white;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
-.btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
-.small{padding:8px 10px;font-size:14px}
-.tableWrap{overflow-x:auto;margin-top:8px}
-table{border-collapse:collapse;width:100%;min-width:700px}
-thead th{background:var(--green);color:#fff;padding:16px 12px;text-align:left}
-tbody td{padding:16px 12px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
-.status-pending{background:var(--accent);color:#fff;padding:6px 10px;border-radius:20px;display:inline-block}
-.status-paid{background:#2dce89;color:#fff;padding:6px 10px;border-radius:20px;display:inline-block}
-.actions{display:flex;flex-direction:column;gap:8px}
-.actions .small{background:#f3fbf6;border:1px solid #e6efe7;color:var(--green)}
-.formRow{display:flex;flex-direction:column;gap:12px;margin-top:16px}
-.formRow .row{display:flex;gap:10px;flex-direction:column}
-.formRow input,.formRow select{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
-.formRow .row input{flex:1}
-.notice{font-size:13px;color:var(--muted);margin-top:12px}
-.footerControls{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:12px}
-.pagination{display:flex;align-items:center;gap:8px}
-.qr-small{width:36px;height:36px;border-radius:6px;background:#fff;border:1px solid #e6e9ea;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.header-stats{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-.stat{background:#f0f9f4;padding:8px 12px;border-radius:10px;color:var(--muted)}
-@media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:520px} }
+  :root{
+    --green:#138a55;
+    --muted:#6b6f72;
+    --card:#ffffff;
+    --bg:#f6f7f8;
+    --radius:10px;
+    --accent:#f59e0b; /* orange for pending badges */
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
+  body{margin:0;background:var(--bg);color:#1f2933;padding:18px;}
+  .wrap{max-width:980px;margin:0 auto}
+  header{display:flex;align-items:center;gap:18px;margin-bottom:18px;align-items:flex-start}
+  header .brand{display:flex;gap:12px;align-items:center}
+  header h1{margin:0;font-size:28px}
+  header .sub{color:var(--muted);font-size:14px}
+  .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
+  .controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+  .controls input[type=search]{width:100%;max-width:540px;padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .controls .small{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}
+  .btn{background:var(--green);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer}
+  .btn.ghost{background:#fff;border:1px solid #e6e9ea;color:var(--muted)}
+  .btn.small{padding:8px 10px;font-size:14px}
+  .tableWrap{overflow-x:auto;margin-top:12px}
+  table{border-collapse:collapse;width:100%;min-width:760px}
+  thead th{background:var(--green);color:#fff;padding:14px 12px;text-align:left}
+  tbody td{padding:14px 12px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
+  .badge-pending{background:var(--accent);color:#fff;padding:6px 10px;border-radius:999px;display:inline-block}
+  .actions{display:flex;gap:8px}
+  .actions .btn{background:#fff;border:1px solid #e6e9ea;color:var(--green);padding:6px 10px;border-radius:8px}
+  .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+  .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .formRow .row{display:flex;gap:10px}
+  .formRow .row input{flex:1}
+  .notice{font-size:13px;color:var(--muted);margin-top:12px}
+  .stats{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .stat{background:#f0fbf5;border-radius:10px;padding:12px;color:var(--muted)}
+  .qr{max-width:90px;border-radius:8px}
+  .pager{display:flex;gap:8px;align-items:center;margin-top:12px}
+  .smallSelect{padding:8px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}
+  @media(min-width:900px){ .formRow .row{flex-direction:row} .controls input[type=search]{width:540px}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
-    <div style="display:flex;align-items:center;gap:14px">
-      <div class="logo">PDN</div>
+  <header>
+    <div class="brand">
+      <div style="font-size:34px">📶</div>
       <div>
         <h1>PERFECT DIGITAL NETWORK</h1>
         <div class="sub">Pending payments dashboard (Live)</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div style="text-align:right;color:var(--muted);font-size:13px">UPI: <strong>perfectdigital@axl</strong></div>
-      <!-- QR thumbnail opens modal -->
-      <div class="qr-small" id="qrBtn" title="Show UPI QR">QR</div>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+      <img id="qrImg" src="" alt="UPI QR" class="qr" />
+      <div style="text-align:right;color:var(--muted);font-size:13px">UPI: <span id="upiText"></span></div>
     </div>
-  </div>
+  </header>
 
-  <div class="card">
+  <div class="card" id="mainCard">
     <div class="controls">
       <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
-      <select id="refreshSel" title="Auto refresh" class="small">
+      <select id="refreshSel" class="smallSelect" title="Auto refresh">
         <option value="0">No Auto-refresh</option>
-        <option value="15">15s</option>
-        <option value="30">30s</option>
-        <option value="60" selected>60s</option>
+        <option value="15">Every 15s</option>
+        <option value="30">Every 30s</option>
+        <option value="60" selected>Every 60s</option>
       </select>
-      <button id="filterPendingBtn" class="btn ghost small">Pending only</button>
+
+      <button id="pendingBtn" class="btn ghost small">Pending only</button>
       <button id="reloadBtn" class="btn small">Reload now</button>
+
+      <div style="margin-left:auto" class="stats">
+        <div class="stat">Total clients: <strong id="statTotal">—</strong></div>
+        <div class="stat">Pending count: <strong id="statPendingCount">—</strong></div>
+        <div class="stat">Pending amount: <strong id="statPendingAmount">—</strong></div>
+      </div>
     </div>
 
-    <div class="header-stats">
-      <div class="stat" id="statTotal">Total clients: —</div>
-      <div class="stat" id="statPendingCount">Pending count: —</div>
-      <div class="stat" id="statPendingAmount">Pending amount: —</div>
-    </div>
-
-    <div style="margin:10px 0">
-      <button class="small" id="areaAll">All</button>
-      <button class="small" id="areaWaz">Wazirpur</button>
-      <button class="small" id="areaShas">Shas/Trinagar</button>
-      <button class="small" id="areaAshok">Ashok Vihar</button>
-      <button class="small" id="areaGul">Gulabi Bagh</button>
+    <div style="margin-bottom:12px">
+      <button class="btn ghost small" data-area="all">All</button>
+      <button class="btn ghost small" data-area="wazirpur">Wazirpur</button>
+      <button class="btn ghost small" data-area="shas">Shas/Trinagar</button>
+      <button class="btn ghost small" data-area="ashok">Ashok Vihar</button>
+      <button class="btn ghost small" data-area="gulabi">Gulabi Bagh</button>
     </div>
 
     <div class="tableWrap" id="tableWrap">
@@ -99,23 +99,19 @@ tbody td{padding:16px 12px;border-bottom:1px solid #f1f2f3;vertical-align:middle
       </table>
     </div>
 
-    <div class="footerControls">
-      <div>
-        Show per page:
-        <select id="perPageSel" class="small">
-          <option>10</option>
-          <option selected>20</option>
-          <option>50</option>
-        </select>
-      </div>
-      <div class="pagination">
-        <button id="prevBtn" class="small">Prev</button>
-        <div id="pageInd">Page 1</div>
-        <button id="nextBtn" class="small">Next</button>
-      </div>
+    <div class="pager">
+      <label>Show per page:</label>
+      <select id="perPage" class="smallSelect">
+        <option>10</option>
+        <option selected>20</option>
+        <option>50</option>
+      </select>
+      <button id="prevBtn" class="btn ghost small">Prev</button>
+      <button id="nextBtn" class="btn ghost small">Next</button>
+      <div style="margin-left:8px;color:var(--muted)">Page <span id="pageNo">1</span></div>
     </div>
 
-    <hr style="margin:16px 0;border:none;border-top:1px solid #eee" />
+    <hr style="margin:18px 0;border:none;border-top:1px solid #eee" />
 
     <h2>Add new client</h2>
     <div class="formRow">
@@ -125,56 +121,75 @@ tbody td{padding:16px 12px;border-bottom:1px solid #f1f2f3;vertical-align:middle
       </div>
       <div class="row">
         <input id="f_amount" placeholder="Amount (₹)" />
-        <input id="f_date" placeholder="Date DD/MM/YYYY or MM/DD/YYYY" />
+        <input id="f_date" placeholder="Date (DD/MM/YYYY or MM/DD/YYYY)" />
       </div>
       <div class="row">
         <select id="f_status">
           <option>pending</option>
           <option>paid</option>
-          <option>other</option>
         </select>
         <select id="f_address">
           <option value="">-- choose address --</option>
-          <option>Wazirpur</option>
-          <option>Shas/Trinagar</option>
-          <option>Ashok Vihar</option>
-          <option>Gulabi Bagh</option>
-          <option>Other</option>
+          <option value="wazirpur">Wazirpur</option>
+          <option value="shas">Shas/Trinagar</option>
+          <option value="ashok">Ashok Vihar</option>
+          <option value="gulabi">Gulabi Bagh</option>
         </select>
       </div>
-
       <div style="display:flex;gap:12px;align-items:center">
         <button id="addBtn" class="btn">Add client</button>
         <div id="msg" style="color:var(--muted)"></div>
       </div>
-      <div class="notice">Tip: Publish the sheet (CSV) or add entries from this form.</div>
+      <div class="notice">Tip: publishing your sheet (CSV) makes the site live. Use the form to add rows via SheetDB.</div>
     </div>
   </div>
 </div>
 
-<!-- QR modal -->
-<div id="qrModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center">
-  <div style="background:#fff;padding:18px;border-radius:12px;max-width:360px;width:90%;text-align:center">
-    <h3 style="margin-top:0">UPI — Perfect Digital Network</h3>
-    <img id="qrImg" src="qr.png" alt="UPI QR" style="width:260px;height:260px;object-fit:contain" />
-    <div style="margin-top:8px">UPI ID: <strong>perfectdigital@axl</strong></div>
-    <div style="margin-top:12px"><button id="qrClose" class="small">Close</button></div>
-    <div style="font-size:12px;color:var(--muted);margin-top:8px">Replace <code>qr.png</code> with your hosted QR image file (public URL).</div>
-  </div>
-</div>
-
 <script>
-/* ---------- CONFIG ---------- */
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // <-- your sheetdb API
-const canonical = ["clientname","mobile","amount","date","status","address"]; // remark removed; days removed
+/* ====== CONFIG ====== */
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // your SheetDB endpoint
+const UPI_ID = 'perfectdigital@axl';            // set your UPI id here
+const QR_IMG_URL = 'https://raw.githubusercontent.com/<USER>/<REPO>/main/qr.png'; // replace with your QR image URL
+/* ==================== */
 
-/* ---------- UTIL ---------- */
-function norm(s){ return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,''); }
-let headerMap = {};
+document.getElementById('upiText').textContent = UPI_ID;
+document.getElementById('qrImg').src = QR_IMG_URL;
+
+// canonical fields we expect
+const canonical = ["clientname","mobile","amount","date","status","address"];
+
+// normalize helper
+function norm(s){
+  return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');
+}
+
 let lastData = [];
+let headerMap = {}; // canonical -> actual sheet key
 let filterPending = false;
-let currentArea = ''; // '' = all
-let perPage = 20, pageIndex = 0;
+let currentArea = 'all';
+let perPage = 20;
+let pageNo = 1;
+
+// --------------- fetch & detect headers ---------------
+async function fetchData(){
+  try{
+    const res = await fetch(SHEETDB_API);
+    if(!res.ok) throw new Error('Fetch failed: '+res.status);
+    const data = await res.json();
+    lastData = Array.isArray(data) ? data : [];
+    detectHeaders(lastData);
+    renderTable();
+    updateStats();
+    return lastData;
+  }catch(e){
+    console.error(e);
+    document.getElementById('msg').textContent = 'Error loading data: '+e.message;
+    // clear table head/body
+    document.getElementById('tableHead').innerHTML = '';
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="color:crimson">Error loading data — check API_URL / SheetDB settings. See console.</td></tr>';
+    return [];
+  }
+}
 
 function detectHeaders(data){
   headerMap = {};
@@ -183,293 +198,285 @@ function detectHeaders(data){
     const lookup = {};
     keys.forEach(k => lookup[norm(k)] = k);
     const variants = {
-      clientname:['clientname','client','name'],
-      mobile:['mobile','phone','mobilenumber','phoneNumber'],
+      clientname:['clientname','client','name','client_name'],
+      mobile:['mobile','phone','phonenumber','mobile_number','mobilephone'],
       amount:['amount','amt','price'],
-      date:['date','duedate'],
+      date:['date','duedate','due_date'],
       status:['status','statu'],
-      address:['address','area','location','addr']
+      address:['address','area','place','location']
     };
-    Object.keys(variants).forEach(c=>{
-      headerMap[c] = keys[0]; // fallback
-      for(const v of variants[c]){
+    canonical.forEach(c=>{
+      const vs = variants[c]||[c];
+      for(const v of vs){
         if(lookup[norm(v)]){ headerMap[c]=lookup[norm(v)]; break; }
       }
     });
+    // fallback: if some canonical not matched, map to first key not used yet
+    const used = new Set(Object.values(headerMap));
+    let idx = 0;
+    keys.forEach(k=>{
+      if(used.has(k)) return;
+      const need = canonical.find(c=>!headerMap[c]);
+      if(need) headerMap[need] = k;
+    });
   } else {
-    canonical.forEach(c => headerMap[c]=c);
+    // no rows yet — just map canonical to canonical
+    canonical.forEach(c=> headerMap[c] = c);
   }
 }
 
-/* ---------- FETCH & RENDER ---------- */
-async function fetchData(){
-  try{
-    const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: '+res.status);
-    const data = await res.json();
-    lastData = Array.isArray(data) ? data : [];
-    detectHeaders(lastData);
-    updateStats(lastData);
-    renderTable();
-    return lastData;
-  } catch(e){
-    console.error(e);
-    document.getElementById('msg').textContent = 'Error loading data: '+e.message;
-    document.getElementById('tableHead').innerHTML = '';
-    document.getElementById('tableBody').innerHTML = '<tr><td colspan="7" style="padding:18px;color:#b91c1c">Error loading data — check API URL and SheetDB settings. See console.</td></tr>';
-    return [];
-  }
-}
-
-function updateStats(data){
-  const total = data.length;
-  const pendingRows = data.filter(r => String(r[headerMap.status]||'').toLowerCase().includes('pending'));
-  const pendingCount = pendingRows.length;
-  const pendingAmount = pendingRows.reduce((s,r)=> s + Number((r[headerMap.amount]||'0').toString().replace(/[^0-9.]/g,'')),0);
-  document.getElementById('statTotal').textContent = 'Total clients: ' + total;
-  document.getElementById('statPendingCount').textContent = 'Pending count: ' + pendingCount;
-  document.getElementById('statPendingAmount').textContent = 'Pending amount: ₹' + pendingAmount;
-}
-
+// --------------- rendering ---------------
 function renderTable(){
   const th = document.getElementById('tableHead');
   const tb = document.getElementById('tableBody');
-  th.innerHTML=''; tb.innerHTML='';
+  th.innerHTML = ''; tb.innerHTML = '';
 
-  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount (₹)', date:'Date', status:'Status', address:'Address', actions:'Actions' };
+  // header
+  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount (₹)', date:'Date', status:'Status', address:'Address' };
   const headRow = document.createElement('tr');
-  ['clientname','mobile','amount','date','status','address','actions'].forEach(k=>{
-    const thc = document.createElement('th');
-    thc.textContent = titles[k];
-    headRow.appendChild(thc);
+  Object.keys(titles).forEach(k=>{
+    const thcell = document.createElement('th');
+    thcell.textContent = titles[k];
+    headRow.appendChild(thcell);
   });
+  // actions col
+  const thActions = document.createElement('th');
+  thActions.textContent = 'Actions';
+  headRow.appendChild(thActions);
+
   th.appendChild(headRow);
 
-  // filter & paginate
+  // search/filter/pagination
   const search = document.getElementById('searchBox').value.trim().toLowerCase();
-  let rows = lastData.slice().filter(r => {
+  const filtered = (lastData||[]).filter(row => {
     // area filter
-    if(currentArea && String(r[headerMap.address]||'').toLowerCase().indexOf(currentArea.toLowerCase())===-1) return false;
+    if(currentArea !== 'all'){
+      const aKey = headerMap['address'];
+      const v = String(aKey ? (row[aKey]||'') : '').toLowerCase();
+      if(!v.includes(currentArea)) return false;
+    }
     // pending filter
-    if(filterPending && !String(r[headerMap.status]||'').toLowerCase().includes('pending')) return false;
+    if(filterPending){
+      const sKey = headerMap['status'];
+      if(!String(sKey ? (row[sKey]||'') : '').toLowerCase().includes('pending')) return false;
+    }
     // search
     if(search){
-      const hay = Object.values(r).join(' ').toLowerCase();
-      if(hay.indexOf(search)===-1) return false;
+      const hay = Object.values(row).join(' ').toLowerCase();
+      if(!hay.includes(search)) return false;
     }
     return true;
   });
 
   // pagination
-  const totalPages = Math.max(1, Math.ceil(rows.length / perPage));
-  pageIndex = Math.min(pageIndex, totalPages - 1);
-  const start = pageIndex * perPage;
-  rows = rows.slice(start, start + perPage);
-  document.getElementById('pageInd').textContent = `Page ${pageIndex+1}`;
+  perPage = Number(document.getElementById('perPage').value || 20);
+  const pages = Math.max(1, Math.ceil(filtered.length / perPage));
+  pageNo = Math.max(1, Math.min(pageNo, pages));
+  document.getElementById('pageNo').textContent = pageNo;
 
-  rows.forEach((row, idx) => {
+  const start = (pageNo-1)*perPage;
+  const pageItems = filtered.slice(start, start + perPage);
+
+  if(pageItems.length === 0){
+    tb.innerHTML = '<tr><td colspan="8" style="color:var(--muted)">No clients to show.</td></tr>';
+    return;
+  }
+
+  pageItems.forEach((row, idx) => {
     const tr = document.createElement('tr');
 
-    // client name
-    const tdName = document.createElement('td');
-    tdName.textContent = row[headerMap.clientname] || '';
-    tr.appendChild(tdName);
+    // clientname
+    const nameKey = headerMap['clientname'];
+    const mobileKey = headerMap['mobile'];
+    const amountKey = headerMap['amount'];
+    const dateKey = headerMap['date'];
+    const statusKey = headerMap['status'];
+    const addressKey = headerMap['address'];
 
-    // mobile
-    const tdMob = document.createElement('td');
-    tdMob.textContent = row[headerMap.mobile] || '';
-    tr.appendChild(tdMob);
+    const nameTd = document.createElement('td');
+    nameTd.textContent = row[nameKey] || '';
+    tr.appendChild(nameTd);
 
-    // amount
-    const tdAmt = document.createElement('td');
-    tdAmt.textContent = row[headerMap.amount] || '';
-    tr.appendChild(tdAmt);
+    const mobileTd = document.createElement('td');
+    mobileTd.textContent = row[mobileKey] || '';
+    tr.appendChild(mobileTd);
 
-    // date
-    const tdDate = document.createElement('td');
-    tdDate.textContent = row[headerMap.date] || '';
-    tr.appendChild(tdDate);
+    const amountTd = document.createElement('td');
+    amountTd.textContent = row[amountKey] || '';
+    tr.appendChild(amountTd);
 
-    // status with pill
-    const tdStatus = document.createElement('td');
-    const sText = String(row[headerMap.status]||'').toLowerCase();
-    if(sText.includes('paid')) tdStatus.innerHTML = '<span class="status-paid">paid</span>';
-    else tdStatus.innerHTML = '<span class="status-pending">pending</span>';
-    tr.appendChild(tdStatus);
+    const dateTd = document.createElement('td');
+    dateTd.textContent = row[dateKey] || '';
+    tr.appendChild(dateTd);
 
-    // address
-    const tdAddr = document.createElement('td');
-    tdAddr.textContent = row[headerMap.address] || '';
-    tr.appendChild(tdAddr);
-
-    // actions (edit + whatsapp)
-    const tdAct = document.createElement('td');
-    const div = document.createElement('div');
-    div.className='actions';
-
-    // EDIT button (opens prompt to edit name/mobile/amount/status/address/date)
-    const btnEdit = document.createElement('button');
-    btnEdit.className='small';
-    btnEdit.textContent = 'Edit';
-    btnEdit.addEventListener('click', ()=>openEditModal(row));
-    div.appendChild(btnEdit);
-
-    // WhatsApp send button (only if not paid)
-    if(!sText.includes('paid')){
-      const btnMsg = document.createElement('button');
-      btnMsg.className='small';
-      btnMsg.textContent = 'Send msg';
-      btnMsg.addEventListener('click', ()=>sendWhatsAppMsg(row));
-      div.appendChild(btnMsg);
+    const statusTd = document.createElement('td');
+    const st = String(row[statusKey] || '').toLowerCase();
+    if(st.includes('pending')){
+      const span = document.createElement('span');
+      span.className = 'badge-pending';
+      span.textContent = 'pending';
+      statusTd.appendChild(span);
+    } else {
+      statusTd.textContent = row[statusKey] || '';
     }
+    tr.appendChild(statusTd);
 
-    tdAct.appendChild(div);
-    tr.appendChild(tdAct);
+    const addressTd = document.createElement('td');
+    addressTd.textContent = row[addressKey] || '';
+    tr.appendChild(addressTd);
+
+    // actions
+    const actTd = document.createElement('td');
+    const actWrap = document.createElement('div');
+    actWrap.className = 'actions';
+
+    // Edit button — will populate form with row values (client must then Save manually by adding a new row or via Sheet edit)
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn';
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', ()=> {
+      // fill form with this row's data for quick editing
+      document.getElementById('f_name').value = row[nameKey] || '';
+      document.getElementById('f_mobile').value = row[mobileKey] || '';
+      document.getElementById('f_amount').value = row[amountKey] || '';
+      document.getElementById('f_date').value = row[dateKey] || '';
+      document.getElementById('f_status').value = row[statusKey] || '';
+      if(addressKey) document.getElementById('f_address').value = (row[addressKey] || '');
+      // scroll to form
+      document.getElementById('f_name').scrollIntoView({behavior:'smooth'});
+    });
+    actWrap.appendChild(editBtn);
+
+    // WhatsApp send button
+    const waBtn = document.createElement('button');
+    waBtn.className = 'btn';
+    waBtn.textContent = 'Send WhatsApp';
+    waBtn.addEventListener('click', () => sendWhatsAppMsg(row));
+    actWrap.appendChild(waBtn);
+
+    actTd.appendChild(actWrap);
+    tr.appendChild(actTd);
 
     tb.appendChild(tr);
   });
 }
 
-/* ---------- EDIT FLOW (PATCH) ---------- */
-function openEditModal(row){
-  // simple prompt-based edit (keeps UI compact). You can replace with a nicer modal.
-  const fresh = Object.assign({}, row); // copy
-  const name = prompt('Edit client name:', fresh[headerMap.clientname]||'');
-  if(name===null) return; fresh[headerMap.clientname]=name;
-  const mobile = prompt('Edit mobile:', fresh[headerMap.mobile]||'');
-  if(mobile===null) return; fresh[headerMap.mobile]=mobile;
-  const amount = prompt('Edit amount (₹):', fresh[headerMap.amount]||'');
-  if(amount===null) return; fresh[headerMap.amount]=amount;
-  const date = prompt('Edit date:', fresh[headerMap.date]||'');
-  if(date===null) return; fresh[headerMap.date]=date;
-  const status = prompt('Edit status (pending/paid/other):', fresh[headerMap.status]||'pending');
-  if(status===null) return; fresh[headerMap.status]=status;
-  const addr = prompt('Edit address:', fresh[headerMap.address]||'');
-  if(addr===null) return; fresh[headerMap.address]=addr;
-
-  // Build SheetDB PATCH: needs a filter — we'll use the unique row id if present, else attempt to match by all fields (best-effort)
-  // SheetDB supports PATCH /api/v1/{id}/{row_id} or search-based. Here we try to use an 'id' if exists.
-  const rowIdKey = Object.keys(row).find(k=>k.toLowerCase()==='id' || k.toLowerCase()==='rowid' || k.toLowerCase()==='_row');
-  const patchPayload = {};
-  patchPayload[ headerMap.clientname ] = fresh[headerMap.clientname];
-  patchPayload[ headerMap.mobile ] = fresh[headerMap.mobile];
-  patchPayload[ headerMap.amount ] = fresh[headerMap.amount];
-  patchPayload[ headerMap.date ] = fresh[headerMap.date];
-  patchPayload[ headerMap.status ] = fresh[headerMap.status];
-  patchPayload[ headerMap.address ] = fresh[headerMap.address];
-
-  // determine endpoint
-  let url = SHEETDB_API;
-  let options = {
-    method: 'PATCH',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({data: [patchPayload]})
-  };
-
-  if(rowIdKey && row[rowIdKey]){
-    // safer route: use row id endpoint
-    url = SHEETDB_API + '/' + encodeURIComponent(row[rowIdKey]);
-  } else {
-    // fallback: use filter query by mobile (assuming unique)
-    const mobileVal = encodeURIComponent(row[headerMap.mobile]||'');
-    url = SHEETDB_API + '/search?mobile=' + mobileVal;
-  }
-
-  fetch(url, options).then(r=>r.json()).then(j=>{
-    // re-fetch to update UI
-    fetchData();
-  }).catch(err=>{
-    alert('Error updating row: '+err.message);
-  });
+// --------------- stats ---------------
+function updateStats(){
+  const total = lastData.length;
+  const pendingRows = lastData.filter(r => String(r[ headerMap['status'] ]||'').toLowerCase().includes('pending'));
+  const pendingCount = pendingRows.length;
+  const pendingAmount = pendingRows.reduce((sum, r) => {
+    const a = Number((r[ headerMap['amount'] ]||'').toString().replace(/[^0-9.-]/g,''));
+    return sum + (isNaN(a) ? 0 : a);
+  }, 0);
+  document.getElementById('statTotal').textContent = total || '0';
+  document.getElementById('statPendingCount').textContent = pendingCount || '0';
+  document.getElementById('statPendingAmount').textContent = pendingAmount ? '₹'+pendingAmount : '₹0';
 }
 
-/* ---------- WHATSAPP ---------- */
+// --------------- phone normalization + WhatsApp send ---------------
+function normalizePhone(mob){
+  if(!mob) return '';
+  let digits = String(mob).replace(/\D/g,'');        // remove non-digit chars
+  digits = digits.replace(/^0+/, '');                // remove leading zeros
+  // if 10 digits -> assume India and add 91
+  if(digits.length === 10) digits = '91' + digits;
+  // If starts with country code like '91' or other and length >= 11, keep it
+  return digits;
+}
+
 function sendWhatsAppMsg(row){
-  const name = row[headerMap.clientname] || '';
-  const mob = String(row[headerMap.mobile]||'').replace(/[^\d+]/g,'');
-  const amount = row[headerMap.amount] || '';
-  const upi = 'perfectdigital@axl';
+  const nameKey = headerMap['clientname'];
+  const mobileKey = headerMap['mobile'];
+  const amountKey = headerMap['amount'];
 
-  const txt = `Hello ${name || ''}, your broadband payment of ₹${amount || ''} is pending. Please pay to Perfect Digital Network via UPI ID: ${upi}. If already paid, kindly ignore this message.`;
-  // use wa.me with phone if mobile present; else open WhatsApp web with message
-  if(mob){
-    // try to craft wa.me link — mob must be in international format for wa.me; if not, open web.whatsapp with message only
-    const phoneDigits = mob.replace(/[^\d]/g,'');
-    const waUrl = phoneDigits.length>=8 ? `https://wa.me/${phoneDigits}?text=${encodeURIComponent(txt)}` : `https://web.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
-    window.open(waUrl, '_blank');
+  const name = row[nameKey] || '';
+  const rawMob = row[mobileKey] || '';
+  const mob = normalizePhone(rawMob);
+  const amount = row[amountKey] || '';
+
+  const txt = `Hello ${name || ''}, your broadband payment of ₹${amount || ''} is pending. Please pay via UPI ID: ${UPI_ID}. If you've already paid, please ignore.`;
+
+  let waUrl;
+  if(mob && mob.length >= 11){
+    waUrl = `https://wa.me/${mob}?text=${encodeURIComponent(txt)}`;
   } else {
-    window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(txt)}`, '_blank');
+    // fallback to web.whatsapp.com/send (opens WhatsApp Web with message — user must choose recipient)
+    waUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(txt)}`;
   }
+  window.open(waUrl, '_blank');
 }
 
-/* ---------- ADD ROW ---------- */
-document.getElementById('addBtn').addEventListener('click', async ()=>{
+// --------------- add row ---------------
+document.getElementById('addBtn').addEventListener('click', async () => {
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
   const amount = document.getElementById('f_amount').value.trim();
   const date = document.getElementById('f_date').value.trim();
   const status = document.getElementById('f_status').value.trim();
-  const address = document.getElementById('f_address').value.trim();
+  const address = document.getElementById('f_address').value || '';
 
-  if(!name && !mobile){ alert('Provide at least name or mobile'); return; }
+  if(!name && !mobile){ alert('Please enter at least client name or mobile'); return; }
 
-  // ensure headers
+  // ensure headers detected
   if(!Object.keys(headerMap).length) await fetchData();
 
-  // payload uses detected header keys
-  const obj = {};
-  obj[ headerMap.clientname || 'clientname' ] = name;
-  obj[ headerMap.mobile || 'mobile' ] = mobile;
-  obj[ headerMap.amount || 'amount' ] = amount;
-  obj[ headerMap.date || 'date' ] = date;
-  obj[ headerMap.status || 'status' ] = status;
-  obj[ headerMap.address || 'address' ] = address;
+  // build payload using detected headerMap
+  const payloadObj = {};
+  payloadObj[ headerMap['clientname'] || 'clientname' ] = name || '';
+  payloadObj[ headerMap['mobile'] || 'mobile' ] = mobile || '';
+  payloadObj[ headerMap['amount'] || 'amount' ] = amount || '';
+  payloadObj[ headerMap['date'] || 'date' ] = date || '';
+  payloadObj[ headerMap['status'] || 'status' ] = status || '';
+  payloadObj[ headerMap['address'] || 'address' ] = address || '';
+
+  const body = { data: [ payloadObj ] };
 
   try{
     const res = await fetch(SHEETDB_API, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({data: [obj]})
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(body)
     });
     const j = await res.json();
-    if(!res.ok) { console.error('Add error', j); alert('Error adding'); return; }
-    document.getElementById('msg').textContent = 'Added - reloading...';
-    ['f_name','f_mobile','f_amount','f_date','f_days','f_remark'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value='';});
-    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),400);
-  }catch(e){
-    alert('Network error: '+e.message);
+    if(!res.ok){
+      console.error('SheetDB error:', j);
+      alert('Error adding row: '+(j.message||res.status));
+      return;
+    }
+    document.getElementById('msg').textContent = 'Added — reloading...';
+    ['f_name','f_mobile','f_amount','f_date','f_status','f_address'].forEach(id=>document.getElementById(id).value='');
+    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),500);
+  }catch(err){
+    console.error(err);
+    alert('Network error adding row: '+err.message);
   }
 });
 
-/* ---------- UI Handlers ---------- */
-document.getElementById('reloadBtn').addEventListener('click', ()=>fetchData());
-document.getElementById('filterPendingBtn').addEventListener('click', (e)=>{
-  filterPending = !filterPending;
-  e.target.classList.toggle('btn', filterPending);
-  e.target.classList.toggle('ghost', !filterPending);
-  renderTable();
-});
-document.getElementById('searchBox').addEventListener('input', ()=>renderTable());
-document.getElementById('perPageSel').addEventListener('change', (e)=>{ perPage = Number(e.target.value); pageIndex=0; renderTable();});
-document.getElementById('prevBtn').addEventListener('click', ()=>{ if(pageIndex>0){ pageIndex--; renderTable(); }});
-document.getElementById('nextBtn').addEventListener('click', ()=>{ pageIndex++; renderTable();});
-document.getElementById('areaAll').addEventListener('click', ()=>{ currentArea=''; pageIndex=0; renderTable();});
-document.getElementById('areaWaz').addEventListener('click', ()=>{ currentArea='Wazirpur'; pageIndex=0; renderTable();});
-document.getElementById('areaShas').addEventListener('click', ()=>{ currentArea='Shas/Trinagar'; pageIndex=0; renderTable();});
-document.getElementById('areaAshok').addEventListener('click', ()=>{ currentArea='Ashok Vihar'; pageIndex=0; renderTable();});
-document.getElementById('areaGul').addEventListener('click', ()=>{ currentArea='Gulabi Bagh'; pageIndex=0; renderTable();});
+// --------------- UI events ---------------
+document.getElementById('reloadBtn').addEventListener('click', ()=>{ document.getElementById('msg').textContent='Reloading...'; fetchData().then(()=>document.getElementById('msg').textContent=''); });
+document.getElementById('pendingBtn').addEventListener('click', (e) => { filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
+document.getElementById('searchBox').addEventListener('input', ()=>{ pageNo=1; renderTable(); });
+document.getElementById('perPage').addEventListener('change', ()=>{ pageNo=1; renderTable(); });
+document.getElementById('prevBtn').addEventListener('click', ()=>{ pageNo = Math.max(1, pageNo-1); renderTable(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ pageNo = pageNo+1; renderTable(); });
 
-// refresh selector
+document.querySelectorAll('[data-area]').forEach(btn=>{
+  btn.addEventListener('click', (e)=>{
+    currentArea = e.target.getAttribute('data-area');
+    pageNo = 1;
+    renderTable();
+  });
+});
+
+// refresh select auto-refresh
 let refreshTimer = null;
-document.getElementById('refreshSel').addEventListener('change',(e)=>{
+document.getElementById('refreshSel').addEventListener('change', (e) => {
   const v = Number(e.target.value);
-  if(refreshTimer) clearInterval(refreshTimer);
+  if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; }
   if(v>0) refreshTimer = setInterval(fetchData, v*1000);
 });
-
-// QR modal
-document.getElementById('qrBtn').addEventListener('click', ()=>document.getElementById('qrModal').style.display='flex');
-document.getElementById('qrClose').addEventListener('click', ()=>document.getElementById('qrModal').style.display='none');
 
 // initial load
 fetchData();
