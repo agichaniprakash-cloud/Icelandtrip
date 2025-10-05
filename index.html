@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK – Smart Delete (Code X3)</title>
+<title>PERFECT DIGITAL NETWORK – Pending Payments</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -12,14 +12,13 @@
     --card:#ffffff;
     --bg:#f6f7f8;
     --radius:10px;
-    --danger:#cc3b3b;
   }
   *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
-  body{margin:0;background:var(--bg);color:#1f2933;padding:20px;}
+  body{margin:0;background:var(--bg);color:#1f2933;padding:24px;}
   .wrap{max-width:980px;margin:0 auto}
-  header{display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+  header{display:flex;align-items:center;justify-content:center;margin-bottom:18px}
   header h1{margin:0;font-size:28px;color:var(--green)}
-  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
+  .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
   .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
   .controls input[type=search]{width:100%;max-width:480px;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
   .btn{background:var(--green);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
@@ -33,13 +32,6 @@
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:14px}
   .formRow .row{display:flex;gap:10px;flex-wrap:wrap}
   .formRow input,.formRow select{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
-  .leftAction{width:42px;text-align:center}
-  .trashBtn{background:transparent;border:0;font-size:16px;cursor:pointer;padding:8px;border-radius:8px}
-  .trashBtn:hover{background:#fff2f2}
-  .fade-out{transition:opacity .35s ease, transform .35s ease;opacity:0;transform:translateX(-10px) scale(.995);}
-  .highlight{background:linear-gradient(90deg, rgba(255,240,240,.5), rgba(255,255,255,0));}
-  .actions .edit{background:#fff8ef;border:1px solid #f5e6d6;color:#8a5b00;padding:6px 8px;border-radius:6px}
-  .actions .del{background:#fff6f6;border:1px solid #ffecec;color:var(--danger);padding:6px 8px;border-radius:6px}
   .muted{color:var(--muted)}
   @media (max-width:780px){
     .formRow .row{flex-direction:column}
@@ -106,384 +98,127 @@
 </div>
 
 <script>
-/* ---------------- CONFIG ---------------- */
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd'; // keep your API
-const CANON = ['clientname','mobile','amount','date','status','address'];
-
-function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
-
-/* state */
-let rawRows = [];         // as returned by SheetDB
-let headerMap = {};      // canonical -> actual sheet key (or canonical)
-let refreshTimer = null;
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
+const canonical = ["clientname","mobile","amount","date","status","address"];
+let lastData = [];
+let headerMap = {};
 let filterPending = false;
+let refreshTimer = null;
 
-/* ---------- header detection (safe) ---------- */
-function detectHeaders(rows){
-  headerMap = {};
-  if(Array.isArray(rows) && rows.length){
-    const keys = Object.keys(rows[0]);
-    const lookup = {}; keys.forEach(k=>lookup[normKey(k)] = k);
-    const variants = {
-      clientname:['clientname','client','name','client_name'],
-      mobile:['mobile','phone','phonenumber','mobilephone'],
-      amount:['amount','amt','price'],
-      date:['date','duedate','due_date'],
-      status:['status','paymentstatus','st'],
-      address:['address','addr','location','area','remark','remarks']
-    };
-    CANON.forEach(c=>{
-      if(lookup[normKey(c)]){ headerMap[c]=lookup[normKey(c)]; return; }
-      let found=null;
-      (variants[c]||[c]).forEach(v=>{ if(!found && lookup[normKey(v)]) found=lookup[normKey(v)]; });
-      headerMap[c]= found || c;
-    });
-  } else {
-    CANON.forEach(c=> headerMap[c]=c );
-  }
-}
+/* normalize header names */
+function norm(s){ return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,''); }
 
-/* safe get cell with fallbacks */
-function getCell(row, canonical){
-  if(!row) return '';
-  const ak = headerMap[canonical];
-  if(ak && row.hasOwnProperty(ak)) return row[ak];
-  const fallbackKeys = {
-    clientname:['Client Name','clientname','name'],
-    mobile:['mobile','Mobile','phone'],
-    amount:['amount','Amount','amt'],
-    date:['date','Date'],
-    status:['status','Status'],
-    address:['address','Address','remark','Remark','remarks']
-  };
-  for(const k of (fallbackKeys[canonical]||[])) if(row.hasOwnProperty(k)) return row[k];
-  return '';
-}
-
-/* find an internal row-id if present in raw row (common keys) */
-function findRowId(row){
-  if(!row || typeof row !== 'object') return null;
-  const candidates = ['_row','__rownum','_rownum','row','Row','_id','id','_rid'];
-  for(const c of candidates){
-    if(Object.prototype.hasOwnProperty.call(row,c)){
-      const v = row[c]; if(v!==null && v!==undefined && String(v).trim()!=='') return v;
-    }
-  }
-  // nested metadata check
-  for(const k of Object.keys(row)){
-    try{
-      const val = row[k];
-      if(val && typeof val === 'object'){
-        for(const c of ['_row','__rownum','_rownum','row','_id']) if(Object.prototype.hasOwnProperty.call(val,c) && val[c]) return val[c];
-      }
-    }catch(e){}
-  }
-  return null;
-}
-
-/* ---------------- fetch ---------------- */
+/* fetch data and render */
 async function fetchData(){
   try{
-    setMsg('Loading…');
     const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: '+res.status);
-    const json = await res.json();
-    rawRows = Array.isArray(json) ? json : (json.data || []);
-    detectHeaders(rawRows);
-    renderTable();
-    setMsg('');
-  }catch(err){
-    console.error(err);
-    setMsg('Error loading data — check console');
-  }
+    const data = await res.json();
+    lastData = Array.isArray(data) ? data : [];
+    detectHeaders(lastData);
+    renderTable(lastData);
+  }catch(e){ console.error(e); document.getElementById('msg').textContent='Error loading data'; }
 }
 
-/* ---------------- render table ---------------- */
-function renderTable(){
-  const head = document.getElementById('tableHead');
-  const body = document.getElementById('tableBody');
-  head.innerHTML=''; body.innerHTML='';
-
-  // headers: add left small column for delete icon (no text)
-  const headRow = document.createElement('tr');
-  const thLeft = document.createElement('th'); thLeft.style.width='42px'; headRow.appendChild(thLeft);
-  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
-  Object.keys(titles).forEach(k => { const th=document.createElement('th'); th.textContent=titles[k]; headRow.appendChild(th); });
-  const thAct = document.createElement('th'); thAct.textContent='Actions'; headRow.appendChild(thAct);
-  head.appendChild(headRow);
-
-  const q = (document.getElementById('searchBox').value||'').trim().toLowerCase();
-
-  // attach local index to each visible row for safe delete
-  const rows = rawRows.filter(r=>{
-    if(q){
-      const hay = Object.values(r).join(' ').toLowerCase();
-      if(!hay.includes(q)) return false;
-    }
-    if(filterPending){
-      const st = (getCell(r,'status')||'').toString().toLowerCase();
-      if(!st.includes('pending')) return false;
-    }
-    return true;
-  });
-
-  if(!rows.length){
-    body.innerHTML='<tr><td colspan="8" style="text-align:center;padding:14px;color:var(--muted)">No records</td></tr>';
-    return;
-  }
-
-  rows.forEach((row, idx)=>{
-    const tr = document.createElement('tr');
-    // left delete button column
-    const tdLeft = document.createElement('td'); tdLeft.className='leftAction';
-    const btn = document.createElement('button');
-    btn.className='trashBtn'; btn.title='Delete this row';
-    btn.innerHTML = '🗑️';
-    // store the actual original index in dataset (global rawRows index)
-    // find global index in rawRows (safe against filtering)
-    const globalIndex = rawRows.indexOf(row);
-    btn.dataset.globalIndex = String(globalIndex);
-    btn.addEventListener('click', onDeleteClick);
-    tdLeft.appendChild(btn);
-    tr.appendChild(tdLeft);
-
-    const name = getCell(row,'clientname')||'';
-    const mobile = getCell(row,'mobile')||'';
-    const amount = getCell(row,'amount')||'';
-    const date = getCell(row,'date')||'';
-    const statusRaw = (getCell(row,'status')||'').toString().toLowerCase();
-    const address = getCell(row,'address')||'';
-
-    const statusHtml = statusRaw === 'paid' ? `<span class="status-paid">Paid</span>` : `<span class="status-pending">Pending</span>`;
-
-    tr.innerHTML += `
-      <td>${escapeHtml(name)}</td>
-      <td>${escapeHtml(mobile)}</td>
-      <td>${escapeHtml(amount)}</td>
-      <td>${escapeHtml(date)}</td>
-      <td>${statusHtml}</td>
-      <td>${escapeHtml(address)}</td>
-      <td class="actions" style="white-space:nowrap">
-        <button class="edit" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>
-      </td>
-    `;
-    body.appendChild(tr);
-  });
-
-  // attach edit handlers (delegation)
-  body.querySelectorAll('button.edit').forEach(b => {
-    b.addEventListener('click', (e) => {
-      const row = JSON.parse(decodeURIComponent(b.dataset.payload));
-      editRow(row);
+/* detect sheet headers */
+function detectHeaders(data){
+  headerMap={};
+  if(data && data.length){
+    const keys=Object.keys(data[0]); const lookup={}; keys.forEach(k=>lookup[norm(k)]=k);
+    canonical.forEach(c=>{
+      const variants={clientname:['client','name'],mobile:['mobile','phone'],amount:['amount','amt'],date:['date','duedate'],status:['status'],address:['address','remark','area']};
+      let found=null; [c,...(variants[c]||[])].forEach(v=>{if(!found&&lookup[norm(v)])found=lookup[norm(v)];});
+      headerMap[c]=found||keys[0];
     });
+  }else canonical.forEach(c=>headerMap[c]=c);
+}
+
+/* render table */
+function renderTable(data){
+  const th=document.getElementById('tableHead'), tb=document.getElementById('tableBody');
+  th.innerHTML=''; tb.innerHTML='';
+  const titles={clientname:'Client Name',mobile:'Mobile',amount:'Amount',date:'Date',status:'Status',address:'Address'};
+  const headRow=document.createElement('tr');
+  Object.keys(titles).forEach(k=>{const thcell=document.createElement('th');thcell.textContent=titles[k];headRow.appendChild(thcell);});
+  const thEdit=document.createElement('th');thEdit.textContent='Edit';headRow.appendChild(thEdit);
+  th.appendChild(headRow);
+
+  const q=document.getElementById('searchBox').value.trim().toLowerCase();
+  (data||[]).forEach(row=>{
+    const visible=Object.values(row).join(' ').toLowerCase().includes(q);
+    if(!visible) return;
+    if(filterPending && !String(row[headerMap['status']]||'').toLowerCase().includes('pending')) return;
+    const tr=document.createElement('tr');
+    canonical.forEach(k=>{
+      const td=document.createElement('td');
+      const actualKey=headerMap[k];
+      td.textContent=(actualKey && row[actualKey]!==undefined)?row[actualKey]:'';
+      tr.appendChild(td);
+    });
+    const tdEdit=document.createElement('td');
+    const btn=document.createElement('button');
+    btn.textContent='Edit';
+    btn.className='btn ghost';
+    btn.onclick=()=>editRow(row);
+    tdEdit.appendChild(btn);
+    tr.appendChild(tdEdit);
+    tb.appendChild(tr);
   });
 }
 
-/* ---------------- Delete flow ---------------- */
-function onDeleteClick(ev){
-  const btn = ev.currentTarget;
-  const globalIndex = Number(btn.dataset.globalIndex);
-  if(isNaN(globalIndex) || globalIndex < 0){
-    alert('Could not determine row to delete safely. Please delete from the sheet.');
-    return;
-  }
-  // highlight row visually
-  const tr = btn.closest('tr');
-  tr.classList.add('highlight');
-
-  // confirm
-  if(!confirm('Delete only THIS row? This will remove one row from the sheet. Confirm delete.')) {
-    tr.classList.remove('highlight');
-    return;
-  }
-
-  // perform visual fade
-  tr.classList.add('fade-out');
-
-  // perform safe server-side delete by rewriting remaining rows:
-  // build new array excluding the globalIndex row
-  const remaining = rawRows.slice(); // shallow copy
-  const removedRow = remaining.splice(globalIndex,1)[0];
-
-  // attempt write-back as full-data replacement (PUT)
-  replaceFullSheet(remaining).then(ok=>{
-    if(ok){
-      // update local state and re-render
-      rawRows = remaining;
-      setTimeout(()=>{ renderTable(); setMsg('Deleted ✓'); setTimeout(()=>setMsg(''),1200); }, 360);
-    } else {
-      // fallback: try delete by row-id if available
-      const rowId = findRowId(removedRow);
-      if(rowId){
-        deleteByRowId(rowId).then(suc=>{
-          if(suc){
-            // reload
-            fetchData();
-            setMsg('Deleted ✓');
-            setTimeout(()=>setMsg(''),1200);
-          } else {
-            alert('Delete failed. Please delete manually from the sheet.');
-            fetchData();
-          }
-        });
-      } else {
-        alert('Delete failed to write-back. No unique row id available to safely delete. Please delete manually from the sheet.');
-        fetchData();
-      }
-    }
-  });
-}
-
-/* replace entire sheet data via PUT (attempt). Returns true if server responded OK. */
-async function replaceFullSheet(newArray){
+/* add client */
+document.getElementById('addBtn').addEventListener('click',async()=>{
+  const name=f_name.value.trim(),mobile=f_mobile.value.trim(),amount=f_amount.value.trim(),date=f_date.value.trim(),status=f_status.value.trim(),address=f_address.value.trim();
+  if(!name&&!mobile){alert('Enter name or mobile');return;}
+  const payload={};
+  payload[headerMap['clientname']||'clientname']=name;
+  payload[headerMap['mobile']||'mobile']=mobile;
+  payload[headerMap['amount']||'amount']=amount;
+  payload[headerMap['date']||'date']=date;
+  payload[headerMap['status']||'status']=status;
+  payload[headerMap['address']||'address']=address;
   try{
-    // Many SheetDB installations accept PUT to replace data: /api/v1/{id}
-    // We send the raw objects back as-is. If your sheet has custom column names, SheetDB will map keys.
-    const res = await fetch(SHEETDB_API, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: newArray })
-    });
-    if(res.ok) return true;
-    // Some installations may reject PUT — check response and return false
-    console.warn('PUT failed', res.status, await res.text().catch(()=>'')); 
-    return false;
-  }catch(err){
-    console.error('replaceFullSheet error', err);
-    return false;
-  }
-}
+    addMsg.textContent='Adding...';
+    await fetch(SHEETDB_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:[payload]})});
+    await fetchData(); addMsg.textContent='Added ✓'; setTimeout(()=>addMsg.textContent='',1500);
+    ['f_name','f_mobile','f_amount','f_date'].forEach(id=>document.getElementById(id).value=''); f_status.value='pending'; f_address.value='';
+  }catch(e){console.error(e);addMsg.textContent='Error';}
+});
 
-/* delete by row-id fallback */
-async function deleteByRowId(rowId){
-  try{
-    const url = SHEETDB_API.replace(/\/+$/,'') + '/_row/' + encodeURIComponent(rowId);
-    const res = await fetch(url, { method: 'DELETE' });
-    return res.ok;
-  }catch(e){
-    console.error('deleteByRowId error', e);
-    return false;
-  }
-}
+/* edit client */
+async function editRow(row){
+  const name = prompt('Client Name:', row[headerMap['clientname']] || '');
+  const mobile = prompt('Mobile:', row[headerMap['mobile']] || '');
+  const amount = prompt('Amount:', row[headerMap['amount']] || '');
+  const date = prompt('Date:', row[headerMap['date']] || '');
+  const status = prompt('Status (paid/pending):', row[headerMap['status']] || '');
+  const address = prompt('Address:', row[headerMap['address']] || '');
 
-/* ---------------- Edit (unchanged) ---------------- */
-async function editRow(rowObj){
-  try{
-    const currentName = getCell(rowObj,'clientname')||'';
-    const currentMobile = getCell(rowObj,'mobile')||'';
-    const currentAmount = getCell(rowObj,'amount')||'';
-    const currentDate = getCell(rowObj,'date')||'';
-    const currentStatus = getCell(rowObj,'status')||'pending';
-    const currentAddress = getCell(rowObj,'address')||'';
-
-    const newName = prompt('Client name', currentName) || currentName;
-    const newMobile = prompt('Mobile', currentMobile) || currentMobile;
-    const newAmount = prompt('Amount', currentAmount) || currentAmount;
-    const newDate = prompt('Date', currentDate) || currentDate;
-    const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;
-    const newAddress = prompt('Address', currentAddress) || currentAddress;
-
-    const patchObj = {};
-    patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
-    patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;
-    patchObj[ headerMap['amount'] || 'amount' ] = newAmount;
-    patchObj[ headerMap['date'] || 'date' ] = newDate;
-    patchObj[ headerMap['status'] || 'status' ] = newStatus;
-    patchObj[ headerMap['address'] || 'address' ] = newAddress;
-
-    // Prefer patch by row-id if present
-    const rowId = findRowId(rowObj);
-    let patchUrl;
-    if(rowId){
-      patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/_row/' + encodeURIComponent(rowId);
-    } else {
-      // fallback: patch by mobile or clientname
-      const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';
-      const nameVal = rowObj[ headerMap['clientname'] ] || rowObj['Client Name'] || rowObj.clientname || '';
-      if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
-      else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-    }
-
-    const res = await fetch(patchUrl, {
-      method: 'PATCH',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ data: [ patchObj ] })
-    });
-    if(!res.ok) throw new Error('Update failed: '+res.status);
-    await fetchData();
-    setMsg('Updated ✓'); setTimeout(()=>setMsg(''),1200);
-  }catch(err){
-    console.error(err);
-    alert('Update failed — check console.');
-  }
-}
-
-/* ---------------- Add row (unchanged) ---------------- */
-async function addRow(){
-  const name = document.getElementById('f_name').value.trim();
-  const mobile = document.getElementById('f_mobile').value.trim();
-  const amount = document.getElementById('f_amount').value.trim();
-  const date = document.getElementById('f_date').value.trim();
-  const status = document.getElementById('f_status').value.trim();
-  const address = document.getElementById('f_address').value.trim();
-
-  if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }
-  if(!Object.keys(headerMap).length) await fetchData();
-
-  const payload = {};
-  payload[ headerMap['clientname'] || 'clientname' ] = name || '';
-  payload[ headerMap['mobile'] || 'mobile' ] = mobile || '';
-  payload[ headerMap['amount'] || 'amount' ] = amount || '';
-  payload[ headerMap['date'] || 'date' ] = date || '';
-  payload[ headerMap['status'] || 'status' ] = status || '';
-  payload[ headerMap['address'] || 'address' ] = address || '';
+  const patch = {};
+  patch[headerMap['clientname']] = name;
+  patch[headerMap['mobile']] = mobile;
+  patch[headerMap['amount']] = amount;
+  patch[headerMap['date']] = date;
+  patch[headerMap['status']] = status;
+  patch[headerMap['address']] = address;
 
   try{
-    document.getElementById('addMsg').textContent = 'Adding…';
-    const res = await fetch(SHEETDB_API, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ data: [ payload ] })
+    const res = await fetch(`${SHEETDB_API}/mobile/${encodeURIComponent(row[headerMap['mobile']])}`, {
+      method:'PATCH',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ data:[patch] })
     });
-    if(!res.ok){
-      const txt = await res.text().catch(()=>'');
-      throw new Error(txt || res.status);
-    }
-    await fetchData();
-    // verification
-    const found = rawRows.some(r => {
-      const nm = (getCell(r,'clientname')||'').toString().trim();
-      const mob = (getCell(r,'mobile')||'').toString().trim();
-      return (mobile && mob === mobile) || (name && nm === name);
-    });
-    if(!found){
-      document.getElementById('addMsg').textContent = 'Added — but verification failed. Check Sheet headers.';
-      console.warn('Add verification failed', headerMap, payload, rawRows.slice(0,2));
-      return;
-    }
-    ['f_name','f_mobile','f_amount','f_date'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('f_address').value = '';
-    document.getElementById('f_status').value = 'pending';
-    document.getElementById('addMsg').textContent = 'Added ✓';
-    setTimeout(()=>document.getElementById('addMsg').textContent = '',1500);
-  }catch(err){
-    console.error(err);
-    alert('Add failed — see console.');
-    document.getElementById('addMsg').textContent = '';
-  }
+    if(!res.ok) throw new Error(res.statusText);
+    alert('Updated successfully!');
+    fetchData();
+  }catch(e){ alert('Error updating: '+e.message); }
 }
 
-/* UI wiring */
-document.getElementById('reloadBtn').addEventListener('click', fetchData);
-document.getElementById('searchBox').addEventListener('input', renderTable);
-document.getElementById('filterPendingBtn').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
-document.getElementById('refreshSel').addEventListener('change',(e)=>{ const v = Number(e.target.value); if(refreshTimer){ clearInterval(refreshTimer); refreshTimer=null; } if(v>0) refreshTimer = setInterval(fetchData, v*1000); });
-document.getElementById('addBtn').addEventListener('click', addRow);
-
-/* initial load */
+/* filters & reload */
+document.getElementById('reloadBtn').onclick=fetchData;
+document.getElementById('searchBox').oninput=()=>renderTable(lastData);
+document.getElementById('filterPendingBtn').onclick=(e)=>{filterPending=!filterPending;e.target.classList.toggle('btn',filterPending);e.target.classList.toggle('ghost',!filterPending);renderTable(lastData);}
+document.getElementById('refreshSel').onchange=(e)=>{const v=Number(e.target.value);if(refreshTimer)clearInterval(refreshTimer);if(v>0)refreshTimer=setInterval(fetchData,v*1000);}
 fetchData();
-
 </script>
 </body>
 </html>
