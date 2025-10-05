@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK – Pending Payments (Pagination)</title>
+<title>PERFECT DIGITAL NETWORK – Pending Payments (Code M1 + Month/Year)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -21,7 +21,8 @@
   header h1{margin:0;font-size:28px;color:var(--green)}
   .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
   .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-  .controls input[type=search]{width:100%;max-width:420px;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
+  .controls input[type=search]{width:100%;max-width:320px;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
+  .smallSelect{padding:8px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}
   .btn{background:var(--green);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
   .btn.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}
   .tableWrap{overflow-x:auto;margin-top:12px}
@@ -35,13 +36,19 @@
   .formRow input,.formRow select{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
   .leftAction{width:56px;text-align:center}
   .waBtn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-weight:600}
-  .trashBtn{background:transparent;border:0;font-size:16px;cursor:pointer;padding:8px;border-radius:8px}
   .muted{color:var(--muted)}
   .pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
   .pageBtn{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ea;background:#fff;cursor:pointer}
   .pageBtn.active{background:var(--green);color:#fff;border-color:var(--green)}
   .pageInfo{margin-right:auto;color:var(--muted)}
-  /* PASSWORD GATE STYLES (overlay) */
+  .monthYearHeader{font-weight:600;margin-bottom:8px;color:#123}
+  @media (max-width:780px){
+    .formRow .row{flex-direction:column}
+    .controls input[type=search]{max-width:100%}
+    .pagination{justify-content:center}
+    .pageInfo{width:100%;text-align:center;margin-bottom:6px}
+  }
+  /* PASSWORD GATE */
   #pwOverlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.45),rgba(0,0,0,0.55));display:flex;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(2px)}
   #pwBox{width:95%;max-width:420px;background:#fff;padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:left}
   #pwBox h2{margin:0 0 8px 0;color:#153;font-size:18px}
@@ -50,34 +57,25 @@
   #pwBox button{background:#138a55;color:#fff;padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
   #pwMsg{font-size:13px;color:#cc3b3b;margin-top:8px;min-height:18px}
   #pwBox .linkish{background:#fff;border:1px solid #e6e9ea;color:#333;padding:10px 12px;border-radius:8px;cursor:pointer}
-  @media (max-width:420px){#pwBox{padding:14px}}
-  @media (max-width:780px){
-    .formRow .row{flex-direction:column}
-    .controls input[type=search]{max-width:100%}
-    .pagination{justify-content:center}
-    .pageInfo{width:100%;text-align:center;margin-bottom:6px}
-  }
 </style>
 </head>
 <body>
-<!-- PASSWORD OVERLAY: appears before the site -->
+
+<!-- PASSWORD OVERLAY (same as Code M1) -->
 <div id="pwOverlay" role="dialog" aria-label="Login required">
   <div id="pwBox" role="document" aria-live="polite">
     <h2>Admin login</h2>
     <p>Enter username and password to open the dashboard.</p>
-
     <label style="font-size:13px;color:var(--muted)">Username</label>
     <input id="pwUser" type="text" value="" placeholder="admin" />
-
     <label style="font-size:13px;color:var(--muted)">Password</label>
     <input id="pwInput" type="password" placeholder="Password" />
-
     <div style="display:flex;gap:8px;margin-top:8px">
       <button id="pwSubmit">Open</button>
       <button id="pwChangeBtn" class="linkish" title="Change password (requires your email)">Change password</button>
     </div>
     <div id="pwMsg"></div>
-    <div style="margin-top:10px;font-size:12px;color:var(--muted)">Username: <strong>admin</strong>. Password can be changed only with the email <strong>agichaniprakash@gmail.com</strong>.</div>
+    <div style="margin-top:10px;font-size:12px;color:var(--muted)">Username: <strong>admin</strong>. Password change allowed only via <strong>agichaniprakash@gmail.com</strong>.</div>
   </div>
 </div>
 
@@ -87,16 +85,39 @@
   <div class="card">
     <div class="controls">
       <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
-      <select id="refreshSel" title="Auto refresh">
-        <option value="0">Refresh off</option>
-        <option value="15">Refresh every 15s</option>
-        <option value="30">Refresh every 30s</option>
-        <option value="60" selected>Refresh every 60s</option>
+      <label for="monthSel" style="font-size:13px;color:var(--muted)">Month</label>
+      <select id="monthSel" class="smallSelect">
+        <option value="all">All months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
       </select>
+
+      <label for="yearSel" style="font-size:13px;color:var(--muted)">Year</label>
+      <select id="yearSel" class="smallSelect"></select>
+
+      <select id="refreshSel" class="smallSelect" title="Auto refresh">
+        <option value="0">Refresh off</option>
+        <option value="15">Every 15s</option>
+        <option value="30">Every 30s</option>
+        <option value="60" selected>Every 60s</option>
+      </select>
+
       <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>
       <button id="reloadBtn" class="btn">Reload now</button>
       <div style="margin-left:auto" id="msg" class="muted"></div>
     </div>
+
+    <div class="monthYearHeader" id="monthYearHeader">Showing: All months</div>
 
     <div class="tableWrap">
       <table id="dataTable" role="table" aria-label="Pending payments">
@@ -147,7 +168,7 @@
   </div>
 </div>
 
-<!-- PASSWORD-CHANGE MODAL (hidden until requested) -->
+<!-- Password-change modal (same as Code M1) -->
 <div id="pwChangeOverlay" style="display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;background:rgba(0,0,0,0.45)">
   <div style="background:#fff;padding:16px;border-radius:12px;max-width:480px;width:92%;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
     <h3 style="margin:0 0 8px 0">Change password</h3>
@@ -165,45 +186,21 @@
 </div>
 
 <script>
-/*
-  Client-side password gate + password-change restricted by email.
-
-  Behavior:
-  - Username must be "admin".
-  - Initial password (if none stored) = 'pdn@secure#2025'.
-  - Password stored in localStorage (base64-encoded).
-  - Session authentication is kept in sessionStorage.
-  - Password change allowed only if email exactly matches 'agichaniprakash@gmail.com'.
-*/
-
-/* CONFIG */
+/* ----------------------
+   Password gate (Code M1) config
+   ---------------------- */
 const ADMIN_USER = 'admin';
 const AUTH_SESSION_KEY = 'codem1_auth_ok_v1';
-const STORAGE_PW_KEY = 'codem1_pw_v1'; // stores base64 of password
+const STORAGE_PW_KEY = 'codem1_pw_v1';
 const OWNER_EMAIL = 'agichaniprakash@gmail.com';
-
-// initial password we set (will be stored only if no password exists in storage)
 const INITIAL_PW = 'pdn@secure#2025';
 
-/* utilities */
-function setStoredPassword(pw){
-  try{ localStorage.setItem(STORAGE_PW_KEY, btoa(String(pw))); return true; } catch(e){ console.error(e); return false; }
-}
-function getStoredPassword(){
-  try{
-    const v = localStorage.getItem(STORAGE_PW_KEY);
-    if(!v) return null;
-    return atob(v);
-  }catch(e){ return null; }
-}
-function clearAuthSession(){ sessionStorage.removeItem(AUTH_SESSION_KEY); document.getElementById('mainWrap').style.display='none'; document.getElementById('pwOverlay').style.display='flex'; }
+function setStoredPassword(pw){ try{ localStorage.setItem(STORAGE_PW_KEY, btoa(String(pw))); return true; } catch(e){ console.error(e); return false; } }
+function getStoredPassword(){ try{ const v = localStorage.getItem(STORAGE_PW_KEY); if(!v) return null; return atob(v); } catch(e){ return null; } }
 
-/* ensure a stored password exists */
-if(!getStoredPassword()){
-  setStoredPassword(INITIAL_PW);
-}
+// ensure initial
+if(!getStoredPassword()) setStoredPassword(INITIAL_PW);
 
-/* elements */
 const overlay = document.getElementById('pwOverlay');
 const mainWrap = document.getElementById('mainWrap');
 const userInput = document.getElementById('pwUser');
@@ -221,149 +218,119 @@ const chgSave = document.getElementById('chgSave');
 const chgCancel = document.getElementById('chgCancel');
 const chgMsg = document.getElementById('chgMsg');
 
-/* On load — if session authenticated, hide overlay and show main */
-if(sessionStorage.getItem(AUTH_SESSION_KEY) === '1'){
-  overlay.style.display = 'none';
-  mainWrap.style.display = '';
-} else {
-  overlay.style.display = 'flex';
-  mainWrap.style.display = 'none';
-  userInput.value = ADMIN_USER;
-  pwInput.value = '';
-  pwInput.focus();
-}
+if(sessionStorage.getItem(AUTH_SESSION_KEY) === '1'){ overlay.style.display='none'; mainWrap.style.display=''; } else { overlay.style.display='flex'; mainWrap.style.display='none'; userInput.value = ADMIN_USER; pwInput.value = ''; pwInput.focus(); }
 
-/* login function */
-function attemptLogin(){
-  const u = (userInput.value || '').trim();
-  const p = (pwInput.value || '');
-  const stored = getStoredPassword() || '';
-  if(u !== ADMIN_USER){
-    msgDiv.textContent = 'Wrong username.';
-    return;
-  }
-  if(p === stored){
-    sessionStorage.setItem(AUTH_SESSION_KEY, '1');
-    overlay.style.transition = 'opacity 220ms';
-    overlay.style.opacity = '0';
-    setTimeout(()=>{ overlay.style.display='none'; mainWrap.style.display=''; overlay.style.opacity='1'; }, 240);
-    msgDiv.textContent = '';
-  } else {
-    msgDiv.textContent = 'Incorrect password.';
-    pwInput.value = '';
-    pwInput.focus();
-  }
-}
+function attemptLogin(){ const u = (userInput.value||'').trim(); const p = (pwInput.value||''); const stored = getStoredPassword()||''; if(u !== ADMIN_USER){ msgDiv.textContent='Wrong username.'; return; } if(p === stored){ sessionStorage.setItem(AUTH_SESSION_KEY,'1'); overlay.style.transition='opacity 220ms'; overlay.style.opacity='0'; setTimeout(()=>{ overlay.style.display='none'; mainWrap.style.display=''; overlay.style.opacity='1'; },240); msgDiv.textContent=''; } else { msgDiv.textContent='Incorrect password.'; pwInput.value=''; pwInput.focus(); } }
 
-/* events */
 submitBtn.addEventListener('click', attemptLogin);
-pwInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') attemptLogin(); });
+pwInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') attemptLogin(); });
 
 changeBtn.addEventListener('click', ()=>{
-  // show change modal
-  chgEmail.value = '';
-  chgCurrent.value = '';
-  chgNew.value = '';
-  chgNew2.value = '';
-  chgMsg.textContent = '';
-  changeOverlay.style.display = 'flex';
-  chgEmail.focus();
+  chgEmail.value=''; chgCurrent.value=''; chgNew.value=''; chgNew2.value=''; chgMsg.textContent=''; changeOverlay.style.display='flex'; chgEmail.focus();
 });
-
-/* handle change cancel */
 chgCancel.addEventListener('click', ()=>{ changeOverlay.style.display='none'; });
 
-/* change save handler */
 chgSave.addEventListener('click', ()=>{
-  chgMsg.textContent = '';
-  const email = (chgEmail.value || '').trim();
-  const cur = chgCurrent.value || '';
-  const n1 = chgNew.value || '';
-  const n2 = chgNew2.value || '';
+  chgMsg.textContent=''; const email = (chgEmail.value||'').trim(); const cur = chgCurrent.value||''; const n1 = chgNew.value||''; const n2 = chgNew2.value||''; if(!email||!cur||!n1||!n2){ chgMsg.textContent='Please fill all fields.'; return; } if(email.toLowerCase() !== OWNER_EMAIL.toLowerCase()){ chgMsg.textContent='Password change allowed only via owner email.'; return; } const stored = getStoredPassword()||''; if(cur !== stored){ chgMsg.textContent='Current password incorrect.'; return; } if(n1 !== n2){ chgMsg.textContent='New passwords do not match.'; return; } if(n1.length < 6){ chgMsg.textContent='Choose a stronger password (min 6 chars).'; return; } const ok = setStoredPassword(n1); if(ok){ chgMsg.style.color='#138a55'; chgMsg.textContent='Password updated ✓'; setTimeout(()=>{ chgMsg.style.color='#b33'; changeOverlay.style.display='none'; },900); } else { chgMsg.style.color='#b33'; chgMsg.textContent='Failed to save password (browser blocked).'; } });
 
-  if(!email || !cur || !n1 || !n2){ chgMsg.textContent = 'Please fill all fields.'; return; }
-  if(email.toLowerCase() !== OWNER_EMAIL.toLowerCase()){ chgMsg.textContent = 'Password change allowed only via owner email.'; return; }
+/* ----------------------
+   Code M1 logic + Month/Year filter
+   ---------------------- */
 
-  const stored = getStoredPassword() || '';
-  if(cur !== stored){ chgMsg.textContent = 'Current password incorrect.'; return; }
-  if(n1 !== n2){ chgMsg.textContent = 'New passwords do not match.'; return; }
-  if(n1.length < 6){ chgMsg.textContent = 'Choose a stronger password (min 6 chars).'; return; }
-
-  // save new password
-  const ok = setStoredPassword(n1);
-  if(ok){
-    chgMsg.style.color = '#138a55';
-    chgMsg.textContent = 'Password updated ✓';
-    setTimeout(()=>{ chgMsg.style.color = '#b33'; changeOverlay.style.display='none'; }, 900);
-  } else {
-    chgMsg.style.color = '#b33';
-    chgMsg.textContent = 'Failed to save password (browser blocked).';
-  }
-});
-
-/* allow pressing Escape to close change overlay only if shown */
-document.addEventListener('keydown', (e)=>{
-  if(e.key === 'Escape'){
-    if(changeOverlay.style.display === 'flex') changeOverlay.style.display = 'none';
-  }
-});
-
-/* If logout needed later, you can call clearAuthSession() from console to test */
-
-/* -------------------------
-   Below this point: your Code M1 logic (unchanged)
-   - SheetDB fetch, render, pagination, add, edit, WA send.
-   -------------------------*/
-
-/* CONFIG - keep your API */
+/* CONFIG */
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 const CANON = ['clientname','mobile','amount','date','status','address'];
-
-/* UPI + QR used in WhatsApp message */
 const UPI_ID = 'perfectdigital@axl';
 const QR_IMAGE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/Screenshot_20251005_074910_PhonePe.jpg';
 
-/* state for pagination */
-let rawRows = [];        // fetched from SheetDB
+/* state */
+let rawRows = [];
 let headerMap = {};
 let filterPending = false;
 let refreshTimer = null;
-
 const PAGE_SIZE = 20;
 let currentPage = 1;
 let totalPages = 1;
 
+/* month/year controls setup */
+const monthSel = document.getElementById('monthSel');
+const yearSel = document.getElementById('yearSel');
+const monthYearHeader = document.getElementById('monthYearHeader');
+
+// fill year select: current year and next year (no years before 2025)
+(function populateYears(){
+  const now = new Date();
+  let cy = now.getFullYear();
+  if(cy < 2025) cy = 2025;
+  const years = [cy, cy+1]; // current + upcoming
+  yearSel.innerHTML = '';
+  const allOpt = document.createElement('option'); allOpt.value='all'; allOpt.textContent='All years'; yearSel.appendChild(allOpt);
+  years.forEach(y=>{
+    const o = document.createElement('option'); o.value = String(y); o.textContent = String(y); yearSel.appendChild(o);
+  });
+  // default selects: month = current month, year = current year
+  const defaultMonth = (new Date()).getMonth() + 1;
+  monthSel.value = String(defaultMonth);
+  yearSel.value = String(years[0]);
+  updateMonthYearHeader();
+})();
+
+monthSel.addEventListener('change', ()=>{ currentPage = 1; renderTable(); updateMonthYearHeader(); });
+yearSel.addEventListener('change', ()=>{ currentPage = 1; renderTable(); updateMonthYearHeader(); });
+
+function updateMonthYearHeader(){
+  const m = monthSel.value;
+  const y = yearSel.value;
+  if(m === 'all' && y === 'all'){ monthYearHeader.textContent = 'Showing: All months and years'; return; }
+  if(m==='all'){ monthYearHeader.textContent = `Showing: All months — ${y==='all' ? '' : y}`; return; }
+  const monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthLabel = monthNames[Number(m)] || 'All';
+  monthYearHeader.textContent = `Showing: ${monthLabel} ${y==='all' ? '' : String(y)}`;
+}
+
 /* helpers */
 function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
 function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function normalizePhoneForWhatsApp(raw){ if(!raw) return ''; let digits = String(raw).replace(/\D/g,''); digits = digits.replace(/^0+/, ''); if(digits.length === 10) digits = '91' + digits; return digits; }
+function buildWhatsAppText(row){ const name = getCell(row,'clientname') || 'there'; const amount = getCell(row,'amount') || ''; return `Hello ${name},\n\nYour broadband payment of ₹${amount} is pending.\n\nPlease pay via UPI ID: ${UPI_ID}\nIf you've already paid, please ignore.\n\nUPI QR — *CLICK ON THE LINK TO OPEN:*\n${QR_IMAGE_URL}`; }
 
-/* phone normalization for wa.me */
-function normalizePhoneForWhatsApp(raw){
-  if(!raw) return '';
-  let digits = String(raw).replace(/\D/g,'');       // remove non-digits
-  digits = digits.replace(/^0+/, '');                // remove leading zeros
-  if(digits.length === 10) digits = '91' + digits;   // assume India local 10-digit
-  return digits;
+/* parse date robustly and return {year,month (1-12)} or null */
+function parseDateToYearMonth(s){
+  if(!s) return null;
+  s = String(s).trim();
+  // try ISO yyyy-mm-dd
+  const iso = /^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/;
+  const dmy1 = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/; // dd/mm/yyyy or mm/dd/yyyy ambiguous
+  const partsIso = s.match(iso);
+  if(partsIso){
+    const y = Number(partsIso[1]), m = Number(partsIso[2]);
+    if(!isNaN(y) && !isNaN(m) && m>=1 && m<=12) return {year:y, month:m};
+  }
+  const p = s.match(dmy1);
+  if(p){
+    const a = Number(p[1]), b = Number(p[2]), y = Number(p[3]);
+    // We must decide whether a=day or month. If a>12 => it's day, so month=b.
+    // If a<=12 and b>12 => a is month.
+    // If both <=12, prefer dd/mm/YYYY (common for India) -> month = b
+    if(a>12 && b>=1 && b<=12) return {year:y, month:b};
+    if(b>12 && a>=1 && a<=12) return {year:y, month:a};
+    // both <=12: assume dd/mm/yyyy so month = b
+    return {year:y, month:b};
+  }
+  // try year only
+  const yearOnly = s.match(/^(\d{4})$/);
+  if(yearOnly){
+    return {year:Number(yearOnly[1]), month: null};
+  }
+  // fallback: try to parse with Date
+  const dt = new Date(s);
+  if(!isNaN(dt.getTime())){
+    return {year: dt.getFullYear(), month: dt.getMonth()+1};
+  }
+  return null;
 }
 
-/* build the exact WhatsApp message text you requested */
-function buildWhatsAppText(row){
-  const name = getCell(row,'clientname') || 'there';
-  const amount = getCell(row,'amount') || '';
-  const text =
-`Hello ${name},
-
-Your broadband payment of ₹${amount} is pending.
-
-Please pay via UPI ID: ${UPI_ID}
-If you've already paid, please ignore.
-
-UPI QR — *CLICK ON THE LINK TO OPEN:*
-${QR_IMAGE_URL}`;
-  return text;
-}
-
-/* header detection (safe) */
+/* header detection */
 function detectHeaders(rows){
   headerMap = {};
   if(Array.isArray(rows) && rows.length){
@@ -372,7 +339,7 @@ function detectHeaders(rows){
       clientname:['client','name','client_name'],
       mobile:['mobile','phone','phonenumber','mobile_number'],
       amount:['amount','amt','price'],
-      date:['date','duedate','due_date'],
+      date:['date','duedate','due_date','addedon','created'],
       status:['status','paymentstatus'],
       address:['address','addr','location','area','remark','remarks']
     };
@@ -387,25 +354,7 @@ function detectHeaders(rows){
   }
 }
 
-/* fetch data */
-async function fetchData(){
-  try{
-    setMsg('Loading…');
-    const res = await fetch(SHEETDB_API);
-    if(!res.ok) throw new Error('Fetch failed: '+res.status);
-    const json = await res.json();
-    rawRows = Array.isArray(json) ? json : (json.data || []);
-    detectHeaders(rawRows);
-    currentPage = 1; // reset to first page after fetch
-    renderTable();
-    setMsg('');
-  }catch(err){
-    console.error(err);
-    setMsg('Error loading data — check console');
-  }
-}
-
-/* get cell value robustly */
+/* get cell */
 function getCell(row, canonical){
   if(!row) return '';
   const ak = headerMap[canonical];
@@ -414,7 +363,7 @@ function getCell(row, canonical){
     clientname:['Client Name','clientname','name'],
     mobile:['mobile','Mobile','phone'],
     amount:['amount','Amount','amt'],
-    date:['date','Date'],
+    date:['date','Date','addedon'],
     status:['status','Status'],
     address:['address','Address','remark','Remark','remarks']
   };
@@ -422,29 +371,48 @@ function getCell(row, canonical){
   return '';
 }
 
-/* compute filtered rows (search + pending filter) */
+/* get filtered rows including month/year filter */
 function getFilteredRows(){
   const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();
-  return rawRows.filter(r=>{
+  const monthVal = monthSel.value; // 'all' or '1'..'12'
+  const yearVal = yearSel.value;   // 'all' or '2025' etc
+
+  return rawRows.filter(r => {
+    // search
     if(q){
       const hay = Object.values(r).join(' ').toLowerCase();
       if(!hay.includes(q)) return false;
     }
+    // pending filter
     if(filterPending){
       const st = (getCell(r,'status') || '').toString().toLowerCase();
       if(!st.includes('pending')) return false;
+    }
+    // month/year filter
+    if(monthVal === 'all' && yearVal === 'all') return true;
+
+    const dateStr = getCell(r,'date') || '';
+    const parsed = parseDateToYearMonth(dateStr);
+    if(!parsed) return false;
+    const rowYear = parsed.year;
+    const rowMonth = parsed.month; // may be null if only year present
+
+    if(yearVal !== 'all' && String(rowYear) !== String(yearVal)) return false;
+    if(monthVal !== 'all'){
+      if(!rowMonth) return false;
+      if(Number(monthVal) !== Number(rowMonth)) return false;
     }
     return true;
   });
 }
 
-/* render table with pagination */
+/* render table with WA left and Edit right (unchanged) */
 function renderTable(){
   const th = document.getElementById('tableHead');
   const tb = document.getElementById('tableBody');
   th.innerHTML=''; tb.innerHTML='';
 
-  // headers (same as CodeX3) — now first column reserved for WhatsApp Send
+  // header
   const headRow = document.createElement('tr');
   const thLeft = document.createElement('th'); thLeft.style.width='56px'; headRow.appendChild(thLeft);
   const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
@@ -455,8 +423,6 @@ function renderTable(){
   const filtered = getFilteredRows();
   totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   if(currentPage > totalPages) currentPage = totalPages;
-
-  // slice for this page (1-indexed)
   const start = (currentPage-1)*PAGE_SIZE;
   const pageRows = filtered.slice(start, start + PAGE_SIZE);
 
@@ -465,8 +431,6 @@ function renderTable(){
   } else {
     pageRows.forEach(row=>{
       const tr = document.createElement('tr');
-
-      // Build full row HTML including left WhatsApp button cell so layout matches Code M exactly
       const name = getCell(row,'clientname') || '';
       const mobile = getCell(row,'mobile') || '';
       const amount = getCell(row,'amount') || '';
@@ -489,25 +453,23 @@ function renderTable(){
 
       tb.appendChild(tr);
 
-      // attach handler for the WA button we just created
+      // WA handler
       const waBtn = tr.querySelector('button.waBtn');
       if(waBtn){
         waBtn.addEventListener('click', () => {
           const phoneRaw = getCell(row,'mobile') || '';
           const phone = normalizePhoneForWhatsApp(phoneRaw);
           const text = buildWhatsAppText(row);
-          // open wa.me when we have a plausible international number
           if(phone && phone.length >= 11){
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
           } else {
-            // fallback to web.whatsapp (recipient selection manual)
             window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
           }
         });
       }
     });
 
-    // attach edit handlers for visible rows
+    // attach edit handlers
     tb.querySelectorAll('button.editBtn').forEach(b=>{
       b.addEventListener('click', ()=> {
         const row = JSON.parse(decodeURIComponent(b.dataset.payload));
@@ -519,35 +481,42 @@ function renderTable(){
   renderPaginationControls();
 }
 
-/* render pagination controls */
+/* pagination */
 function renderPaginationControls(){
   document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
-  const pageNumbers = document.getElementById('pageNumbers');
-  pageNumbers.innerHTML = '';
-
-  // show up to 5 pages: center current
+  const pageNumbers = document.getElementById('pageNumbers'); pageNumbers.innerHTML='';
   const maxButtons = 5;
   let start = Math.max(1, currentPage - Math.floor(maxButtons/2));
   let end = Math.min(totalPages, start + maxButtons - 1);
-  if(end - start + 1 < maxButtons){
-    start = Math.max(1, end - maxButtons + 1);
-  }
-
+  if(end - start + 1 < maxButtons){ start = Math.max(1, end - maxButtons + 1); }
   for(let p=start;p<=end;p++){
-    const btn = document.createElement('button');
-    btn.className = 'pageBtn' + (p===currentPage ? ' active' : '');
-    btn.textContent = p;
-    btn.addEventListener('click', ()=> { currentPage = p; renderTable(); });
-    pageNumbers.appendChild(btn);
+    const btn = document.createElement('button'); btn.className = 'pageBtn' + (p===currentPage ? ' active' : ''); btn.textContent = p;
+    btn.addEventListener('click', ()=> { currentPage = p; renderTable(); }); pageNumbers.appendChild(btn);
   }
-
   document.getElementById('prevBtn').disabled = currentPage === 1;
   document.getElementById('firstBtn').disabled = currentPage === 1;
   document.getElementById('nextBtn').disabled = currentPage === totalPages;
   document.getElementById('lastBtn').disabled = currentPage === totalPages;
 }
 
-/* add row (unchanged) */
+/* fetch, add, edit (same as Code M1) */
+function detectHeadersSimple(rows){
+  detectHeaders(rows); // reuse
+}
+async function fetchData(){
+  try{
+    setMsg('Loading…');
+    const res = await fetch(SHEETDB_API);
+    if(!res.ok) throw new Error('Fetch failed: '+res.status);
+    const json = await res.json();
+    rawRows = Array.isArray(json) ? json : (json.data || []);
+    detectHeadersSimple(rawRows);
+    currentPage = 1;
+    renderTable();
+    setMsg('');
+  }catch(err){ console.error(err); setMsg('Error loading data — check console'); }
+}
+
 async function addRow(){
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
@@ -555,10 +524,8 @@ async function addRow(){
   const date = document.getElementById('f_date').value.trim();
   const status = document.getElementById('f_status').value.trim();
   const address = document.getElementById('f_address').value.trim();
-
   if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }
   if(!Object.keys(headerMap).length) await fetchData();
-
   const payload = {};
   payload[ headerMap['clientname'] || 'clientname' ] = name || '';
   payload[ headerMap['mobile'] || 'mobile' ] = mobile || '';
@@ -566,14 +533,9 @@ async function addRow(){
   payload[ headerMap['date'] || 'date' ] = date || '';
   payload[ headerMap['status'] || 'status' ] = status || '';
   payload[ headerMap['address'] || 'address' ] = address || '';
-
   try{
     document.getElementById('addMsg').textContent = 'Adding…';
-    const res = await fetch(SHEETDB_API, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ data: [ payload ] })
-    });
+    const res = await fetch(SHEETDB_API, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ data: [ payload ] }) });
     if(!res.ok) throw new Error('Add failed: '+res.status);
     await fetchData();
     ['f_name','f_mobile','f_amount','f_date'].forEach(id=>document.getElementById(id).value='');
@@ -581,13 +543,9 @@ async function addRow(){
     document.getElementById('f_status').value = 'pending';
     document.getElementById('addMsg').textContent = 'Added ✓';
     setTimeout(()=>document.getElementById('addMsg').textContent = '',1500);
-  }catch(err){
-    console.error(err);
-    document.getElementById('addMsg').textContent = 'Error adding';
-  }
+  }catch(err){ console.error(err); document.getElementById('addMsg').textContent = 'Error adding'; }
 }
 
-/* edit - prompt-based patch */
 async function editRow(rowObj){
   try{
     const currentName = getCell(rowObj,'clientname')||'';
@@ -596,14 +554,12 @@ async function editRow(rowObj){
     const currentDate = getCell(rowObj,'date')||'';
     const currentStatus = getCell(rowObj,'status')||'pending';
     const currentAddress = getCell(rowObj,'address')||'';
-
     const newName = prompt('Client name', currentName) || currentName;
     const newMobile = prompt('Mobile', currentMobile) || currentMobile;
     const newAmount = prompt('Amount', currentAmount) || currentAmount;
     const newDate = prompt('Date', currentDate) || currentDate;
     const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;
     const newAddress = prompt('Address', currentAddress) || currentAddress;
-
     const patchObj = {};
     patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
     patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;
@@ -611,38 +567,26 @@ async function editRow(rowObj){
     patchObj[ headerMap['date'] || 'date' ] = newDate;
     patchObj[ headerMap['status'] || 'status' ] = newStatus;
     patchObj[ headerMap['address'] || 'address' ] = newAddress;
-
-    // PATCH by mobile if present, else by clientname
     const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';
     const nameVal = rowObj[ headerMap['clientname'] ] || rowObj.clientname || '';
     let patchUrl;
     if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
     else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-
-    const res = await fetch(patchUrl, {
-      method: 'PATCH',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ data: [ patchObj ] })
-    });
+    const res = await fetch(patchUrl, { method: 'PATCH', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ data: [ patchObj ] }) });
     if(!res.ok) throw new Error('Update failed: ' + res.status);
     await fetchData();
     setMsg('Updated ✓'); setTimeout(()=>setMsg(''),1200);
-  }catch(err){
-    console.error(err);
-    alert('Update failed — check console.');
-  }
+  }catch(err){ console.error(err); alert('Update failed — check console.'); }
 }
 
 /* small UI helpers */
 function setMsg(m){ document.getElementById('msg').textContent = m || ''; }
 
-/* pagination controls wiring */
+/* wiring */
 document.getElementById('prevBtn').addEventListener('click', ()=> { if(currentPage>1){ currentPage--; renderTable(); } });
 document.getElementById('nextBtn').addEventListener('click', ()=> { if(currentPage<totalPages){ currentPage++; renderTable(); } });
 document.getElementById('firstBtn').addEventListener('click', ()=> { currentPage=1; renderTable(); });
 document.getElementById('lastBtn').addEventListener('click', ()=> { currentPage=totalPages; renderTable(); });
-
-/* other UI wiring */
 document.getElementById('reloadBtn').addEventListener('click', fetchData);
 document.getElementById('searchBox').addEventListener('input', ()=>{ currentPage=1; renderTable(); });
 document.getElementById('filterPendingBtn').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); currentPage=1; renderTable(); });
