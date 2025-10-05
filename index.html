@@ -33,7 +33,8 @@
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:14px}
   .formRow .row{display:flex;gap:10px;flex-wrap:wrap}
   .formRow input,.formRow select{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
-  .leftAction{width:42px;text-align:center}
+  .leftAction{width:56px;text-align:center}
+  .waBtn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-weight:600}
   .trashBtn{background:transparent;border:0;font-size:16px;cursor:pointer;padding:8px;border-radius:8px}
   .muted{color:var(--muted)}
   .pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
@@ -120,6 +121,10 @@
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 const CANON = ['clientname','mobile','amount','date','status','address'];
 
+/* UPI + QR used in WhatsApp message */
+const UPI_ID = 'perfectdigital@axl';
+const QR_IMAGE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/Screenshot_20251005_074910_PhonePe.jpg';
+
 /* state for pagination */
 let rawRows = [];        // fetched from SheetDB
 let headerMap = {};
@@ -133,6 +138,32 @@ let totalPages = 1;
 /* helpers */
 function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
 function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+/* phone normalization for wa.me */
+function normalizePhoneForWhatsApp(raw){
+  if(!raw) return '';
+  let digits = String(raw).replace(/\D/g,'');       // remove non-digits
+  digits = digits.replace(/^0+/, '');                // remove leading zeros
+  if(digits.length === 10) digits = '91' + digits;   // assume India local 10-digit
+  return digits;
+}
+
+/* build the exact WhatsApp message text you requested */
+function buildWhatsAppText(row){
+  const name = getCell(row,'clientname') || 'there';
+  const amount = getCell(row,'amount') || '';
+  const text =
+`Hello ${name},
+
+Your broadband payment of ₹${amount} is pending.
+
+Please pay via UPI ID: ${UPI_ID}
+If you've already paid, please ignore.
+
+UPI QR — *CLICK ON THE LINK TO OPEN:*
+${QR_IMAGE_URL}`;
+  return text;
+}
 
 /* header detection (safe) */
 function detectHeaders(rows){
@@ -215,9 +246,9 @@ function renderTable(){
   const tb = document.getElementById('tableBody');
   th.innerHTML=''; tb.innerHTML='';
 
-  // headers (same as CodeX3)
+  // headers (same as CodeX3) — now first column reserved for WhatsApp Send
   const headRow = document.createElement('tr');
-  const thLeft = document.createElement('th'); thLeft.style.width='42px'; headRow.appendChild(thLeft);
+  const thLeft = document.createElement('th'); thLeft.style.width='56px'; headRow.appendChild(thLeft);
   const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
   Object.keys(titles).forEach(k => { const thc=document.createElement('th'); thc.textContent = titles[k]; headRow.appendChild(thc); });
   const thAct = document.createElement('th'); thAct.textContent = 'Edit'; headRow.appendChild(thAct);
@@ -236,8 +267,8 @@ function renderTable(){
   } else {
     pageRows.forEach(row=>{
       const tr = document.createElement('tr');
-      // left empty cell to match CodeX3 layout (delete not present)
-      const tdLeft = document.createElement('td'); tdLeft.className='leftAction'; tr.appendChild(tdLeft);
+
+      // Build full row HTML including left WhatsApp button cell so layout matches Code M exactly
       const name = getCell(row,'clientname') || '';
       const mobile = getCell(row,'mobile') || '';
       const amount = getCell(row,'amount') || '';
@@ -246,18 +277,36 @@ function renderTable(){
       const address = getCell(row,'address') || '';
       const statusHtml = statusRaw === 'paid' ? `<span class="status-paid">Paid</span>` : `<span class="status-pending">Pending</span>`;
 
-      tr.innerHTML += `
-        <td>${escapeHtml(name)}</td>
-        <td>${escapeHtml(mobile)}</td>
-        <td>${escapeHtml(amount)}</td>
-        <td>${escapeHtml(date)}</td>
-        <td>${statusHtml}</td>
-        <td>${escapeHtml(address)}</td>
-        <td class="actions" style="white-space:nowrap">
-          <button class="btn ghost editBtn" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>
-        </td>
-      `;
+      tr.innerHTML =
+        `<td class="leftAction"><button class="waBtn" title="Send WhatsApp">Send</button></td>
+         <td>${escapeHtml(name)}</td>
+         <td>${escapeHtml(mobile)}</td>
+         <td>${escapeHtml(amount)}</td>
+         <td>${escapeHtml(date)}</td>
+         <td>${statusHtml}</td>
+         <td>${escapeHtml(address)}</td>
+         <td class="actions" style="white-space:nowrap">
+           <button class="btn ghost editBtn" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>
+         </td>`;
+
       tb.appendChild(tr);
+
+      // attach handler for the WA button we just created
+      const waBtn = tr.querySelector('button.waBtn');
+      if(waBtn){
+        waBtn.addEventListener('click', () => {
+          const phoneRaw = getCell(row,'mobile') || '';
+          const phone = normalizePhoneForWhatsApp(phoneRaw);
+          const text = buildWhatsAppText(row);
+          // open wa.me when we have a plausible international number
+          if(phone && phone.length >= 11){
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+          } else {
+            // fallback to web.whatsapp (recipient selection manual)
+            window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+          }
+        });
+      }
     });
 
     // attach edit handlers for visible rows
