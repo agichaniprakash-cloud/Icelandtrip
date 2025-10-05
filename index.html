@@ -28,7 +28,7 @@
   thead th{background:var(--green);color:#fff;padding:18px 14px;text-align:left}
   tbody td{padding:18px 14px;border-bottom:1px solid #f1f2f3}
   .formRow{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .formRow input,.formRow select, .formRow textarea{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
+  .formRow input,.formRow select{padding:12px;border-radius:8px;border:1px solid #e6e9ea}
   .formRow .row{display:flex;gap:10px;flex-wrap:wrap}
   .formRow .row input{flex:1}
   .notice{font-size:13px;color:var(--muted);margin-top:12px}
@@ -43,7 +43,7 @@
 
   <div class="card">
     <div class="controls">
-      <input id="searchBox" type="search" placeholder="Search client, mobile or remark" />
+      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
       <select id="refreshSel" title="Auto refresh">
         <option value="0">Refresh off</option>
         <option value="15">Refresh every 15s</option>
@@ -77,99 +77,103 @@
         <select id="f_status">
           <option>pending</option>
           <option>paid</option>
-          <option>other</option>
+        </select>
+        <select id="f_address">
+          <option value="">Select Area</option>
+          <option>Wazirpur</option>
+          <option>Shastri Nagar</option>
+          <option>Ashok Vihar</option>
+          <option>Gulabi Bagh</option>
         </select>
       </div>
-      <textarea id="f_remark" rows="2" placeholder="Remark"></textarea>
       <div style="display:flex;gap:12px;align-items:center">
         <button id="addBtn" class="btn">Add</button>
         <div id="msg" style="color:var(--muted)"></div>
       </div>
-      <div class="notice">Tip: To update sheet directly, edit your Google Sheet and publish to the web (CSV) — or add via this form.</div>
+      <div class="notice">Tip: choose area before adding new client.</div>
     </div>
   </div>
 </div>
 
 <script>
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
-const canonical = ["clientname","mobile","amount","date","status","remark"];
-function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\-]+/g,'').replace(/[^a-z0-9]/g,'');}
+const SHEETDB_API='https://sheetdb.io/api/v1/zla8gcygz4jgd';
+const canonical=["clientname","mobile","amount","date","status","address"];
+function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[_\\-]+/g,'').replace(/[^a-z0-9]/g,'');}
 let lastData=[],headerMap={};
 
 async function fetchData(){
-  try{
-    const res=await fetch(SHEETDB_API);
-    if(!res.ok)throw new Error('Fetch failed: '+res.status);
-    const data=await res.json();
-    lastData=Array.isArray(data)?data:[];
-    detectHeaders(lastData);
-    renderTable(lastData);
-    return lastData;
-  }catch(e){console.error(e);document.getElementById('msg').textContent='Error loading data: '+e.message;return[];}
+ try{
+  const res=await fetch(SHEETDB_API);
+  if(!res.ok)throw new Error('Fetch failed: '+res.status);
+  const data=await res.json();
+  lastData=Array.isArray(data)?data:[];
+  detectHeaders(lastData);
+  renderTable(lastData);
+ }catch(e){console.error(e);document.getElementById('msg').textContent='Error loading data: '+e.message;}
 }
 
 function detectHeaders(data){
-  headerMap={};
-  if(data&&data.length){
-    const keys=Object.keys(data[0]);
-    const lookup={};keys.forEach(k=>lookup[norm(k)]=k);
-    canonical.forEach(c=>{
-      if(lookup[norm(c)])headerMap[c]=lookup[norm(c)];
-      else{if(keys.length)headerMap[c]=keys[0];}
-    });
-  }else{canonical.forEach(c=>headerMap[c]=c);}
+ headerMap={};
+ if(data&&data.length){
+   const keys=Object.keys(data[0]);
+   const lookup={};keys.forEach(k=>lookup[norm(k)]=k);
+   canonical.forEach(c=>{
+     if(lookup[norm(c)])headerMap[c]=lookup[norm(c)];
+     else if(keys.length)headerMap[c]=keys[0];
+   });
+ }else{canonical.forEach(c=>headerMap[c]=c);}
 }
 
 function renderTable(data){
-  const th=document.getElementById('tableHead'),tb=document.getElementById('tableBody');
-  th.innerHTML='';tb.innerHTML='';
-  const titles={clientname:'Client Name',mobile:'Mobile',amount:'Amount',date:'Date',status:'Status',remark:'Remark'};
-  const headRow=document.createElement('tr');
-  Object.keys(titles).forEach(k=>{const thcell=document.createElement('th');thcell.textContent=titles[k];headRow.appendChild(thcell);});
-  th.appendChild(headRow);
-  const search=document.getElementById('searchBox').value.trim().toLowerCase();
-  const showOnlyPending=filterPending;
-  (data||[]).forEach(row=>{
-    const visible=Object.values(row).join(' ').toLowerCase().includes(search);
-    if(!visible)return;
-    if(showOnlyPending&&!String(row[headerMap['status']]||'').toLowerCase().includes('pending'))return;
-    const tr=document.createElement('tr');
-    canonical.forEach(k=>{
-      const td=document.createElement('td');
-      const actualKey=headerMap[k];
-      td.textContent=(actualKey&&row[actualKey]!==undefined)?row[actualKey]:'';
-      tr.appendChild(td);
-    });
-    tb.appendChild(tr);
+ const th=document.getElementById('tableHead'),tb=document.getElementById('tableBody');
+ th.innerHTML='';tb.innerHTML='';
+ const titles={clientname:'Client Name',mobile:'Mobile',amount:'Amount',date:'Date',status:'Status',address:'Address'};
+ const headRow=document.createElement('tr');
+ Object.keys(titles).forEach(k=>{const thcell=document.createElement('th');thcell.textContent=titles[k];headRow.appendChild(thcell);});
+ th.appendChild(headRow);
+ const search=document.getElementById('searchBox').value.trim().toLowerCase();
+ const showOnlyPending=filterPending;
+ (data||[]).forEach(row=>{
+  const visible=Object.values(row).join(' ').toLowerCase().includes(search);
+  if(!visible)return;
+  if(showOnlyPending&&!String(row[headerMap['status']]||'').toLowerCase().includes('pending'))return;
+  const tr=document.createElement('tr');
+  canonical.forEach(k=>{
+    const td=document.createElement('td');
+    const actualKey=headerMap[k];
+    td.textContent=(actualKey&&row[actualKey]!==undefined)?row[actualKey]:'';
+    tr.appendChild(td);
   });
+  tb.appendChild(tr);
+ });
 }
 
 let refreshTimer=null,filterPending=false;
-document.getElementById('reloadBtn').addEventListener('click',()=>{document.getElementById('msg').textContent='Reloading…';fetchData().then(()=>document.getElementById('msg').textContent='');});
-document.getElementById('filterPendingBtn').addEventListener('click',e=>{filterPending=!filterPending;e.target.classList.toggle('btn',filterPending);e.target.classList.toggle('ghost',!filterPending);e.target.textContent='Show: Pending only';renderTable(lastData);});
-document.getElementById('searchBox').addEventListener('input',()=>renderTable(lastData));
-document.getElementById('refreshSel').addEventListener('change',e=>{const v=Number(e.target.value);if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}if(v>0)refreshTimer=setInterval(fetchData,v*1000);});
-document.getElementById('addBtn').addEventListener('click',async()=>{
-  const name=f_name.value.trim(),mobile=f_mobile.value.trim(),amount=f_amount.value.trim(),date=f_date.value.trim(),status=f_status.value.trim(),remark=f_remark.value.trim();
-  if(!name&&!mobile){alert('Please provide at least Client Name or Mobile.');return;}
-  if(!Object.keys(headerMap).length)await fetchData();
-  const payloadObj={};
-  payloadObj[headerMap['clientname']||'clientname']=name||'';
-  payloadObj[headerMap['mobile']||'mobile']=mobile||'';
-  payloadObj[headerMap['amount']||'amount']=amount||'';
-  payloadObj[headerMap['date']||'date']=date||'';
-  payloadObj[headerMap['status']||'status']=status||'';
-  payloadObj[headerMap['remark']||'remark']=remark||'';
-  const body={data:[payloadObj]};
-  try{
-    const res=await fetch(SHEETDB_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const j=await res.json();
-    if(!res.ok){console.error('SheetDB error:',j);alert('Error adding row: '+(j.message||res.status));return;}
-    document.getElementById('msg').textContent='Added — reloading...';
-    ['f_name','f_mobile','f_amount','f_date','f_remark'].forEach(id=>document.getElementById(id).value='');
-    setTimeout(()=>fetchData().then(()=>document.getElementById('msg').textContent=''),400);
-  }catch(err){console.error(err);alert('Network error adding row: '+err.message);}
-});
+reloadBtn.onclick=()=>{msg.textContent='Reloading…';fetchData().then(()=>msg.textContent='');};
+filterPendingBtn.onclick=e=>{filterPending=!filterPending;e.target.classList.toggle('btn',filterPending);e.target.classList.toggle('ghost',!filterPending);renderTable(lastData);};
+searchBox.oninput=()=>renderTable(lastData);
+refreshSel.onchange=e=>{const v=Number(e.target.value);if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}if(v>0)refreshTimer=setInterval(fetchData,v*1000);};
+
+addBtn.onclick=async()=>{
+ const name=f_name.value.trim(),mobile=f_mobile.value.trim(),amount=f_amount.value.trim(),date=f_date.value.trim(),status=f_status.value.trim(),address=f_address.value.trim();
+ if(!name&&!mobile){alert('Please provide at least Client Name or Mobile.');return;}
+ if(!Object.keys(headerMap).length)await fetchData();
+ const payloadObj={};
+ payloadObj[headerMap['clientname']||'clientname']=name||'';
+ payloadObj[headerMap['mobile']||'mobile']=mobile||'';
+ payloadObj[headerMap['amount']||'amount']=amount||'';
+ payloadObj[headerMap['date']||'date']=date||'';
+ payloadObj[headerMap['status']||'status']=status||'';
+ payloadObj[headerMap['address']||'address']=address||'';
+ try{
+  const res=await fetch(SHEETDB_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:[payloadObj]})});
+  if(!res.ok)throw new Error(res.status);
+  msg.textContent='Added — reloading...';
+  ['f_name','f_mobile','f_amount','f_date'].forEach(id=>document.getElementById(id).value='');
+  f_address.value='';setTimeout(()=>fetchData().then(()=>msg.textContent=''),400);
+ }catch(err){console.error(err);alert('Network error adding row: '+err.message);}
+};
+
 fetchData();
 </script>
 </body>
