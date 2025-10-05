@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>PERFECT DIGITAL NETWORK – Pending Payments (Code X2)</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<title>PERFECT DIGITAL NETWORK – Pending Payments</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --green:#138a55;
@@ -44,7 +44,7 @@
 
   <div class="card">
     <div class="controls">
-      <input id="searchBox" type="search" placeholder="Search client, mobile or remark" />
+      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
       <select id="refreshSel" title="Auto refresh">
         <option value="0">Refresh off</option>
         <option value="15">Refresh every 15s</option>
@@ -80,42 +80,46 @@
           <option>paid</option>
           <option>other</option>
         </select>
+
+        <!-- Address dropdown as requested -->
+        <select id="f_address">
+          <option value="">-- Select Area --</option>
+          <option>Wazirpur</option>
+          <option>Shas/Trinagar</option>
+          <option>Ashok Vihar</option>
+          <option>Gulabi Bagh</option>
+        </select>
       </div>
-      <textarea id="f_remark" rows="2" placeholder="Remark"></textarea>
       <div style="display:flex;gap:12px;align-items:center">
         <button id="addBtn" class="btn">Add</button>
         <div id="msg" style="color:var(--muted)"></div>
       </div>
-      <div class="notice">Tip: edit your Google Sheet directly or use this form.</div>
+      <div class="notice">Tip: choose area from the dropdown before adding new client.</div>
     </div>
   </div>
 </div>
 
 <script>
-/* ---------------- CONFIG ----------------
-   Replace SHEETDB_API if different.
-   This File = Code X2 candidate (header mapping fixed).
+/* Only change from Code X1: remark removed, address added (dropdown).
+   Safe header detection: prefer 'address' column, fall back to reading from 'remark' (so old data still visible).
+   When posting, will write to 'address' (creating the column if not present).
 */
+
 const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
 
-/* canonical fields we expect (Code X1 base) */
-const CANONICAL = ['clientname','mobile','amount','date','status','remark'];
+// canonical now includes address
+const CANONICAL = ['clientname','mobile','amount','date','status','address'];
 
-/* normalize key helper */
 function normKey(s){
   return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 }
 
-/* state */
 let rawRows = [];
-let headerMap = {}; // canonical -> actual sheet key (or canonical if missing)
+let headerMap = {};
 let refreshTimer = null;
 let filterPending = false;
 
-/* ----------- robust detectHeaders (SAFE) -----------
-   — only map canonical -> actual key if confident match exists
-   — otherwise map canonical -> canonical (so POST creates new column)
-*/
+// detect headers safely (prefer address; if address missing but remark exists, map address -> remark key)
 function detectHeaders(rows){
   headerMap = {};
   if(Array.isArray(rows) && rows.length){
@@ -126,48 +130,49 @@ function detectHeaders(rows){
     const variants = {
       clientname:['clientname','client','name','client_name','client name'],
       mobile:['mobile','phone','phonenumber','mobilephone','mobile_number','phone_number'],
-      amount:['amount','amt','price','amt_inr'],
+      amount:['amount','amt','price'],
       date:['date','duedate','due_date','billingdate'],
       status:['status','paymentstatus','st','payment_status'],
-      remark:['remark','remarks','note','notes']
+      address:['address','addr','location'] // prefer address variants
     };
 
     CANONICAL.forEach(c => {
-      // exact normalized match first
-      if(lookup[normKey(c)]) { headerMap[c] = lookup[normKey(c)]; return; }
-
-      // try variants
+      if(lookup[normKey(c)]){ headerMap[c] = lookup[normKey(c)]; return; }
       let found = null;
       const vs = variants[c] || [c];
       for(const v of vs){
         if(lookup[normKey(v)]){ found = lookup[normKey(v)]; break; }
       }
-      if(found){
-        headerMap[c] = found;
-      } else {
-        // SAFE fallback: don't reuse sheet columns — map to canonical, so POST will create that column.
-        headerMap[c] = c;
+      if(found){ headerMap[c] = found; return; }
+
+      // special fallback for address: if sheet has 'remark' or 'remarks', map address -> that key so existing data shows
+      if(c === 'address'){
+        if(lookup['remark']) { headerMap[c] = lookup['remark']; return; }
+        if(lookup['remarks']) { headerMap[c] = lookup['remarks']; return; }
       }
+
+      // safe default: canonical name (so POST will create this column instead of overwriting existing ones)
+      headerMap[c] = c;
     });
   } else {
-    // no rows yet — map canonical->canonical
+    // no rows yet
     CANONICAL.forEach(c => headerMap[c] = c);
   }
 }
 
-/* safe cell access */
+// safe get cell using headerMap with small fallbacks
 function getCell(row, canonical){
   if(!row) return '';
   const ak = headerMap[canonical];
   if(ak && row.hasOwnProperty(ak)) return row[ak];
-  // extra fallbacks: try some common alternate keys directly
+  // fallback list per key
   const fallbacks = {
     clientname: ['Client Name','clientname','name'],
     mobile: ['mobile','Mobile','phone'],
     amount: ['amount','Amount','amt'],
     date: ['date','Date'],
     status: ['status','Status'],
-    remark: ['remark','Remark','notes']
+    address: ['address','Address','remark','Remark','remarks']
   };
   const alts = fallbacks[canonical] || [];
   for(const a of alts){
@@ -176,37 +181,35 @@ function getCell(row, canonical){
   return '';
 }
 
-/* fetch data */
+// fetch and render
 async function fetchData(){
   try{
-    document.getElementById('msg').textContent = 'Loading…';
+    msg.textContent = 'Loading…';
     const res = await fetch(SHEETDB_API);
     if(!res.ok) throw new Error('Fetch failed: ' + res.status);
     const json = await res.json();
     rawRows = Array.isArray(json) ? json : (json.data || []);
     detectHeaders(rawRows);
     renderTable();
-    document.getElementById('msg').textContent = '';
+    msg.textContent = '';
   }catch(err){
     console.error(err);
-    document.getElementById('msg').textContent = 'Error loading data — check API & console';
+    msg.textContent = 'Error loading data — check API & console';
   }
 }
 
-/* render table */
 function renderTable(){
-  const tableHead = document.getElementById('tableHead');
-  const tableBody = document.getElementById('tableBody');
-  tableHead.innerHTML = '';
-  tableBody.innerHTML = '';
+  const head = document.getElementById('tableHead');
+  const body = document.getElementById('tableBody');
+  head.innerHTML = ''; body.innerHTML = '';
 
-  // headers
-  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', remark:'Remark' };
-  const headRow = document.createElement('tr');
+  // headers: address replaces remark
+  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address' };
+  const hRow = document.createElement('tr');
   Object.keys(titles).forEach(k => {
-    const th = document.createElement('th'); th.textContent = titles[k]; headRow.appendChild(th);
+    const th = document.createElement('th'); th.textContent = titles[k]; hRow.appendChild(th);
   });
-  tableHead.appendChild(headRow);
+  head.appendChild(hRow);
 
   const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();
 
@@ -214,14 +217,14 @@ function renderTable(){
     const hay = Object.values(r).join(' ').toLowerCase();
     if(q && !hay.includes(q)) return false;
     if(filterPending){
-      const st = (getCell(r,'status')||'').toString().toLowerCase();
+      const st = (getCell(r,'status') || '').toString().toLowerCase();
       if(!st.includes('pending')) return false;
     }
     return true;
   });
 
   if(!rows.length){
-    tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted)">No records found</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted)">No records found</td></tr>';
     return;
   }
 
@@ -232,7 +235,7 @@ function renderTable(){
     const amount = getCell(r,'amount') || '';
     const date = getCell(r,'date') || '';
     const statusRaw = (getCell(r,'status') || '').toString().toLowerCase();
-    const remark = getCell(r,'remark') || '';
+    const address = getCell(r,'address') || '';
 
     const statusHtml = statusRaw === 'paid'
       ? `<span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:8px;font-weight:600">Paid</span>`
@@ -244,41 +247,38 @@ function renderTable(){
       <td>${escapeHtml(amount)}</td>
       <td>${escapeHtml(date)}</td>
       <td>${statusHtml}</td>
-      <td>${escapeHtml(remark)}</td>
-      <td style="white-space:nowrap">
-        <button data-payload="${encodeURIComponent(JSON.stringify(r))}" data-action="edit" class="btn ghost">Edit</button>
-        <button data-payload="${encodeURIComponent(JSON.stringify(r))}" data-action="delete" class="btn ghost">Delete</button>
-      </td>
+      <td>${escapeHtml(address)}</td>
     `;
-    tableBody.appendChild(tr);
+    body.appendChild(tr);
   }
 }
 
-/* escape helper */
-function escapeHtml(str){ if(str==null) return ''; return String(str).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
-/* add row (POST) + sanity check */
+// add row
 async function addRow(){
   const name = document.getElementById('f_name').value.trim();
   const mobile = document.getElementById('f_mobile').value.trim();
   const amount = document.getElementById('f_amount').value.trim();
   const date = document.getElementById('f_date').value.trim();
   const status = document.getElementById('f_status').value.trim();
-  const remark = document.getElementById('f_remark').value.trim();
+  const address = document.getElementById('f_address').value.trim();
 
-  if(!name && !mobile){ alert('Please enter Client Name or Mobile'); return; }
+  if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }
 
-  // prepare payload using headerMap (mapped to actual keys or canonical keys)
+  if(!Object.keys(headerMap).length) await fetchData();
+
   const payload = {};
-  payload[ headerMap['clientname'] || 'clientname' ] = name;
-  payload[ headerMap['mobile'] || 'mobile' ] = mobile;
-  payload[ headerMap['amount'] || 'amount' ] = amount;
-  payload[ headerMap['date'] || 'date' ] = date;
-  payload[ headerMap['status'] || 'status' ] = status;
-  payload[ headerMap['remark'] || 'remark' ] = remark;
+  payload[ headerMap['clientname'] || 'clientname' ] = name || '';
+  payload[ headerMap['mobile'] || 'mobile' ] = mobile || '';
+  payload[ headerMap['amount'] || 'amount' ] = amount || '';
+  payload[ headerMap['date'] || 'date' ] = date || '';
+  payload[ headerMap['status'] || 'status' ] = status || '';
+  // Important: write to address column (prefer actual 'address' key; if headerMap mapped address->remark that's fine)
+  payload[ headerMap['address'] || 'address' ] = address || '';
 
   try{
-    document.getElementById('msg').textContent = 'Adding…';
+    msg.textContent = 'Adding…';
     const res = await fetch(SHEETDB_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -289,107 +289,44 @@ async function addRow(){
       throw new Error(txt || res.status);
     }
 
-    // reload and sanity-check that the new row appears correctly
+    // reload
     await fetchData();
 
-    // Check quickly by mobile or name presence in the fetched rows
+    // quick verification that row exists (by mobile or name)
     const found = rawRows.some(r => {
-      const nameVal = getCell(r,'clientname') || '';
-      const mobileVal = getCell(r,'mobile') || '';
-      return (mobile && String(mobileVal).trim() === mobile) || (name && String(nameVal).trim() === name);
+      const nm = (getCell(r,'clientname') || '').toString().trim();
+      const mob = (getCell(r,'mobile') || '').toString().trim();
+      return (mobile && mob === mobile) || (name && nm === name);
     });
 
     if(!found){
-      // warn user — we didn't find the new row where expected (likely header mismatch). Do not autorewrite sheet.
-      document.getElementById('msg').textContent = 'Added — but could not verify placement. Please check Sheet headers.';
-      console.warn('Added row but verification failed. headerMap:', headerMap, 'last payload:', payload, 'sample rows:', rawRows.slice(0,2));
+      msg.textContent = 'Added — but could not verify placement. Check Sheet headers.';
+      console.warn('Add verification failed. headerMap:', headerMap, 'payload:', payload, 'sample rows:', rawRows.slice(0,3));
       return;
     }
 
-    // success: clear form and show message
-    ['f_name','f_mobile','f_amount','f_date','f_remark'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('msg').textContent = 'Added ✓';
-    setTimeout(()=>document.getElementById('msg').textContent = '', 1800);
+    // success: clear form
+    ['f_name','f_mobile','f_amount','f_date'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f_address').value = '';
+    document.getElementById('f_status').value = 'pending';
+    msg.textContent = 'Added ✓';
+    setTimeout(()=>msg.textContent = '', 1600);
   }catch(err){
     console.error(err);
     alert('Add failed — see console');
-    document.getElementById('msg').textContent = '';
+    msg.textContent = '';
   }
 }
 
-/* Edit / Delete using event delegation (prompt-based) */
-document.getElementById('tableBody').addEventListener('click', async (ev) => {
-  const btn = ev.target.closest('button');
-  if(!btn) return;
-  const action = btn.dataset.action;
-  const payload = btn.dataset.payload ? JSON.parse(decodeURIComponent(btn.dataset.payload)) : null;
-  if(!payload) return;
-
-  // derive identifiers (prefer mobile)
-  const mobileVal = payload[ headerMap['mobile'] ] || payload.mobile || '';
-  const nameVal = payload[ headerMap['clientname'] ] || payload['Client Name'] || payload.clientname || '';
-
-  if(action === 'delete'){
-    if(!confirm('Delete: ' + (nameVal || mobileVal || 'this row') + ' ?')) return;
-    try{
-      let url;
-      if(mobileVal) url = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
-      else url = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-      const res = await fetch(url, { method: 'DELETE' });
-      if(!res.ok) throw new Error('Delete failed: ' + res.status);
-      await fetchData();
-    }catch(err){
-      console.error(err);
-      alert('Delete failed — check console');
-    }
-    return;
-  }
-
-  if(action === 'edit'){
-    const newName = prompt('Client name', nameVal) || nameVal;
-    const newMobile = prompt('Mobile', mobileVal) || mobileVal;
-    const newAmount = prompt('Amount', payload[ headerMap['amount'] ] || payload.amount || '') || (payload[ headerMap['amount'] ] || payload.amount || '');
-    const newDate = prompt('Date', payload[ headerMap['date'] ] || payload.date || '') || (payload[ headerMap['date'] ] || payload.date || '');
-    const newStatus = prompt('Status (paid/pending)', (payload[ headerMap['status'] ] || payload.status || 'pending')) || (payload[ headerMap['status'] ] || payload.status || 'pending');
-    const newRemark = prompt('Remark', payload[ headerMap['remark'] ] || payload.remark || '') || (payload[ headerMap['remark'] ] || payload.remark || '');
-
-    const patchObj = {};
-    patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
-    patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;
-    patchObj[ headerMap['amount'] || 'amount' ] = newAmount;
-    patchObj[ headerMap['date'] || 'date' ] = newDate;
-    patchObj[ headerMap['status'] || 'status' ] = newStatus;
-    patchObj[ headerMap['remark'] || 'remark' ] = newRemark;
-
-    try{
-      let url;
-      if(mobileVal) url = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
-      else url = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
-      const res = await fetch(url, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: [ patchObj ] })
-      });
-      if(!res.ok) throw new Error('Update failed: ' + res.status);
-      await fetchData();
-    }catch(err){
-      console.error(err);
-      alert('Update failed — check console');
-    }
-    return;
-  }
-});
-
-/* UI bindings */
+/* UI wiring */
 document.getElementById('reloadBtn').addEventListener('click', fetchData);
 document.getElementById('searchBox').addEventListener('input', renderTable);
-document.getElementById('filterPendingBtn').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
-document.getElementById('refreshSel').addEventListener('change', (e)=>{ const v = Number(e.target.value); if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; } if(v>0) refreshTimer = setInterval(fetchData, v*1000); });
+document.getElementById('filterPendingBtn').addEventListener('click', (e) => { filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); renderTable(); });
+document.getElementById('refreshSel').addEventListener('change', (e) => { const v = Number(e.target.value); if(refreshTimer){ clearInterval(refreshTimer); refreshTimer = null; } if(v>0) refreshTimer = setInterval(fetchData, v*1000); });
 document.getElementById('addBtn').addEventListener('click', addRow);
 
-/* initial load */
+/* init */
 fetchData();
-
 </script>
 </body>
 </html>
