@@ -1,51 +1,51 @@
-<!doctype html>  
-<html lang="en">  
-<head>  
-<meta charset="utf-8" />  
-<meta name="viewport" content="width=device-width,initial-scale=1" />  
-<title>PERFECT DIGITAL NETWORK – Pending Payments (CodeFinal1)</title>  
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">  
-<style>  
-  :root{  
-    --green:#138a55;  
-    --muted:#6b6f72;  
-    --card:#ffffff;  
-    --bg:#f6f7f8;  
-    --radius:10px;  
-  }  
-  *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}  
-  body{margin:0;background:var(--bg);color:#1f2933;padding:20px;}  
-  .wrap{max-width:980px;margin:0 auto}  
-  header{display:flex;align-items:center;justify-content:center;margin-bottom:16px}  
-  header h1{margin:0;font-size:28px;color:var(--green)}  
-  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}  
-  .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}  
-  .controls input[type=search]{width:100%;max-width:420px;padding:10px;border-radius:8px;border:1px solid #e6e9ea}  
-  .smallSelect{padding:8px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}  
-  .btn{background:var(--green);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}  
-  .btn.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}  
-  .tableWrap{overflow-x:auto;margin-top:12px}  
-  table{border-collapse:collapse;width:100%;min-width:820px}  
-  thead th{background:var(--green);color:#fff;padding:12px 10px;text-align:left}  
-  tbody td{padding:12px 10px;border-bottom:1px solid #f1f2f3;vertical-align:middle}  
-  .status-paid{background:#d1fae5;color:#065f46;padding:4px 8px;border-radius:8px;font-weight:600}  
-  .status-pending{background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:8px;font-weight:600}  
-  .formRow{display:flex;flex-direction:column;gap:10px;margin-top:14px}  
-  .formRow .row{display:flex;gap:10px;flex-wrap:wrap}  
-  .formRow input,.formRow select{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ea}  
-  .leftAction{width:56px;text-align:center}  
-  .waBtn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-weight:600}  
-  .muted{color:var(--muted)}  
-  .pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}  
-  .pageBtn{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ea;background:#fff;cursor:pointer}  
-  .pageBtn.active{background:var(--green);color:#fff;border-color:var(--green)}  
-  .pageInfo{margin-right:auto;color:var(--muted)}  
-  @media (max-width:780px){  
-    .formRow .row{flex-direction:column}  
-    .controls input[type=search]{max-width:100%}  
-    .pagination{justify-content:center}  
-    .pageInfo{width:100%;text-align:center;margin-bottom:6px}  
-  }  
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PERFECT DIGITAL NETWORK – Pending Payments (CodeFinal1)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#138a55;
+    --muted:#6b6f72;
+    --card:#ffffff;
+    --bg:#f6f7f8;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Arial,sans-serif}
+  body{margin:0;background:var(--bg);color:#1f2933;padding:20px;}
+  .wrap{max-width:980px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+  header h1{margin:0;font-size:28px;color:var(--green)}
+  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 20px rgba(9,20,30,0.06)}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .controls input[type=search]{width:100%;max-width:420px;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
+  .smallSelect{padding:8px;border-radius:8px;border:1px solid #e6e9ea;background:#fff}
+  .btn{background:var(--green);color:white;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--muted);border:1px solid #e6e9ea}
+  .tableWrap{overflow-x:auto;margin-top:12px}
+  table{border-collapse:collapse;width:100%;min-width:820px}
+  thead th{background:var(--green);color:#fff;padding:12px 10px;text-align:left}
+  tbody td{padding:12px 10px;border-bottom:1px solid #f1f2f3;vertical-align:middle}
+  .status-paid{background:#d1fae5;color:#065f46;padding:4px 8px;border-radius:8px;font-weight:600}
+  .status-pending{background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:8px;font-weight:600}
+  .formRow{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .formRow .row{display:flex;gap:10px;flex-wrap:wrap}
+  .formRow input,.formRow select{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ea}
+  .leftAction{width:56px;text-align:center}
+  .waBtn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:6px 8px;cursor:pointer;font-weight:600}
+  .muted{color:var(--muted)}
+  .pagination{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+  .pageBtn{padding:8px 10px;border-radius:8px;border:1px solid #e6e9ea;background:#fff;cursor:pointer}
+  .pageBtn.active{background:var(--green);color:#fff;border-color:var(--green)}
+  .pageInfo{margin-right:auto;color:var(--muted)}
+  @media (max-width:780px){
+    .formRow .row{flex-direction:column}
+    .controls input[type=search]{max-width:100%}
+    .pagination{justify-content:center}
+    .pageInfo{width:100%;text-align:center;margin-bottom:6px}
+  }
 
   /* Admin modal styles (CODEFINAL1) */
   #adminModal {
@@ -71,98 +71,98 @@
   #adminModal input { width:100%; padding:10px; margin:6px 0; border-radius:8px; border:1px solid #ddd; }
   #adminModal button { margin-top:10px; background:var(--green); color:#fff; border:0; border-radius:8px; padding:10px; cursor:pointer; width:100%; }
   #adminModal .note { color:#6b6f72; font-size:13px; margin-top:8px; }
-</style>  
-</head>  
-<body>  
-<div class="wrap">  
-  <header><h1>PERFECT DIGITAL NETWORK</h1></header>  
-  
-  <div class="card">  
-    <div class="controls">  
-      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />  
-      <!-- Month filter -->  
-      <label for="monthSel" style="font-size:13px;color:var(--muted)">Month</label>  
-      <select id="monthSel" class="smallSelect">  
-        <option value="all">All months</option>  
-        <option value="1">January</option>  
-        <option value="2">February</option>  
-        <option value="3">March</option>  
-        <option value="4">April</option>  
-        <option value="5">May</option>  
-        <option value="6">June</option>  
-        <option value="7">July</option>  
-        <option value="8">August</option>  
-        <option value="9">September</option>  
-        <option value="10">October</option>  
-        <option value="11">November</option>  
-        <option value="12">December</option>  
-      </select>  
-  
-      <select id="refreshSel" class="smallSelect" title="Auto refresh">  
-        <option value="0">Refresh off</option>  
-        <option value="15">Refresh every 15s</option>  
-        <option value="30">Refresh every 30s</option>  
-        <option value="60" selected>Refresh every 60s</option>  
-      </select>  
-      <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>  
-      <button id="reloadBtn" class="btn">Reload now</button>  
-      <div style="margin-left:auto" id="msg" class="muted"></div>  
-    </div>  
-  
-    <div class="tableWrap">  
-      <table id="dataTable" role="table" aria-label="Pending payments">  
-        <thead id="tableHead"></thead>  
-        <tbody id="tableBody"></tbody>  
-      </table>  
-    </div>  
-  
-    <div class="pagination" aria-label="Pagination controls">  
-      <div class="pageInfo" id="pageInfo">Page 1 of 1</div>  
-      <button class="pageBtn" id="firstBtn">First</button>  
-      <button class="pageBtn" id="prevBtn">Prev</button>  
-      <div id="pageNumbers" style="display:flex;gap:6px;align-items:center"></div>  
-      <button class="pageBtn" id="nextBtn">Next</button>  
-      <button class="pageBtn" id="lastBtn">Last</button>  
-    </div>  
-  
-    <hr style="margin:14px 0;border:none;border-top:1px solid #eee" />  
-  
-    <h2>Add New Pending Client</h2>  
-    <div class="formRow">  
-      <div class="row">  
-        <input id="f_name" placeholder="Client Name" />  
-        <input id="f_mobile" placeholder="Mobile" />  
-      </div>  
-      <div class="row">  
-        <input id="f_amount" placeholder="Amount" />  
-        <input id="f_date" placeholder="Date (e.g. 10/1/2025)" />  
-      </div>  
-      <div class="row">  
-        <select id="f_status">  
-          <option>pending</option>  
-          <option>paid</option>  
-        </select>  
-        <select id="f_address">  
-          <option value="">-- Select Area --</option>  
-          <option>Wazirpur</option>  
-          <option>Shas/Trinagar</option>  
-          <option>Ashok Vihar</option>  
-          <option>Gulabi Bagh</option>  
-        </select>  
-      </div>  
-  
-      <!-- REMARK input added (keeps layout similar) -->  
-      <div class="row">  
-        <input id="f_remark" placeholder="Remark (optional)" />  
-      </div>  
-  
-      <div style="display:flex;gap:10px;align-items:center;margin-top:6px">  
-        <button id="addBtn" class="btn">Add</button>  
-        <div id="addMsg" class="muted"></div>  
-      </div>  
-    </div>  
-  </div>  
-</div>  
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>PERFECT DIGITAL NETWORK</h1></header>
+
+  <div class="card">
+    <div class="controls">
+      <input id="searchBox" type="search" placeholder="Search client, mobile or address" />
+      <!-- Month filter -->
+      <label for="monthSel" style="font-size:13px;color:var(--muted)">Month</label>
+      <select id="monthSel" class="smallSelect">
+        <option value="all">All months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+
+      <select id="refreshSel" class="smallSelect" title="Auto refresh">
+        <option value="0">Refresh off</option>
+        <option value="15">Refresh every 15s</option>
+        <option value="30">Refresh every 30s</option>
+        <option value="60" selected>Refresh every 60s</option>
+      </select>
+      <button id="filterPendingBtn" class="btn ghost">Show: Pending only</button>
+      <button id="reloadBtn" class="btn">Reload now</button>
+      <div style="margin-left:auto" id="msg" class="muted"></div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="dataTable" role="table" aria-label="Pending payments">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="pagination" aria-label="Pagination controls">
+      <div class="pageInfo" id="pageInfo">Page 1 of 1</div>
+      <button class="pageBtn" id="firstBtn">First</button>
+      <button class="pageBtn" id="prevBtn">Prev</button>
+      <div id="pageNumbers" style="display:flex;gap:6px;align-items:center"></div>
+      <button class="pageBtn" id="nextBtn">Next</button>
+      <button class="pageBtn" id="lastBtn">Last</button>
+    </div>
+
+    <hr style="margin:14px 0;border:none;border-top:1px solid #eee" />
+
+    <h2>Add New Pending Client</h2>
+    <div class="formRow">
+      <div class="row">
+        <input id="f_name" placeholder="Client Name" />
+        <input id="f_mobile" placeholder="Mobile" />
+      </div>
+      <div class="row">
+        <input id="f_amount" placeholder="Amount" />
+        <input id="f_date" placeholder="Date (e.g. 10/1/2025)" />
+      </div>
+      <div class="row">
+        <select id="f_status">
+          <option>pending</option>
+          <option>paid</option>
+        </select>
+        <select id="f_address">
+          <option value="">-- Select Area --</option>
+          <option>Wazirpur</option>
+          <option>Shas/Trinagar</option>
+          <option>Ashok Vihar</option>
+          <option>Gulabi Bagh</option>
+        </select>
+      </div>
+
+      <!-- REMARK input added (keeps layout similar) -->
+      <div class="row">
+        <input id="f_remark" placeholder="Remark (optional)" />
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+        <button id="addBtn" class="btn">Add</button>
+        <div id="addMsg" class="muted"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ADMIN LOGIN MODAL (CODEFINAL1) -->
 <div id="adminModal" class="">
@@ -176,380 +176,380 @@
 </div>
 <!-- END ADMIN LOGIN MODAL -->
 
-<script>  
-/* CONFIG - keep your API */  
-const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';  
-const CANON = ['clientname','mobile','amount','date','status','address','remark'];  
-  
-/* UPI + QR used in WhatsApp message */  
-const UPI_ID = 'perfectdigital@axl';  
-const QR_IMAGE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/Screenshot_20251005_074910_PhonePe.jpg';  
-  
-/* state for pagination */  
-let rawRows = [];        // fetched from SheetDB  
-let headerMap = {};  
-let filterPending = false;  
-let refreshTimer = null;  
-  
-const PAGE_SIZE = 20;  
-let currentPage = 1;  
-let totalPages = 1;  
-  
-/* helpers */  
-function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }  
-function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }  
-  
-/* phone normalization for wa.me */  
-function normalizePhoneForWhatsApp(raw){  
-  if(!raw) return '';  
-  let digits = String(raw).replace(/\D/g,'');       // remove non-digits  
-  digits = digits.replace(/^0+/, '');                // remove leading zeros  
-  if(digits.length === 10) digits = '91' + digits;   // assume India local 10-digit  
-  return digits;  
-}  
-  
-/* build message */  
-function buildWhatsAppText(row){  
-  const name = getCell(row,'clientname') || 'there';  
-  const amount = getCell(row,'amount') || '';  
-  const text =  
-`Hello ${name},  
-  
-Your broadband payment of ₹${amount} is pending.  
-  
-Please pay via UPI ID: ${UPI_ID}  
-If you've already paid, please ignore.  
-  
-UPI QR — *CLICK ON THE LINK TO OPEN:*  
-${QR_IMAGE_URL}`;  
-  return text;  
-}  
-  
-/* parse date and return month number (1-12) or null */  
-function parseMonthFromDate(s){  
-  if(!s) return null;  
-  s = String(s).trim();  
-  // ISO yyyy-mm-dd  
-  let m;  
-  const iso = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);  
-  if(iso){ m = Number(iso[2]); if(m>=1 && m<=12) return m; }  
-  // dd/mm/yyyy or dd-mm-yyyy  
-  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);  
-  if(dmy){  
-    // assume dd/mm/yyyy (India), so month = dmy[2]  
-    m = Number(dmy[2]);  
-    if(m>=1 && m<=12) return m;  
-  }  
-  // try Date parse fallback  
-  const dt = new Date(s);  
-  if(!isNaN(dt.getTime())){  
-    return dt.getMonth() + 1;  
-  }  
-  return null;  
-}  
-  
-/* header detection (safe, includes remark) */  
-function detectHeaders(rows){  
-  headerMap = {};  
-  if(Array.isArray(rows) && rows.length){  
-    const keys = Object.keys(rows[0]); const lookup = {}; keys.forEach(k=>lookup[normKey(k)]=k);  
-    const variants = {  
-      clientname:['client','name','client_name'],  
-      mobile:['mobile','phone','phonenumber','mobile_number'],  
-      amount:['amount','amt','price'],  
-      date:['date','duedate','due_date'],  
-      status:['status','paymentstatus'],  
-      address:['address','addr','location','area','remark','remarks'],  
-      remark:['remark','remarks','note','notes']  
-    };  
-    CANON.forEach(c=>{  
-      if(lookup[normKey(c)]){ headerMap[c]=lookup[normKey(c)]; return; }  
-      let found=null;  
-      (variants[c]||[c]).forEach(v=>{ if(!found && lookup[normKey(v)]) found=lookup[normKey(v)]; });  
-      headerMap[c]= found || c;  
-    });  
-  } else {  
-    CANON.forEach(c=> headerMap[c]=c);  
-  }  
-}  
-  
-/* fetch data */  
-async function fetchData(){  
-  try{  
-    setMsg('Loading…');  
-    const res = await fetch(SHEETDB_API);  
-    if(!res.ok) throw new Error('Fetch failed: '+res.status);  
-    const json = await res.json();  
-    rawRows = Array.isArray(json) ? json : (json.data || []);  
-    detectHeaders(rawRows);  
-    currentPage = 1; // reset to first page after fetch  
-    renderTable();  
-    setMsg('');  
-  }catch(err){  
-    console.error(err);  
-    setMsg('Error loading data — check console');  
-  }  
-}  
-  
-/* get cell value robustly */  
-function getCell(row, canonical){  
-  if(!row) return '';  
-  const ak = headerMap[canonical];  
-  if(ak && row.hasOwnProperty(ak)) return row[ak];  
-  const fallback = {  
-    clientname:['Client Name','clientname','name'],  
-    mobile:['mobile','Mobile','phone'],  
-    amount:['amount','Amount','amt'],  
-    date:['date','Date'],  
-    status:['status','Status'],  
-    address:['address','Address','remark','Remark','remarks'],  
-    remark:['remark','Remark','remarks','note','notes']  
-  };  
-  for(const k of (fallback[canonical]||[])) if(row.hasOwnProperty(k)) return row[k];  
-  return '';  
-}  
-  
-/* compute filtered rows (search + pending filter + month filter) */  
-function getFilteredRows(){  
-  const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();  
-  const monthVal = document.getElementById('monthSel').value; // 'all' or '1'..'12'  
-  
-  return rawRows.filter(r=>{  
-    if(q){  
-      const hay = Object.values(r).join(' ').toLowerCase();  
-      if(!hay.includes(q)) return false;  
-    }  
-    if(filterPending){  
-      const st = (getCell(r,'status') || '').toString().toLowerCase();  
-      if(!st.includes('pending')) return false;  
-    }  
-    if(monthVal !== 'all'){  
-      const dateStr = getCell(r,'date') || '';  
-      const m = parseMonthFromDate(dateStr);  
-      if(!m) return false;  
-      if(Number(monthVal) !== Number(m)) return false;  
-    }  
-    return true;  
-  });  
-}  
-  
-/* render table with WA left and Edit right; includes Remark column */  
-function renderTable(){  
-  const th = document.getElementById('tableHead');  
-  const tb = document.getElementById('tableBody');  
-  th.innerHTML=''; tb.innerHTML='';  
-  
-  // header  
-  const headRow = document.createElement('tr');  
-  const thLeft = document.createElement('th'); thLeft.style.width='56px'; headRow.appendChild(thLeft);  
-  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address', remark:'Remark' };  
-  Object.keys(titles).forEach(k => { const thc=document.createElement('th'); thc.textContent = titles[k]; headRow.appendChild(thc); });  
-  const thAct = document.createElement('th'); thAct.textContent = 'Edit'; headRow.appendChild(thAct);  
-  th.appendChild(headRow);  
-  
-  const filtered = getFilteredRows();  
-  totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));  
-  if(currentPage > totalPages) currentPage = totalPages;  
-  
-  // slice for this page (1-indexed)  
-  const start = (currentPage-1)*PAGE_SIZE;  
-  const pageRows = filtered.slice(start, start + PAGE_SIZE);  
-  
-  if(!pageRows.length){  
-    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:14px;color:var(--muted)">No records</td></tr>';  
-  } else {  
-    pageRows.forEach(row=>{  
-      const tr = document.createElement('tr');  
-      const name = getCell(row,'clientname') || '';  
-      const mobile = getCell(row,'mobile') || '';  
-      const amount = getCell(row,'amount') || '';  
-      const date = getCell(row,'date') || '';  
-      const statusRaw = (getCell(row,'status') || '').toString().toLowerCase();  
-      const address = getCell(row,'address') || '';  
-      const remark = getCell(row,'remark') || '';  
-      const statusHtml = statusRaw === 'paid' ? `<span class="status-paid">Paid</span>` : `<span class="status-pending">Pending</span>`;  
-  
-      tr.innerHTML =  
-        `<td class="leftAction"><button class="waBtn" title="Send WhatsApp">Send</button></td>  
-         <td>${escapeHtml(name)}</td>  
-         <td>${escapeHtml(mobile)}</td>  
-         <td>${escapeHtml(amount)}</td>  
-         <td>${escapeHtml(date)}</td>  
-         <td>${statusHtml}</td>  
-         <td>${escapeHtml(address)}</td>  
-         <td>${escapeHtml(remark)}</td>  
-         <td class="actions" style="white-space:nowrap">  
-           <button class="btn ghost editBtn" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>  
-         </td>`;  
-  
-      tb.appendChild(tr);  
-  
-      // attach WA handler  
-      const waBtn = tr.querySelector('button.waBtn');  
-      if(waBtn){  
-        waBtn.addEventListener('click', () => {  
-          const phoneRaw = getCell(row,'mobile') || '';  
-          const phone = normalizePhoneForWhatsApp(phoneRaw);  
-          const text = buildWhatsAppText(row);  
-          if(phone && phone.length >= 11){  
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');  
-          } else {  
-            window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');  
-          }  
-        });  
-      }  
-    });  
-  
-    // attach edit handlers for visible rows  
-    tb.querySelectorAll('button.editBtn').forEach(b=>{  
-      b.addEventListener('click', ()=> {  
-        const row = JSON.parse(decodeURIComponent(b.dataset.payload));  
-        editRow(row);  
-      });  
-    });  
-  }  
-  
-  renderPaginationControls();  
-}  
-  
-/* render pagination controls */  
-function renderPaginationControls(){  
-  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;  
-  const pageNumbers = document.getElementById('pageNumbers');  
-  pageNumbers.innerHTML = '';  
-  
-  const maxButtons = 5;  
-  let start = Math.max(1, currentPage - Math.floor(maxButtons/2));  
-  let end = Math.min(totalPages, start + maxButtons - 1);  
-  if(end - start + 1 < maxButtons){  
-    start = Math.max(1, end - maxButtons + 1);  
-  }  
-  
-  for(let p=start;p<=end;p++){  
-    const btn = document.createElement('button');  
-    btn.className = 'pageBtn' + (p===currentPage ? ' active' : '');  
-    btn.textContent = p;  
-    btn.addEventListener('click', ()=> { currentPage = p; renderTable(); });  
-    pageNumbers.appendChild(btn);  
-  }  
-  
-  document.getElementById('prevBtn').disabled = currentPage === 1;  
-  document.getElementById('firstBtn').disabled = currentPage === 1;  
-  document.getElementById('nextBtn').disabled = currentPage === totalPages;  
-  document.getElementById('lastBtn').disabled = currentPage === totalPages;  
-}  
-  
-/* add row (includes remark) */  
-async function addRow(){  
-  const name = document.getElementById('f_name').value.trim();  
-  const mobile = document.getElementById('f_mobile').value.trim();  
-  const amount = document.getElementById('f_amount').value.trim();  
-  const date = document.getElementById('f_date').value.trim();  
-  const status = document.getElementById('f_status').value.trim();  
-  const address = document.getElementById('f_address').value.trim();  
-  const remark = document.getElementById('f_remark').value.trim();  
-  
-  if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }  
-  if(!Object.keys(headerMap).length) await fetchData();  
-  
-  const payload = {};  
-  payload[ headerMap['clientname'] || 'clientname' ] = name || '';  
-  payload[ headerMap['mobile'] || 'mobile' ] = mobile || '';  
-  payload[ headerMap['amount'] || 'amount' ] = amount || '';  
-  payload[ headerMap['date'] || 'date' ] = date || '';  
-  payload[ headerMap['status'] || 'status' ] = status || '';  
-  payload[ headerMap['address'] || 'address' ] = address || '';  
-  payload[ headerMap['remark'] || 'remark' ] = remark || '';  
-  
-  try{  
-    document.getElementById('addMsg').textContent = 'Adding…';  
-    const res = await fetch(SHEETDB_API, {  
-      method: 'POST',  
-      headers: { 'Content-Type':'application/json' },  
-      body: JSON.stringify({ data: [ payload ] })  
-    });  
-    if(!res.ok) throw new Error('Add failed: '+res.status);  
-    await fetchData();  
-    ['f_name','f_mobile','f_amount','f_date','f_remark'].forEach(id=>document.getElementById(id).value='');  
-    document.getElementById('f_address').value = '';  
-    document.getElementById('f_status').value = 'pending';  
-    document.getElementById('addMsg').textContent = 'Added ✓';  
-    setTimeout(()=>document.getElementById('addMsg').textContent = '',1500);  
-  }catch(err){  
-    console.error(err);  
-    document.getElementById('addMsg').textContent = 'Error adding';  
-  }  
-}  
-  
-/* edit - includes remark in prompt & patch */  
-async function editRow(rowObj){  
-  try{  
-    const currentName = getCell(rowObj,'clientname')||'';  
-    const currentMobile = getCell(rowObj,'mobile')||'';  
-    const currentAmount = getCell(rowObj,'amount')||'';  
-    const currentDate = getCell(rowObj,'date')||'';  
-    const currentStatus = getCell(rowObj,'status')||'pending';  
-    const currentAddress = getCell(rowObj,'address')||'';  
-    const currentRemark = getCell(rowObj,'remark')||'';  
-  
-    const newName = prompt('Client name', currentName) || currentName;  
-    const newMobile = prompt('Mobile', currentMobile) || currentMobile;  
-    const newAmount = prompt('Amount', currentAmount) || currentAmount;  
-    const newDate = prompt('Date', currentDate) || currentDate;  
-    const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;  
-    const newAddress = prompt('Address', currentAddress) || currentAddress;  
-    const newRemark = prompt('Remark (optional)', currentRemark) || currentRemark;  
-  
-    const patchObj = {};  
-    patchObj[ headerMap['clientname'] || 'clientname' ] = newName;  
-    patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;  
-    patchObj[ headerMap['amount'] || 'amount' ] = newAmount;  
-    patchObj[ headerMap['date'] || 'date' ] = newDate;  
-    patchObj[ headerMap['status'] || 'status' ] = newStatus;  
-    patchObj[ headerMap['address'] || 'address' ] = newAddress;  
-    patchObj[ headerMap['remark'] || 'remark' ] = newRemark;  
-  
-    // PATCH by mobile if present, else by clientname  
-    const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';  
-    const nameVal = rowObj[ headerMap['clientname'] ] || rowObj.clientname || '';  
-    let patchUrl;  
-    if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);  
-    else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);  
-  
-    const res = await fetch(patchUrl, {  
-      method: 'PATCH',  
-      headers: { 'Content-Type':'application/json' },  
-      body: JSON.stringify({ data: [ patchObj ] })  
-    });  
-    if(!res.ok) throw new Error('Update failed: ' + res.status);  
-    await fetchData();  
-    setMsg('Updated ✓'); setTimeout(()=>setMsg(''),1200);  
-  }catch(err){  
-    console.error(err);  
-    alert('Update failed — check console.');  
-  }  
-}  
-  
-/* small UI helpers */  
-function setMsg(m){ document.getElementById('msg').textContent = m || ''; }  
-  
-/* pagination and UI wiring */  
-document.getElementById('prevBtn').addEventListener('click', ()=> { if(currentPage>1){ currentPage--; renderTable(); } });  
-document.getElementById('nextBtn').addEventListener('click', ()=> { if(currentPage<totalPages){ currentPage++; renderTable(); } });  
-document.getElementById('firstBtn').addEventListener('click', ()=> { currentPage=1; renderTable(); });  
-document.getElementById('lastBtn').addEventListener('click', ()=> { currentPage=totalPages; renderTable(); });  
-document.getElementById('reloadBtn').addEventListener('click', fetchData);  
-document.getElementById('searchBox').addEventListener('input', ()=>{ currentPage=1; renderTable(); });  
-document.getElementById('filterPendingBtn').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); currentPage=1; renderTable(); });  
-document.getElementById('refreshSel').addEventListener('change', (e)=>{ const v=Number(e.target.value); if(refreshTimer){ clearInterval(refreshTimer); refreshTimer=null; } if(v>0) refreshTimer=setInterval(fetchData, v*1000); });  
-document.getElementById('monthSel').addEventListener('change', ()=>{ currentPage=1; renderTable(); });  
-document.getElementById('addBtn').addEventListener('click', addRow);  
-  
-/* initial load */  
-fetchData();  
+<script>
+/* CONFIG - keep your API */
+const SHEETDB_API = 'https://sheetdb.io/api/v1/zla8gcygz4jgd';
+const CANON = ['clientname','mobile','amount','date','status','address','remark'];
+
+/* UPI + QR used in WhatsApp message */
+const UPI_ID = 'perfectdigital@axl';
+const QR_IMAGE_URL = 'https://agichaniprakash-cloud.github.io/PerfectDigital/Screenshot_20251005_074910_PhonePe.jpg';
+
+/* state for pagination */
+let rawRows = [];        // fetched from SheetDB
+let headerMap = {};
+let filterPending = false;
+let refreshTimer = null;
+
+const PAGE_SIZE = 20;
+let currentPage = 1;
+let totalPages = 1;
+
+/* helpers */
+function normKey(s){ return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function escapeHtml(s){ if(s==null) return ''; return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
+/* phone normalization for wa.me */
+function normalizePhoneForWhatsApp(raw){
+  if(!raw) return '';
+  let digits = String(raw).replace(/\D/g,'');       // remove non-digits
+  digits = digits.replace(/^0+/, '');                // remove leading zeros
+  if(digits.length === 10) digits = '91' + digits;   // assume India local 10-digit
+  return digits;
+}
+
+/* build message */
+function buildWhatsAppText(row){
+  const name = getCell(row,'clientname') || 'there';
+  const amount = getCell(row,'amount') || '';
+  const text =
+`Hello ${name},
+
+Your broadband payment of ₹${amount} is pending.
+
+Please pay via UPI ID: ${UPI_ID}
+If you've already paid, please ignore.
+
+UPI QR — *CLICK ON THE LINK TO OPEN:*
+${QR_IMAGE_URL}`;
+  return text;
+}
+
+/* parse date and return month number (1-12) or null */
+function parseMonthFromDate(s){
+  if(!s) return null;
+  s = String(s).trim();
+  // ISO yyyy-mm-dd
+  let m;
+  const iso = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if(iso){ m = Number(iso[2]); if(m>=1 && m<=12) return m; }
+  // dd/mm/yyyy or dd-mm-yyyy
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(dmy){
+    // assume dd/mm/yyyy (India), so month = dmy[2]
+    m = Number(dmy[2]);
+    if(m>=1 && m<=12) return m;
+  }
+  // try Date parse fallback
+  const dt = new Date(s);
+  if(!isNaN(dt.getTime())){
+    return dt.getMonth() + 1;
+  }
+  return null;
+}
+
+/* header detection (safe, includes remark) */
+function detectHeaders(rows){
+  headerMap = {};
+  if(Array.isArray(rows) && rows.length){
+    const keys = Object.keys(rows[0]); const lookup = {}; keys.forEach(k=>lookup[normKey(k)]=k);
+    const variants = {
+      clientname:['client','name','client_name'],
+      mobile:['mobile','phone','phonenumber','mobile_number'],
+      amount:['amount','amt','price'],
+      date:['date','duedate','due_date'],
+      status:['status','paymentstatus'],
+      address:['address','addr','location','area','remark','remarks'],
+      remark:['remark','remarks','note','notes']
+    };
+    CANON.forEach(c=>{
+      if(lookup[normKey(c)]){ headerMap[c]=lookup[normKey(c)]; return; }
+      let found=null;
+      (variants[c]||[c]).forEach(v=>{ if(!found && lookup[normKey(v)]) found=lookup[normKey(v)]; });
+      headerMap[c]= found || c;
+    });
+  } else {
+    CANON.forEach(c=> headerMap[c]=c);
+  }
+}
+
+/* fetch data */
+async function fetchData(){
+  try{
+    setMsg('Loading…');
+    const res = await fetch(SHEETDB_API);
+    if(!res.ok) throw new Error('Fetch failed: '+res.status);
+    const json = await res.json();
+    rawRows = Array.isArray(json) ? json : (json.data || []);
+    detectHeaders(rawRows);
+    currentPage = 1; // reset to first page after fetch
+    renderTable();
+    setMsg('');
+  }catch(err){
+    console.error(err);
+    setMsg('Error loading data — check console');
+  }
+}
+
+/* get cell value robustly */
+function getCell(row, canonical){
+  if(!row) return '';
+  const ak = headerMap[canonical];
+  if(ak && row.hasOwnProperty(ak)) return row[ak];
+  const fallback = {
+    clientname:['Client Name','clientname','name'],
+    mobile:['mobile','Mobile','phone'],
+    amount:['amount','Amount','amt'],
+    date:['date','Date'],
+    status:['status','Status'],
+    address:['address','Address','remark','Remark','remarks'],
+    remark:['remark','Remark','remarks','note','notes']
+  };
+  for(const k of (fallback[canonical]||[])) if(row.hasOwnProperty(k)) return row[k];
+  return '';
+}
+
+/* compute filtered rows (search + pending filter + month filter) */
+function getFilteredRows(){
+  const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();
+  const monthVal = document.getElementById('monthSel').value; // 'all' or '1'..'12'
+
+  return rawRows.filter(r=>{
+    if(q){
+      const hay = Object.values(r).join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    if(filterPending){
+      const st = (getCell(r,'status') || '').toString().toLowerCase();
+      if(!st.includes('pending')) return false;
+    }
+    if(monthVal !== 'all'){
+      const dateStr = getCell(r,'date') || '';
+      const m = parseMonthFromDate(dateStr);
+      if(!m) return false;
+      if(Number(monthVal) !== Number(m)) return false;
+    }
+    return true;
+  });
+}
+
+/* render table with WA left and Edit right; includes Remark column */
+function renderTable(){
+  const th = document.getElementById('tableHead');
+  const tb = document.getElementById('tableBody');
+  th.innerHTML=''; tb.innerHTML='';
+
+  // header
+  const headRow = document.createElement('tr');
+  const thLeft = document.createElement('th'); thLeft.style.width='56px'; headRow.appendChild(thLeft);
+  const titles = { clientname:'Client Name', mobile:'Mobile', amount:'Amount', date:'Date', status:'Status', address:'Address', remark:'Remark' };
+  Object.keys(titles).forEach(k => { const thc=document.createElement('th'); thc.textContent = titles[k]; headRow.appendChild(thc); });
+  const thAct = document.createElement('th'); thAct.textContent = 'Edit'; headRow.appendChild(thAct);
+  th.appendChild(headRow);
+
+  const filtered = getFilteredRows();
+  totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if(currentPage > totalPages) currentPage = totalPages;
+
+  // slice for this page (1-indexed)
+  const start = (currentPage-1)*PAGE_SIZE;
+  const pageRows = filtered.slice(start, start + PAGE_SIZE);
+
+  if(!pageRows.length){
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:14px;color:var(--muted)">No records</td></tr>';
+  } else {
+    pageRows.forEach(row=>{
+      const tr = document.createElement('tr');
+      const name = getCell(row,'clientname') || '';
+      const mobile = getCell(row,'mobile') || '';
+      const amount = getCell(row,'amount') || '';
+      const date = getCell(row,'date') || '';
+      const statusRaw = (getCell(row,'status') || '').toString().toLowerCase();
+      const address = getCell(row,'address') || '';
+      const remark = getCell(row,'remark') || '';
+      const statusHtml = statusRaw === 'paid' ? `<span class="status-paid">Paid</span>` : `<span class="status-pending">Pending</span>`;
+
+      tr.innerHTML =
+        `<td class="leftAction"><button class="waBtn" title="Send WhatsApp">Send</button></td>
+         <td>${escapeHtml(name)}</td>
+         <td>${escapeHtml(mobile)}</td>
+         <td>${escapeHtml(amount)}</td>
+         <td>${escapeHtml(date)}</td>
+         <td>${statusHtml}</td>
+         <td>${escapeHtml(address)}</td>
+         <td>${escapeHtml(remark)}</td>
+         <td class="actions" style="white-space:nowrap">
+           <button class="btn ghost editBtn" data-payload="${encodeURIComponent(JSON.stringify(row))}">Edit</button>
+         </td>`;
+
+      tb.appendChild(tr);
+
+      // attach WA handler
+      const waBtn = tr.querySelector('button.waBtn');
+      if(waBtn){
+        waBtn.addEventListener('click', () => {
+          const phoneRaw = getCell(row,'mobile') || '';
+          const phone = normalizePhoneForWhatsApp(phoneRaw);
+          const text = buildWhatsAppText(row);
+          if(phone && phone.length >= 11){
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+          } else {
+            window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+          }
+        });
+      }
+    });
+
+    // attach edit handlers for visible rows
+    tb.querySelectorAll('button.editBtn').forEach(b=>{
+      b.addEventListener('click', ()=> {
+        const row = JSON.parse(decodeURIComponent(b.dataset.payload));
+        editRow(row);
+      });
+    });
+  }
+
+  renderPaginationControls();
+}
+
+/* render pagination controls */
+function renderPaginationControls(){
+  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+  const pageNumbers = document.getElementById('pageNumbers');
+  pageNumbers.innerHTML = '';
+
+  const maxButtons = 5;
+  let start = Math.max(1, currentPage - Math.floor(maxButtons/2));
+  let end = Math.min(totalPages, start + maxButtons - 1);
+  if(end - start + 1 < maxButtons){
+    start = Math.max(1, end - maxButtons + 1);
+  }
+
+  for(let p=start;p<=end;p++){
+    const btn = document.createElement('button');
+    btn.className = 'pageBtn' + (p===currentPage ? ' active' : '');
+    btn.textContent = p;
+    btn.addEventListener('click', ()=> { currentPage = p; renderTable(); });
+    pageNumbers.appendChild(btn);
+  }
+
+  document.getElementById('prevBtn').disabled = currentPage === 1;
+  document.getElementById('firstBtn').disabled = currentPage === 1;
+  document.getElementById('nextBtn').disabled = currentPage === totalPages;
+  document.getElementById('lastBtn').disabled = currentPage === totalPages;
+}
+
+/* add row (includes remark) */
+async function addRow(){
+  const name = document.getElementById('f_name').value.trim();
+  const mobile = document.getElementById('f_mobile').value.trim();
+  const amount = document.getElementById('f_amount').value.trim();
+  const date = document.getElementById('f_date').value.trim();
+  const status = document.getElementById('f_status').value.trim();
+  const address = document.getElementById('f_address').value.trim();
+  const remark = document.getElementById('f_remark').value.trim();
+
+  if(!name && !mobile){ alert('Please provide at least Client Name or Mobile.'); return; }
+  if(!Object.keys(headerMap).length) await fetchData();
+
+  const payload = {};
+  payload[ headerMap['clientname'] || 'clientname' ] = name || '';
+  payload[ headerMap['mobile'] || 'mobile' ] = mobile || '';
+  payload[ headerMap['amount'] || 'amount' ] = amount || '';
+  payload[ headerMap['date'] || 'date' ] = date || '';
+  payload[ headerMap['status'] || 'status' ] = status || '';
+  payload[ headerMap['address'] || 'address' ] = address || '';
+  payload[ headerMap['remark'] || 'remark' ] = remark || '';
+
+  try{
+    document.getElementById('addMsg').textContent = 'Adding…';
+    const res = await fetch(SHEETDB_API, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ data: [ payload ] })
+    });
+    if(!res.ok) throw new Error('Add failed: '+res.status);
+    await fetchData();
+    ['f_name','f_mobile','f_amount','f_date','f_remark'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f_address').value = '';
+    document.getElementById('f_status').value = 'pending';
+    document.getElementById('addMsg').textContent = 'Added ✓';
+    setTimeout(()=>document.getElementById('addMsg').textContent = '',1500);
+  }catch(err){
+    console.error(err);
+    document.getElementById('addMsg').textContent = 'Error adding';
+  }
+}
+
+/* edit - includes remark in prompt & patch */
+async function editRow(rowObj){
+  try{
+    const currentName = getCell(rowObj,'clientname')||'';
+    const currentMobile = getCell(rowObj,'mobile')||'';
+    const currentAmount = getCell(rowObj,'amount')||'';
+    const currentDate = getCell(rowObj,'date')||'';
+    const currentStatus = getCell(rowObj,'status')||'pending';
+    const currentAddress = getCell(rowObj,'address')||'';
+    const currentRemark = getCell(rowObj,'remark')||'';
+
+    const newName = prompt('Client name', currentName) || currentName;
+    const newMobile = prompt('Mobile', currentMobile) || currentMobile;
+    const newAmount = prompt('Amount', currentAmount) || currentAmount;
+    const newDate = prompt('Date', currentDate) || currentDate;
+    const newStatus = prompt('Status (paid/pending)', currentStatus) || currentStatus;
+    const newAddress = prompt('Address', currentAddress) || currentAddress;
+    const newRemark = prompt('Remark (optional)', currentRemark) || currentRemark;
+
+    const patchObj = {};
+    patchObj[ headerMap['clientname'] || 'clientname' ] = newName;
+    patchObj[ headerMap['mobile'] || 'mobile' ] = newMobile;
+    patchObj[ headerMap['amount'] || 'amount' ] = newAmount;
+    patchObj[ headerMap['date'] || 'date' ] = newDate;
+    patchObj[ headerMap['status'] || 'status' ] = newStatus;
+    patchObj[ headerMap['address'] || 'address' ] = newAddress;
+    patchObj[ headerMap['remark'] || 'remark' ] = newRemark;
+
+    // PATCH by mobile if present, else by clientname
+    const mobileVal = rowObj[ headerMap['mobile'] ] || rowObj.mobile || '';
+    const nameVal = rowObj[ headerMap['clientname'] ] || rowObj.clientname || '';
+    let patchUrl;
+    if(mobileVal) patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/mobile/' + encodeURIComponent(mobileVal);
+    else patchUrl = SHEETDB_API.replace(/\/+$/,'') + '/clientname/' + encodeURIComponent(nameVal);
+
+    const res = await fetch(patchUrl, {
+      method: 'PATCH',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ data: [ patchObj ] })
+    });
+    if(!res.ok) throw new Error('Update failed: ' + res.status);
+    await fetchData();
+    setMsg('Updated ✓'); setTimeout(()=>setMsg(''),1200);
+  }catch(err){
+    console.error(err);
+    alert('Update failed — check console.');
+  }
+}
+
+/* small UI helpers */
+function setMsg(m){ document.getElementById('msg').textContent = m || ''; }
+
+/* pagination and UI wiring */
+document.getElementById('prevBtn').addEventListener('click', ()=> { if(currentPage>1){ currentPage--; renderTable(); } });
+document.getElementById('nextBtn').addEventListener('click', ()=> { if(currentPage<totalPages){ currentPage++; renderTable(); } });
+document.getElementById('firstBtn').addEventListener('click', ()=> { currentPage=1; renderTable(); });
+document.getElementById('lastBtn').addEventListener('click', ()=> { currentPage=totalPages; renderTable(); });
+document.getElementById('reloadBtn').addEventListener('click', fetchData);
+document.getElementById('searchBox').addEventListener('input', ()=>{ currentPage=1; renderTable(); });
+document.getElementById('filterPendingBtn').addEventListener('click', (e)=>{ filterPending = !filterPending; e.target.classList.toggle('btn', filterPending); e.target.classList.toggle('ghost', !filterPending); currentPage=1; renderTable(); });
+document.getElementById('refreshSel').addEventListener('change', (e)=>{ const v=Number(e.target.value); if(refreshTimer){ clearInterval(refreshTimer); refreshTimer=null; } if(v>0) refreshTimer=setInterval(fetchData, v*1000); });
+document.getElementById('monthSel').addEventListener('change', ()=>{ currentPage=1; renderTable(); });
+document.getElementById('addBtn').addEventListener('click', addRow);
+
+/* initial load */
+fetchData();
 
 /* --------- SIMPLE ADMIN LOGIN (client-side) - CODEFINAL1 --------- */
-/* Username is 'admin'. Change password below if you want a different one. */
+/* Username is 'admin'. Change password below in code if you want a different one. */
 (function(){
   const USERNAME = 'admin';
   const PASSWORD = 'Perfect@2025'; // <- your requested password
@@ -563,13 +563,13 @@ fetchData();
 
   function setSession(){
     const expires = Date.now() + SESSION_MINUTES*60*1000;
-    // store expiry timestamp as number string
-    sessionStorage.setItem(SESSION_KEY, String(expires));
+    // store expiry timestamp in localStorage to persist across refresh
+    localStorage.setItem(SESSION_KEY, String(expires));
   }
-  function clearSession(){ sessionStorage.removeItem(SESSION_KEY); }
+  function clearSession(){ localStorage.removeItem(SESSION_KEY); }
   function hasSession(){
     try{
-      const exp = sessionStorage.getItem(SESSION_KEY);
+      const exp = localStorage.getItem(SESSION_KEY);
       return exp && Date.now() < Number(exp);
     }catch(e){ return false; }
   }
@@ -614,7 +614,7 @@ fetchData();
   let expiryTimer = null;
   function scheduleExpiry(){
     try{ if(expiryTimer) clearTimeout(expiryTimer); }catch(e){}
-    const s = sessionStorage.getItem(SESSION_KEY);
+    const s = localStorage.getItem(SESSION_KEY);
     if(!s) return showModal();
     const msLeft = Number(s) - Date.now();
     if(msLeft <= 0){ clearSession(); showModal(); return; }
@@ -629,6 +629,6 @@ fetchData();
     hasSession, setSession, clearSession, scheduleExpiry
   };
 })();
-</script>  
-</body>  
+</script>
+</body>
 </html>
