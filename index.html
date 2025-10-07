@@ -3,7 +3,7 @@
 <head>  
 <meta charset="utf-8" />  
 <meta name="viewport" content="width=device-width,initial-scale=1" />  
-<title>PERFECT DIGITAL NETWORK – Pending Payments (CodeDone)</title>  
+<title>PERFECT DIGITAL NETWORK – Pending Payments (CodeFinal1)</title>  
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">  
 <style>  
   :root{  
@@ -47,11 +47,14 @@
     .pageInfo{width:100%;text-align:center;margin-bottom:6px}  
   }  
 
-  /* Admin modal styles (added) */
+  /* Admin modal styles (CODEFINAL1) */
   #adminModal {
-    position: fixed; inset: 0;
+    position: fixed;
+    inset: 0;
     background: rgba(0,0,0,0.55);
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 99999;
   }
   #adminModal.hidden { display: none; }
@@ -60,7 +63,7 @@
     border-radius: 10px;
     padding: 18px;
     box-shadow: 0 5px 25px rgba(0,0,0,0.2);
-    width: 340px;
+    width: 360px;
     max-width: 94%;
     text-align: center;
   }
@@ -161,7 +164,7 @@
   </div>  
 </div>  
 
-<!-- ADMIN LOGIN MODAL (appears on load, reappears after 8 minutes) -->
+<!-- ADMIN LOGIN MODAL (CODEFINAL1) -->
 <div id="adminModal" class="">
   <div class="box" role="dialog" aria-modal="true" aria-labelledby="adminTitle">
     <h2 id="adminTitle">Admin Login</h2>
@@ -545,12 +548,13 @@ document.getElementById('addBtn').addEventListener('click', addRow);
 /* initial load */  
 fetchData();  
 
-/* --------- SIMPLE ADMIN LOGIN (client-side) --------- */
+/* --------- SIMPLE ADMIN LOGIN (client-side) - CODEFINAL1 --------- */
 /* Username is 'admin'. Change password below if you want a different one. */
 (function(){
   const USERNAME = 'admin';
-  const PASSWORD = 'PdNet@2025'; // <- change this in code if you want a different password
+  const PASSWORD = 'Perfect@2025'; // <- your requested password
   const SESSION_MINUTES = 8;
+  const SESSION_KEY = 'codefinal1_admin_session';
 
   const modal = document.getElementById('adminModal');
   const userIn = document.getElementById('adminUser');
@@ -558,13 +562,18 @@ fetchData();
   const loginBtn = document.getElementById('adminLoginBtn');
 
   function setSession(){
-    const exp = Date.now() + SESSION_MINUTES*60*1000;
-    sessionStorage.setItem('admin_session', exp);
+    const expires = Date.now() + SESSION_MINUTES*60*1000;
+    // store expiry timestamp as number string
+    sessionStorage.setItem(SESSION_KEY, String(expires));
   }
+  function clearSession(){ sessionStorage.removeItem(SESSION_KEY); }
   function hasSession(){
-    const exp = sessionStorage.getItem('admin_session');
-    return exp && Date.now() < Number(exp);
+    try{
+      const exp = sessionStorage.getItem(SESSION_KEY);
+      return exp && Date.now() < Number(exp);
+    }catch(e){ return false; }
   }
+
   function showModal(){
     modal.classList.remove('hidden');
     document.documentElement.style.overflow = 'hidden';
@@ -577,6 +586,7 @@ fetchData();
     document.documentElement.style.overflow = '';
   }
 
+  // login click
   loginBtn.addEventListener('click', function(){
     const u = (userIn.value||'').trim();
     const p = (passIn.value||'').trim();
@@ -584,7 +594,7 @@ fetchData();
     if(p === PASSWORD){
       setSession();
       hideModal();
-      scheduleExpiry(); // schedule reappear
+      scheduleExpiry();
     } else {
       alert('Wrong password');
       passIn.value = '';
@@ -592,27 +602,32 @@ fetchData();
     }
   });
 
-  // check every 60s whether session expired
+  // check periodically so modal reappears after expiry (runs every 60s)
   setInterval(()=>{
     if(!hasSession()) showModal();
   }, 60*1000);
 
-  // initial show if no session
+  // initial show/hide on page load
   if(!hasSession()) showModal(); else scheduleExpiry();
 
-  // schedule exact reappear when session expires
+  // schedule exact reappearance when session expires
   let expiryTimer = null;
   function scheduleExpiry(){
     try{ if(expiryTimer) clearTimeout(expiryTimer); }catch(e){}
-    const s = sessionStorage.getItem('admin_session');
+    const s = sessionStorage.getItem(SESSION_KEY);
     if(!s) return showModal();
     const msLeft = Number(s) - Date.now();
-    if(msLeft <= 0){ sessionStorage.removeItem('admin_session'); showModal(); return; }
+    if(msLeft <= 0){ clearSession(); showModal(); return; }
     expiryTimer = setTimeout(()=>{
-      sessionStorage.removeItem('admin_session');
+      clearSession();
       showModal();
     }, msLeft + 50);
   }
+
+  // expose helper for testing in console if needed
+  window.__codefinal1_admin = {
+    hasSession, setSession, clearSession, scheduleExpiry
+  };
 })();
 </script>  
 </body>  
